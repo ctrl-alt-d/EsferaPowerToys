@@ -40,6 +40,8 @@ Per instal·lar aquest script necessites:
 
 ---
 
+![Captura de pantalla](./docs/exemple.png)
+
 ## Contribucions
 
 Estàs convidat/da a col·laborar!
