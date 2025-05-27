@@ -75,7 +75,7 @@ Fes-lo servir sota la teva responsabilitat i sentit comú.
 
 ## 📝 ToDo
 
-- 🧹 Afegir testos per a cada classe.
+- 🧹 Afegir tests per a cada classe.
 
 ---
 
