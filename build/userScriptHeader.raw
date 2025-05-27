@@ -1,0 +1,12 @@
+// ==UserScript==
+// @name         Esfer@ PowerToys
+// @namespace    https://github.com/ctrl-alt-d/EsferaPowerToys
+// @version      {{VERSION}}
+// @description  Millores per a la plataforma Esfer@
+// @author       ctrl-alt-d
+// @license      MIT
+// @match        https://bfgh.aplicacions.ensenyament.gencat.cat/bfgh/avaluacio/*
+// @grant        none
+// @updateURL    https://raw.githubusercontent.com/ctrl-alt-d/EsferaPowerToys/refs/heads/main/dist/script.user.js
+// @downloadURL  https://raw.githubusercontent.com/ctrl-alt-d/EsferaPowerToys/refs/heads/main/dist/script.user.js
+// ==/UserScript==

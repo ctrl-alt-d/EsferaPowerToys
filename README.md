@@ -17,15 +17,15 @@ Per instal·lar aquest script necessites:
 
 ## 🚀 Instal·lació
 
-1. Instal·la **Tampermonkey** des de la seva web oficial:
+1. Instal·la **Tampermonkey** des de la seva web oficial:  
    👉 [https://www.tampermonkey.net/](https://www.tampermonkey.net/)
 
-2. Fes clic aquí per instal·lar l'script:
+2. Fes clic aquí per instal·lar l'script:  
    👉 [`Esfer@ PowerToys`](https://raw.githubusercontent.com/ctrl-alt-d/EsferaPowerToys/refs/heads/main/dist/script.user.js)
 
    Tampermonkey t'obrirà una pestanya amb el codi i un botó per **"Install"**.
 
-3. Un cop instal·lat, quan entris qualificacions finals per grup i alumne/a et permetrà fer copy-paste de les notes des d'un full de càlcul.
+3. Un cop instal·lat, quan entris a qualificacions finals per grup i alumne/a et permetrà fer copy-paste de les notes des d'un full de càlcul.
 
    L'script s'activarà automàticament.
 
@@ -40,7 +40,9 @@ Per instal·lar aquest script necessites:
 
 ---
 
-![Captura de pantalla](./docs/exemple.png)
+![Captura de pantalla](./docs/video.gif)
+
+---
 
 ## Contribucions
 
@@ -71,18 +73,7 @@ Fes-lo servir sota la teva responsabilitat i sentit comú.
 
 ---
 
-## ✨ Gràcies
-
-Aquest projecte existeix per fer més còmoda i eficient la feina docent.  
-Espero que et sigui útil!
-
 ## 📝 ToDo
-
-- 📚 **Afegir documentació visual**  
-  Incloure un GIF animat o un vídeo curt que mostri l’script en acció. Això ajudaria a entendre’n l’ús de forma ràpida i visual per a nous usuaris.
-
-- 📦 **Integrar un bundler JavaScript**  
-  Actualment el codi està escrit en vanilla JS. Estaria bé fer servir un bundler com [Vite](https://vitejs.dev/) o [esbuild](https://esbuild.dev/) per modularitzar el projecte, millorar el rendiment, facilitar els tests i preparar una pipeline de generació automàtica.
 
 - 🧹 **Millores generals de codi**  
   Segur que hi ha moltes àrees a optimitzar o refactoritzar:
@@ -90,3 +81,45 @@ Espero que et sigui útil!
   - Validació i feedback visual dels inputs.
   - Millora de l’accessibilitat i experiència d’usuari.
   - Separació clara entre interfície i lògica funcional.
+
+---
+
+## ✨ Gràcies i crèdits
+
+Aquest projecte existeix per fer més còmoda i eficient la feina docent.  
+Espero que et sigui útil!
+
+🎨 El gif animat del repositori és obra de [@ermengolbota](https://github.com/ermengolbota).
+
+---
+
+## 👩‍💻 Developers
+
+Si vols compilar el projecte tu mateix:
+
+1. Clona el repositori:
+   '''bash
+   git clone https://github.com/ctrl-alt-d/EsferaPowerToys.git
+   cd EsferaPowerToys
+   '''
+
+2. Installa les dependències:
+   '''bash
+   npm install
+   '''
+
+3. Compila l'script:
+   '''bash
+   npm run build
+   '''
+
+   Això generarà el fitxer:
+   '''
+   dist/script.user.js
+   '''
+
+4. Incrementa la versió modificant el fitxer:
+   '''
+   build/version.js
+   '''
+
