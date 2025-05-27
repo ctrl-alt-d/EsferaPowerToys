@@ -1,22 +1,22 @@
 {
   "name": "esferapowertoys",
-  "version": "1.0.0",
+  "version": "1.3.0",
   "description": "Millores personalitzades per a la plataforma Esfer@ d'avaluació del Departament d'Educació de la Generalitat de Catalunya.",
   "main": "esbuild.config.js",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node ./build/esbuild.config.js"
+    "sync-version": "node ./build/sync-version.js",
+    "build": "npm run sync-version && node ./build/esbuild.config.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ctrl-alt-d/EsferaPowerToys.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["Esfer@", "UI", "UX2", "Avaluació", "Departament d'Educació", "Generalitat de Catalunya"],
+  "author": "ctrl-alt-d",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/ctrl-alt-d/EsferaPowerToys/issues"
   },
