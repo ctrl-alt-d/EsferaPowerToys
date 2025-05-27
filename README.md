@@ -75,12 +75,7 @@ Fes-lo servir sota la teva responsabilitat i sentit comú.
 
 ## 📝 ToDo
 
-- 🧹 **Millores generals de codi**  
-  Segur que hi ha moltes àrees a optimitzar o refactoritzar:
-  - Reutilització de components i funcions.
-  - Validació i feedback visual dels inputs.
-  - Millora de l’accessibilitat i experiència d’usuari.
-  - Separació clara entre interfície i lògica funcional.
+- 🧹 Afegir testos per a cada classe.
 
 ---
 
