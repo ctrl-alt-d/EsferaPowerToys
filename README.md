@@ -93,28 +93,28 @@ Espero que et sigui útil!
 Si vols compilar el projecte tu mateix:
 
 1. Clona el repositori:
-   '''bash
+   ```bash
    git clone https://github.com/ctrl-alt-d/EsferaPowerToys.git
    cd EsferaPowerToys
-   '''
+   ```
 
 2. Installa les dependències:
-   '''bash
+   ```bash
    npm install
-   '''
+   ```
 
 3. Compila l'script:
-   '''bash
+   ```bash
    npm run build
-   '''
+   ```
 
    Això generarà el fitxer:
-   '''
+   ```
    dist/script.user.js
-   '''
+   ```
 
 4. Incrementa la versió modificant el fitxer:
-   '''
+   ```
    build/version.js
-   '''
+   ```
 
