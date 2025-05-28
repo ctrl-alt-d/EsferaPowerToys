@@ -42,6 +42,9 @@ Per instal·lar aquest script necessites:
 
 ![Captura de pantalla](./docs/video.gif)
 
+🎨 El gif animat cortesia d' [@ermengolbota](https://github.com/ermengolbota).
+
+
 ---
 
 ## Contribucions
@@ -79,14 +82,6 @@ Fes-lo servir sota la teva responsabilitat i sentit comú.
 
 ---
 
-## ✨ Gràcies i crèdits
-
-Aquest projecte existeix per fer més còmoda i eficient la feina docent.  
-Espero que et sigui útil!
-
-🎨 El gif animat del repositori és obra de [@ermengolbota](https://github.com/ermengolbota).
-
----
 
 ## 👩‍💻 Developers
 
