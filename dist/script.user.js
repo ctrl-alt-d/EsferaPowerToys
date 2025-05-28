@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Esfer@ PowerToys
 // @namespace    https://github.com/ctrl-alt-d/EsferaPowerToys
-// @version      1.3.0
+// @version      1.4.0
 // @description  Millores per a la plataforma Esfer@
 // @author       ctrl-alt-d
 // @license      MIT
@@ -76,26 +76,70 @@
      */
     parse(files) {
       this.logger.log("MateriaParser \u2192 inici");
-      const materies = [];
-      let actual = null;
-      files.forEach((row) => {
-        const codiCell = row.querySelector("td:nth-child(1)");
-        const nomCell = row.querySelector("td:nth-child(2)");
-        if (!codiCell || !nomCell) return;
-        const codi = codiCell.textContent.trim().replace(/\s/g, "");
-        const nom = nomCell.textContent.trim();
-        this.logger.log(`MateriaParser \u2192 codi detectat: ${codi}`);
-        if (/^[0-9]{4}_[A-Z0-9]+$/.test(codi)) {
-          actual = { codi, nom, RAs: [] };
-          materies.push(actual);
-          this.logger.log(`MateriaParser \u2192 nova mat\xE8ria afegida: ${codi}`);
-        } else if (/^[0-9]{4}_[A-Z0-9]+_[0-9]{2}RA$/.test(codi) && actual) {
-          actual.RAs.push(codi);
-          this.logger.log(`MateriaParser \u2192 RA afegit a ${actual.codi}: ${codi}`);
-        }
-      });
+      const codis = this._extractCodis(files);
+      const ras = this._filterRAs(codis);
+      const modules = this._detectModules(codis, ras);
+      const materies = this._buildMateries(files, modules, ras);
       this.logger.log("MateriaParser \u2192 resultat final:", materies);
       return materies;
+    }
+    /**
+     * Extreu tots els codis de les files.
+     * @param {HTMLElement[]} files
+     * @returns {string[]} Llista de codis.
+     */
+    _extractCodis(files) {
+      return files.map((row) => {
+        var _a;
+        return (_a = row.querySelector("td:nth-child(1)")) == null ? void 0 : _a.textContent.trim().replace(/\s/g, "");
+      }).filter((codi) => codi);
+    }
+    /**
+     * Filtra els codis que són RAs.
+     * @param {string[]} codis
+     * @returns {Set<string>} Conjunt de codis RA.
+     */
+    _filterRAs(codis) {
+      const raRegex = /^[0-9]{4}_[A-Z0-9]+_[0-9]{2}RA$/;
+      return new Set(codis.filter((codi) => raRegex.test(codi)));
+    }
+    /**
+     * Detecta quins codis són mòduls (tenen algun RA que comença per ells).
+     * @param {string[]} codis
+     * @param {Set<string>} ras
+     * @returns {Set<string>} Conjunt de codis mòdul.
+     */
+    _detectModules(codis, ras) {
+      const modules = /* @__PURE__ */ new Set();
+      codis.forEach((codi) => {
+        const prefix = codi + "_";
+        for (const ra of ras) {
+          if (ra.startsWith(prefix)) {
+            modules.add(codi);
+            break;
+          }
+        }
+      });
+      return modules;
+    }
+    /**
+     * Construeix l’estructura final de matèries.
+     * @param {HTMLElement[]} files
+     * @param {Set<string>} modules
+     * @param {Set<string>} ras
+     * @returns {Array<{ codi: string, nom: string, RAs: string[] }>}
+     */
+    _buildMateries(files, modules, ras) {
+      return Array.from(modules).map((modulCodi) => {
+        var _a;
+        const row = files.find((r) => {
+          const cell = r.querySelector("td:nth-child(1)");
+          return cell && cell.textContent.trim().replace(/\s/g, "") === modulCodi;
+        });
+        const nom = ((_a = row == null ? void 0 : row.querySelector("td:nth-child(2)")) == null ? void 0 : _a.textContent.trim()) || "";
+        const raList = Array.from(ras).filter((ra) => ra.startsWith(modulCodi + "_"));
+        return { codi: modulCodi, nom, RAs: raList };
+      });
     }
   };
 
@@ -310,7 +354,7 @@
   };
 
   // build/version.js
-  var version = "1.3.0";
+  var version = "1.4.0";
 
   // src/PowerToysController.js
   var PowerToysController = class {
