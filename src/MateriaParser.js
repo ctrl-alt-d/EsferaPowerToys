@@ -46,7 +46,7 @@ export class MateriaParser {
      * @returns {Set<string>} Conjunt de codis RA.
      */
     _filterRAs(codis) {
-        const raRegex = /^[0-9]{4}_[A-Z0-9]+_[0-9]{2}RA$/;
+        const raRegex = /^[A-Z0-9]{4}_[A-Z0-9]+_[0-9]{2}RA$/;
         return new Set(codis.filter(codi => raRegex.test(codi)));
     }
 
