@@ -1,8 +1,7 @@
-name: Run tests on PR
+name: Run tests and verify build on PR
 
 on:
   pull_request:
-    branches: [ main ]
 
 jobs:
   test:
@@ -26,3 +25,22 @@ jobs:
 
     - name: Run tests
       run: npm test
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test  # <-- espera que el job 'test' acabi correctament
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run build
+      run: npm run build

@@ -4,6 +4,8 @@ Millores personalitzades per a la plataforma Esfer@ d'avaluació del Departament
 
 Aquest script permet aplicar ràpidament notes fent copy-paste des del teu full de càlcul.
 
+![Tests](https://github.com/ctrl-alt-d/EsferaPowerToys/actions/workflows/test.yml/badge.svg)
+
 ---
 
 ## 🔧 Requisits
