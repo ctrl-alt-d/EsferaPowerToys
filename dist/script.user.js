@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Esfer@ PowerToys
 // @namespace    https://github.com/ctrl-alt-d/EsferaPowerToys
-// @version      1.4.0
+// @version      1.5.0
 // @description  Millores per a la plataforma Esfer@
 // @author       ctrl-alt-d
 // @license      MIT
@@ -100,7 +100,7 @@
      * @returns {Set<string>} Conjunt de codis RA.
      */
     _filterRAs(codis) {
-      const raRegex = /^[0-9]{4}_[A-Z0-9]+_[0-9]{2}RA$/;
+      const raRegex = /^[A-Z0-9]{4}_[A-Z0-9]+_[0-9]{2}RA$/;
       return new Set(codis.filter((codi) => raRegex.test(codi)));
     }
     /**
@@ -354,7 +354,7 @@
   };
 
   // build/version.js
-  var version = "1.4.0";
+  var version = "1.5.0";
 
   // src/PowerToysController.js
   var PowerToysController = class {
