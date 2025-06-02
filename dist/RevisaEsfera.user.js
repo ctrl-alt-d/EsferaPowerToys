@@ -9,9 +9,9 @@
 // ==/UserScript==
 
 (() => {
-    // Logger (similar to PowerToysLogger)
+    // Logger (semblant a PowerToysLogger)
     var RevisaEsferaLogger = class {
-        constructor(debug = true) { // Enable debug by default for this script
+        constructor(debug = true) { // Activar debug per defecte en aquest script
             this.debug = debug;
             this.prefix = "[RevisaEsfera]";
         }
@@ -33,10 +33,10 @@
     var GradeStylerController = class {
         constructor() {
             this.logger = new RevisaEsferaLogger(true);
-            //Selector para los elementos que contienen las notas. ¡¡¡ESTO PUEDE NECESITAR AJUSTE!!!
-            //Busca celdas de tabla (td) o spans que contengan principalmente números (potencialmente con decimales).
-            this.gradeSelector = 'tr.alturallistat select'; // More specific selector targeting selects within relevant table rows
-            this.processedElements = new WeakSet(); // Para evitar reprocesar innecesariamente
+            //Selector pels elements que contenen les notes. AIXÒ POT NECESSITAR AJUSTOS!
+            //Busca cel·les de taula (td) o spans que continguin principalment números (potencialment amb decimals).
+            this.gradeSelector = 'tr.alturallistat select'; // Selector més específic per als selects dins de les files de taula rellevants
+            this.processedElements = new WeakSet(); // Per evitar processaments innecessaris
 
             this.init();
         }
@@ -55,29 +55,29 @@
             this.logger.log("MutationObserver activat per observar canvis en resultats 'No assolit'.");
         }
 
-        applyStylesToRAresults() { // Renamed method
+        applyStylesToRAresults() { // Mètode reanomenat
             this.logger.log("Intentant aplicar estils als resultats 'No assolit'.");
             const potentialResultElements = document.querySelectorAll(this.gradeSelector);
             let styledCount = 0;
             const noAssolitTextLower = "no assolit";
             const pendentTextLower = "pendent";
-            const assolitPrefixLower = "assolit"; // For 'Assolit-A', 'Assolit-B', etc.
+            const assolitPrefixLower = "assolit"; // Per a 'Assolit-A', 'Assolit-B', etc.
             const enProcesTextLower = "en procés";
 
             const redBg = 'red';
             const whiteColor = 'white';
             const yellowBg = 'yellow';
             const lightGreenBg = 'lightgreen';
-            const defaultColor = ''; // Browser default
-            const defaultFontWeight = ''; // Browser default
-            const defaultBg = ''; // Browser default
+            const defaultColor = ''; // Valor per defecte del navegador
+            const defaultFontWeight = ''; // Valor per defecte del navegador
+            const defaultBg = ''; // Valor per defecte del navegador
 
             potentialResultElements.forEach(selectElement => {
                 if (selectElement.tagName === 'SELECT' && selectElement.selectedOptions && selectElement.selectedOptions.length > 0) {
                     const selectedOptionText = selectElement.selectedOptions[0].text.trim();
                     const selectedOptionTextLower = selectedOptionText.toLowerCase();
 
-                    // Flags to check current styles to avoid redundant operations
+                    // Banderes per verificar els estils actuals i evitar operacions redundants
                     let isStyledForNoAssolit = selectElement.style.getPropertyValue('background-color') === redBg && selectElement.style.getPropertyValue('color') === whiteColor && selectElement.style.getPropertyValue('font-weight') === 'bold';
                     let isStyledForPendent = selectElement.style.getPropertyValue('background-color') === yellowBg;
                     let isStyledForAssolit = selectElement.style.getPropertyValue('background-color') === lightGreenBg;
@@ -87,7 +87,7 @@
                                               selectElement.style.getPropertyValue('background-color') !== yellowBg &&
                                               selectElement.style.getPropertyValue('background-color') !== lightGreenBg;
 
-                    // Determine new styles based on text
+                    // Determinar els nous estils basats en el text
                     let applyNoAssolit = false;
                     let applyPendent = false;
                     let applyAssolit = false;
@@ -103,7 +103,7 @@
                         applyEnProces = true;
                     }
 
-                    // Apply/Remove 'No Assolit' styles (red background, white text, bold)
+                    // Aplicar/Eliminar estils 'No Assolit' (fons vermell, text blanc, negreta)
                     if (applyNoAssolit) {
                         if (!isStyledForNoAssolit) {
                             selectElement.style.setProperty('background-color', redBg, 'important');
@@ -119,53 +119,53 @@
                         this.logger.log(`Estil 'No assolit' (vermell/blanc/negreta) eliminat (text canviat de "${selectedOptionText}")`);
                     }
 
-                    // Apply/Remove 'Pendent' style (yellow background)
+                    // Aplicar/Eliminar estil 'Pendent' (fons groc)
                     if (applyPendent) {
                         if (!isStyledForPendent) {
                             selectElement.style.setProperty('background-color', yellowBg, 'important');
                             this.logger.log(`Estil 'Pendent' aplicat: "${selectedOptionText}"`);
-                            if(!applyNoAssolit) styledCount++; // Count only if not already counted for 'no assolit'
+                            if(!applyNoAssolit) styledCount++; // Comptar només si no s'ha comptat ja per 'no assolit'
                         }
                     } else if (isStyledForPendent) {
                         selectElement.style.setProperty('background-color', defaultBg, 'important');
                         this.logger.log(`Estil 'Pendent' eliminat (text canviat de "${selectedOptionText}")`);
                     }
 
-                    // Apply/Remove 'Assolit' style (light green background)
+                    // Aplicar/Eliminar estil 'Assolit' (fons verd clar)
                     if (applyAssolit) {
                         if (!isStyledForAssolit) {
                             selectElement.style.setProperty('background-color', lightGreenBg, 'important');
                             this.logger.log(`Estil 'Assolit' aplicat: "${selectedOptionText}"`);
-                            if(!applyNoAssolit && !applyPendent) styledCount++; // Count only if not already counted
+                            if(!applyNoAssolit && !applyPendent) styledCount++; // Comptar només si no s'ha comptat ja
                         }
                     } else if (isStyledForAssolit) {
                         selectElement.style.setProperty('background-color', defaultBg, 'important');
                         this.logger.log(`Estil 'Assolit' eliminat (text canviat de "${selectedOptionText}")`);
                     }
 
-                    // Apply/Remove 'En Procés' style (red text, bold, default/white background)
+                    // Aplicar/Eliminar estil 'En Procés' (text vermell, negreta, fons per defecte/blanc)
                     if (applyEnProces) {
                         if (!isStyledForEnProces) {
                             selectElement.style.setProperty('color', 'red', 'important');
                             selectElement.style.setProperty('font-weight', 'bold', 'important');
-                            selectElement.style.setProperty('background-color', defaultBg, 'important'); // Ensure no other custom bg
+                            selectElement.style.setProperty('background-color', defaultBg, 'important'); // Assegurar que no hi hagi cap altre fons personalitzat
                             this.logger.log(`Estil 'En Procés' aplicat: "${selectedOptionText}"`);
                             if(!applyNoAssolit && !applyPendent && !applyAssolit) styledCount++;
                         }
                     } else if (isStyledForEnProces) {
                         selectElement.style.setProperty('color', defaultColor, 'important');
                         selectElement.style.setProperty('font-weight', defaultFontWeight, 'important');
-                        // No need to reset defaultBg explicitly unless it was changed by something else
+                        // No cal reiniciar defaultBg explícitament llevat que hagi estat canviat per alguna altra cosa
                         this.logger.log(`Estil 'En Procés' eliminat (text canviat de "${selectedOptionText}")`);
                     }
 
-                    // Ensure other styles are cleared if a specific style is applied
+                    // Assegurar-se que s'esborrin altres estils si s'aplica un estil específic
                     if (applyNoAssolit) {
                         if (isStyledForPendent) selectElement.style.setProperty('background-color', defaultBg, 'important');
                         if (isStyledForAssolit) selectElement.style.setProperty('background-color', defaultBg, 'important');
                         if (isStyledForEnProces) {
-                            // font-weight 'bold' is shared. background-color will be overridden by redBg.
-                            // color will be overridden by whiteColor.
+                            // font-weight 'bold' és compartit. background-color serà sobreescrit per redBg.
+                            // color serà sobreescrit per whiteColor.
                         }
                         // Ensure No Assolit styles are dominant
                         selectElement.style.setProperty('background-color', redBg, 'important');
@@ -175,7 +175,7 @@
                     } else if (applyEnProces) {
                         if (isStyledForNoAssolit) {
                             selectElement.style.setProperty('background-color', defaultBg, 'important');
-                            // font-weight 'bold' is shared. color will be set to 'red'.
+                            // 'font-weight: bold' és compartit. 'color' es definirà a 'red'.
                         }
                         if (isStyledForPendent) selectElement.style.setProperty('background-color', defaultBg, 'important');
                         if (isStyledForAssolit) selectElement.style.setProperty('background-color', defaultBg, 'important');
@@ -193,9 +193,9 @@
                         if (isStyledForEnProces) {
                             selectElement.style.setProperty('color', defaultColor, 'important');
                             selectElement.style.setProperty('font-weight', defaultFontWeight, 'important');
-                            // background-color is already defaultBg, will be overridden by Pendent/Assolit
+                            // 'background-color' ja és defaultBg, serà sobreescrit per Pendent/Assolit
                         }
-                        // Ensure text color is default (black) if changed by No Assolit or En Proces
+                        // Assegurar que el color del text sigui el per defecte (negre) si ha estat canviat per No Assolit o En Procés
                         if (selectElement.style.getPropertyValue('color') === whiteColor || selectElement.style.getPropertyValue('color') === 'red') {
                             selectElement.style.setProperty('color', defaultColor, 'important');
                         }
@@ -221,7 +221,7 @@
         }
     };
 
-    // Iniciar el controlador quan el DOM estigui llest
+    // Iniciar el controlador quan el DOM estigui a punt
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => new GradeStylerController());
     } else {
