@@ -39,6 +39,11 @@ Per instal·lar aquest script necessites:
 - ✅ Traducció automàtica de notes numèriques a valors com `A10`, `A7`, `PDT`, etc.
 - ✅ Scroll automàtic a l'assignatura per veure els canvis.
 - ✅ Interfície afegida al principi de la pàgina amb inputs i botons útils.
+- ✅ **RevisaEsfera**: Destaca visualment els resultats d'aprenentatge segons el seu estat:
+  - 🔴 Fons vermell i text blanc en negreta per a "No assolit"
+  - 🟡 Fons groc per a "Pendent"
+  - 🟢 Fons verd clar per a "Assolit" (i variants com Assolit-A, Assolit-B, etc.)
+  - 🔴 Text vermell en negreta per a "En procés"
 
 ---
 
