@@ -80,8 +80,6 @@
       const ras = this._filterRAs(codis);
       const modules = this._detectModules(codis, ras);
       const materies = this._buildMateries(files, modules, ras);
-      this.logger.log("MateriaParser \u2192 resultat final:", materies);
-      return materies;
     }
     /**
      * Extreu tots els codis de les files.
@@ -145,24 +143,11 @@
 
   // src/MateriaUIBuilder.js
   var MateriaUIBuilder = class {
-    /**
-     * Constructor del builder.
-     * @param {PowerToysLogger} logger - Instància del logger per registrar missatges.
-     * @param {function} onApply - Callback a executar quan es fa clic al botó "Aplica".
-     * Ha de rebre (materia, inputValue).
-     * @param {string} version - Número de versió de l'script (ex: "1.2.0").
-     */
     constructor(logger, onApply, version2 = "") {
       this.logger = logger;
       this.onApply = onApply;
       this.version = version2;
     }
-    /**
-     * Crea l’estructura HTML per mostrar totes les matèries,
-     * incloent un text de versió alineat a la dreta.
-     * @param {Array<{ codi: string, nom: string, RAs: string[] }>} materies - Llista de matèries.
-     * @returns {HTMLElement} Div HTML amb el contingut generat.
-     */
     createHTML(materies) {
       this.logger.log("MateriaUIBuilder \u2192 inici");
       const container = document.createElement("div");
@@ -175,62 +160,56 @@
       });
       const table = document.createElement("table");
       Object.assign(table.style, { width: "100%", borderCollapse: "collapse" });
-      materies.forEach((m) => {
-        this.logger.log(`MateriaUIBuilder \u2192 afegint fila per: ${m.codi}`);
-        const row = document.createElement("tr");
-        const tdNom = document.createElement("td");
-        tdNom.textContent = `${m.codi} \u2014 ${m.nom}`;
-        Object.assign(tdNom.style, {
-          width: "30%",
-          borderBottom: "1px solid #ddd",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis"
+      const fieldset = document.querySelector("div.main div.ng-scope fieldset.ng-scope");
+      const isDisabled = fieldset && fieldset.disabled;
+      if (!isDisabled) {
+        materies.forEach((m) => {
+          this.logger.log(`MateriaUIBuilder \u2192 afegint fila per: ${m.codi}`);
+          const row = document.createElement("tr");
+          const tdNom = document.createElement("td");
+          tdNom.textContent = `${m.codi} \u2014 ${m.nom}`;
+          Object.assign(tdNom.style, {
+            width: "30%",
+            borderBottom: "1px solid #ddd",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis"
+          });
+          row.appendChild(tdNom);
+          const tdInput = document.createElement("td");
+          tdInput.style.width = "60%";
+          const input = document.createElement("input");
+          input.type = "text";
+          input.style.width = "100%";
+          tdInput.appendChild(input);
+          const tdButton = document.createElement("td");
+          const btn = document.createElement("button");
+          btn.textContent = "Aplica";
+          btn.className = "btn btn-primary";
+          btn.addEventListener("click", () => {
+            const inputVal = input.value.trim();
+            this.logger.log(`MateriaUIBuilder \u2192 clic Aplica per ${m.codi}, valor: ${inputVal}`);
+            this.onApply(m, inputVal);
+          });
+          tdButton.appendChild(btn);
+          row.appendChild(tdInput);
+          row.appendChild(tdButton);
+          table.appendChild(row);
         });
-        const tdInput = document.createElement("td");
-        tdInput.style.width = "60%";
-        const input = document.createElement("input");
-        input.type = "text";
-        input.style.width = "100%";
-        tdInput.appendChild(input);
-        const tdButton = document.createElement("td");
-        const btn = document.createElement("button");
-        btn.textContent = "Aplica";
-        btn.className = "btn btn-primary";
-        btn.addEventListener("click", () => {
-          const inputVal = input.value.trim();
-          this.logger.log(`MateriaUIBuilder \u2192 clic Aplica per ${m.codi}, valor: ${inputVal}`);
-          this.onApply(m, inputVal);
-        });
-        tdButton.appendChild(btn);
-        row.appendChild(tdNom);
-        row.appendChild(tdInput);
-        row.appendChild(tdButton);
-        table.appendChild(row);
-      });
-      container.appendChild(table);
-      if (this.version) {
-        const versionDiv = document.createElement("div");
-        versionDiv.textContent = `versi\xF3: ${this.version}`;
-        Object.assign(versionDiv.style, {
-          textAlign: "right",
-          fontSize: "0.8em",
-          marginTop: "8px",
-          color: "#666"
-        });
-        container.appendChild(versionDiv);
-        this.logger.log(`MateriaUIBuilder \u2192 mostrant versi\xF3: ${this.version}`);
       }
+      container.appendChild(table);
+      const versionDiv = document.createElement("div");
+      versionDiv.innerHTML = `<a href="https://github.com/ctrl-alt-d/EsferaPowerToys" target="_blank" style="text-decoration:none;">Esfer@ Power Toys</a> v. ${this.version}`;
+      Object.assign(versionDiv.style, {
+        textAlign: "right",
+        fontSize: "0.8em",
+        marginTop: "8px",
+        color: "#666"
+      });
+      container.appendChild(versionDiv);
       this.logger.log("MateriaUIBuilder \u2192 container creat");
       return container;
     }
-    /**
-     * Insereix el div generat abans d’un element concret del DOM.
-     * Si ja existeix un div amb id 'powertoy-div', l’elimina.
-     * @param {HTMLElement} div - L’element HTML a inserir.
-     * @param {HTMLElement} abansDe - L’element davant del qual s’inserirà.
-     * @returns {void}
-     */
     insertDiv(div, abansDe) {
       this.logger.log("MateriaUIBuilder \u2192 intentant inserir div");
       const existent = document.getElementById("powertoy-div");
@@ -240,6 +219,7 @@
       }
       abansDe.parentElement.insertBefore(div, abansDe);
       this.logger.log("MateriaUIBuilder \u2192 div inserit");
+      window.dispatchEvent(new Event("resize"));
     }
   };
 
@@ -356,6 +336,59 @@
   // build/version.js
   var version = "1.5.0";
 
+  // src/CSSApplier.js
+  var CSSApplier = class {
+    constructor(logger) {
+      this.logger = logger;
+      this.injectStyles();
+    }
+    injectStyles() {
+      if (document.getElementById("powertoy-styles")) return;
+      const style = document.createElement("style");
+      style.id = "powertoy-styles";
+      style.textContent = `
+            .powertoy-pass { background-color: #d4edda !important; }
+            .powertoy-fail { background-color: #f8d7da !important; }
+            .powertoy-pendent { background-color: #d1ecf1 !important; }
+            .powertoy-proces { background-color: #fff3cd !important; }
+            .powertoy-pq { background-color: #d1ecf1 !important; }
+            .powertoy-pass select,
+            .powertoy-fail select,
+            .powertoy-pendent select,
+            .powertoy-proces select,
+            .powertoy-pq select {
+                background-color: inherit !important;
+            }
+        `;
+      document.head.appendChild(style);
+      this.logger.log("CSSApplier \u2192 estils injectats");
+    }
+    aplicaEstils() {
+      const selects = document.querySelectorAll("tr.alturallistat select");
+      selects.forEach((select) => {
+        const tr = select.closest("tr");
+        if (!tr) return;
+        tr.classList.remove("powertoy-pass", "powertoy-fail", "powertoy-pendent", "powertoy-proces");
+        if (select.disabled || !select.value) {
+          this.logger.log("CSSApplier \u2192 select desactivat o buit, no es pinta");
+          return;
+        }
+        const value = select.value.replace("string:", "").toUpperCase();
+        if (value === "PDT" || value === "PQ") {
+          tr.classList.add("powertoy-pendent");
+        } else if (value === "EP") {
+          tr.classList.add("powertoy-proces");
+        } else if (value === "NA") {
+          tr.classList.add("powertoy-fail");
+        } else if (/A(10|[5-9])/.test(value)) {
+          tr.classList.add("powertoy-pass");
+        } else {
+          this.logger.warn(`CSSApplier \u2192 valor desconegut: ${value}`);
+        }
+      });
+    }
+  };
+
   // src/PowerToysController.js
   var PowerToysController = class {
     /**
@@ -368,11 +401,17 @@
       this.applier = new MateriaApplier(this.logger);
       this.scrollHelper = new ScrollHelper(this.logger);
       this.uiBuilder = new MateriaUIBuilder(this.logger, (materia, inputVal) => this.onApply(materia, inputVal), version);
+      this.cssApplier = new CSSApplier(this.logger);
       this.lastStudent = "";
       this.reinicialitzaTimeout = null;
       const mainContainer = document.querySelector("#mainView") || document.body;
       this.observer = new MutationObserver(() => this.reinicialitza());
       this.observer.observe(mainContainer, { childList: true, subtree: true });
+      document.body.addEventListener("change", (e) => {
+        if (e.target.tagName === "SELECT") {
+          this.cssApplier.aplicaEstils();
+        }
+      });
       this.logger.log("PowerToysController \u2192 Observer activat");
     }
     /**
@@ -397,6 +436,7 @@
      */
     reinicialitza() {
       this.logger.log("reinicialitza \u2192 inici");
+      this.cssApplier.aplicaEstils();
       clearTimeout(this.reinicialitzaTimeout);
       this.reinicialitzaTimeout = setTimeout(() => {
         const form = document.querySelector('form[name="grupAlumne"]');
