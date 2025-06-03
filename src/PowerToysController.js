@@ -4,6 +4,7 @@ import { MateriaUIBuilder } from './MateriaUIBuilder.js';
 import { MateriaApplier } from './MateriaApplier.js';
 import { ScrollHelper } from './ScrollHelper.js';
 import { version } from '../build/version.js';
+import { CSSApplier } from './CSSApplier.js';
 
 /**
  * Classe principal que coordina les funcionalitats d'Esfer@ PowerToys.
@@ -29,6 +30,10 @@ export class PowerToysController {
         /** @type {MateriaUIBuilder} */
         this.uiBuilder = new MateriaUIBuilder(this.logger, (materia, inputVal) => this.onApply(materia, inputVal), version);
 
+        /** @type {CSSApplier} */
+        this.cssApplier = new CSSApplier(this.logger);
+
+
 
         this.lastStudent = '';
         this.reinicialitzaTimeout = null;
@@ -36,6 +41,13 @@ export class PowerToysController {
         const mainContainer = document.querySelector('#mainView') || document.body;
         this.observer = new MutationObserver(() => this.reinicialitza());
         this.observer.observe(mainContainer, { childList: true, subtree: true });
+
+        document.body.addEventListener('change', (e) => {
+            if (e.target.tagName === 'SELECT') {
+                this.cssApplier.aplicaEstils();
+            }
+        });
+
 
         this.logger.log('PowerToysController → Observer activat');
     }
@@ -64,6 +76,9 @@ export class PowerToysController {
      */
     reinicialitza() {
         this.logger.log('reinicialitza → inici');
+
+        this.cssApplier.aplicaEstils();
+
         clearTimeout(this.reinicialitzaTimeout);
         this.reinicialitzaTimeout = setTimeout(() => {
             const form = document.querySelector('form[name="grupAlumne"]');
