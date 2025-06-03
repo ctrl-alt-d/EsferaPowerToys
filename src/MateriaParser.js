@@ -26,7 +26,7 @@ export class MateriaParser {
         const materies = this._buildMateries(files, modules, ras);
 
         // this.logger.log('MateriaParser → resultat final:', materies);
-        // return materies;
+        return materies;
     }
 
     /**

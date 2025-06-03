@@ -80,6 +80,7 @@
       const ras = this._filterRAs(codis);
       const modules = this._detectModules(codis, ras);
       const materies = this._buildMateries(files, modules, ras);
+      return materies;
     }
     /**
      * Extreu tots els codis de les files.
