@@ -73,6 +73,10 @@ export class MateriaApplier {
                 this.logger.warn(`MateriaApplier → no trobat select per RA: ${raCodi}`);
                 return;
             }
+            if (select.disabled) {
+                this.logger.warn(`MateriaApplier → select desactivat per RA: ${raCodi}`);
+                return;
+            }
             if (Array.from(select.options).map(opt => opt.value).includes(valorIntern)) {
                 select.value = valorIntern;
                 select.dispatchEvent(new Event('change', { bubbles: true }));

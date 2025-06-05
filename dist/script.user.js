@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Esfer@ PowerToys
 // @namespace    https://github.com/ctrl-alt-d/EsferaPowerToys
-// @version      1.5.0
+// @version      1.6.0
 // @description  Millores per a la plataforma Esfer@
 // @author       ctrl-alt-d
 // @license      MIT
@@ -288,6 +288,10 @@
           this.logger.warn(`MateriaApplier \u2192 no trobat select per RA: ${raCodi}`);
           return;
         }
+        if (select.disabled) {
+          this.logger.warn(`MateriaApplier \u2192 select desactivat per RA: ${raCodi}`);
+          return;
+        }
         if (Array.from(select.options).map((opt) => opt.value).includes(valorIntern)) {
           select.value = valorIntern;
           select.dispatchEvent(new Event("change", { bubbles: true }));
@@ -335,7 +339,7 @@
   };
 
   // build/version.js
-  var version = "1.5.0";
+  var version = "1.6.0";
 
   // src/CSSApplier.js
   var CSSApplier = class {
@@ -370,8 +374,8 @@
         const tr = select.closest("tr");
         if (!tr) return;
         tr.classList.remove("powertoy-pass", "powertoy-fail", "powertoy-pendent", "powertoy-proces");
-        if (select.disabled || !select.value) {
-          this.logger.log("CSSApplier \u2192 select desactivat o buit, no es pinta");
+        if (!select.value) {
+          this.logger.log("CSSApplier \u2192 buit, no es pinta");
           return;
         }
         const value = select.value.replace("string:", "").toUpperCase();

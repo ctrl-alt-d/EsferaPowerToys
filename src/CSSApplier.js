@@ -38,8 +38,8 @@ export class CSSApplier {
             // Neteja classes anteriors
             tr.classList.remove('powertoy-pass', 'powertoy-fail', 'powertoy-pendent', 'powertoy-proces');
 
-            if (select.disabled || !select.value) {
-                this.logger.log('CSSApplier → select desactivat o buit, no es pinta');
+            if (!select.value) {
+                this.logger.log('CSSApplier → buit, no es pinta');
                 return;
             }
 
