@@ -25,7 +25,7 @@ export class MateriaApplier {
             const vNet = v.replace(',', '.').trim().toUpperCase();
             if (vNet === '' || vNet === '.' || vNet === 'X') return '';
             if (/^A(10|[5-9])$|^NA$|^EP$|^PDT$/.test(vNet)) return vNet;
-            if (vNet.startsWith('PENDENT')) return 'PDT';
+            if (vNet.startsWith('PENDENT') || vNet === 'NP') return 'PDT';
             const num = parseFloat(vNet);
             if (isNaN(num)) return null;
             if (num >= 9.5) return 'A10';

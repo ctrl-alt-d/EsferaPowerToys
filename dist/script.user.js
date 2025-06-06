@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Esfer@ PowerToys
 // @namespace    https://github.com/ctrl-alt-d/EsferaPowerToys
-// @version      1.6.0
+// @version      1.7.0
 // @description  Millores per a la plataforma Esfer@
 // @author       ctrl-alt-d
 // @license      MIT
@@ -243,7 +243,7 @@
       const valors = text.trim().replace(/\t/g, " ").replace(/\s+/g, " ").split(" ");
       const tradu\u00EFdes = valors.map((v) => {
         const vNet = v.replace(",", ".").trim().toUpperCase();
-        if (vNet === "" || vNet === "." || vNet === "X") return "";
+        if (vNet === "" || vNet === "." || vNet === "X" || vNet === "NP") return "";
         if (/^A(10|[5-9])$|^NA$|^EP$|^PDT$/.test(vNet)) return vNet;
         if (vNet.startsWith("PENDENT")) return "PDT";
         const num = parseFloat(vNet);
@@ -339,7 +339,7 @@
   };
 
   // build/version.js
-  var version = "1.6.0";
+  var version = "1.7.0";
 
   // src/CSSApplier.js
   var CSSApplier = class {
