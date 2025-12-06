@@ -1,10 +1,12 @@
 # Esfer@ PowerToys
 
-Millores personalitzades per a la plataforma Esfer@ d'avaluació del Departament d'Educació de la Generalitat de Catalunya.
+Millora accessibilitat per a la plataforma Esfer@ d'avaluació del Departament d'Educació de la Generalitat de Catalunya.
 
 Aquest script permet aplicar ràpidament notes fent copy-paste des del teu full de càlcul.
 
 ![Tests](https://github.com/ctrl-alt-d/EsferaPowerToys/actions/workflows/test.yml/badge.svg)
+
+#a11y #UI
 
 ---
 
@@ -19,10 +21,10 @@ Per instal·lar aquest script necessites:
 
 ## 🚀 Instal·lació
 
-1. Instal·la **Tampermonkey** des de la seva web oficial:  
+1. Instal·la **Tampermonkey** des de la seva web oficial, selecciona el teu navegador i ves a l'apartat `Download`:  
    👉 [https://www.tampermonkey.net/](https://www.tampermonkey.net/)
 
-2. Fes clic aquí per instal·lar l'script:  
+2. Fes clic aquí per instal·lar l'Esfer@a PowerToys:  
    👉 [`Esfer@ PowerToys`](https://raw.githubusercontent.com/ctrl-alt-d/EsferaPowerToys/refs/heads/main/dist/script.user.js)
 
    Tampermonkey t'obrirà una pestanya amb el codi i un botó per **"Install"**.
@@ -85,7 +87,7 @@ Fes-lo servir sota la teva responsabilitat i sentit comú.
 ---
 
 
-## 👩‍💻 Developers
+## 👩‍💻 Ets Developer i vols trastejar?
 
 Si vols compilar el projecte tu mateix:
 
@@ -115,3 +117,6 @@ Si vols compilar el projecte tu mateix:
    build/version.js
    ```
 
+## Notes
+
+Esfer@ PowerToys treballa modificant la UI, veient com està fet l'Esfer@, em plantejo bypassar la UI i usar directament les APIs no documentades d'Esfer@.
