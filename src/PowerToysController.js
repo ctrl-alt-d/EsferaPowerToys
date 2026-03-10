@@ -103,4 +103,44 @@ export class PowerToysController {
             this.uiBuilder.insertDiv(html, form);
         }, 100);
     }
+
+    /**
+     * Posa totes les RA buides a pendent.
+     * @param {{ codi: string, nom: string, RAs: string[] }} materia - La matèria seleccionada.
+     */
+    posaPendentsRA(materia) {
+
+        this.logger.log(`PDT al mòdul ${materia.codi}`);
+
+        const rows = document.querySelectorAll("tr.alturallistat");
+
+        rows.forEach(row => {
+
+            const tdCodi = row.querySelector("td:first-child");
+            if (!tdCodi) return;
+
+            const codi = tdCodi.textContent.trim();
+
+            // comprova si pertany al mòdul
+            if (!codi.startsWith(materia.codi)) return;
+
+            const select = row.querySelector("select");
+
+            if (!select || select.disabled || select.value) return;
+
+            const opcions = [...select.options].map(o => o.value);
+
+            if (opcions.includes("string:PDT")) {
+                select.value = "string:PDT";
+            }
+            else if (opcions.includes("string:PQ")) {
+                select.value = "string:PQ";
+            }
+
+            select.dispatchEvent(new Event("change", { bubbles: true }));
+
+        });
+
+        this.cssApplier.aplicaEstils();
+    }
 }

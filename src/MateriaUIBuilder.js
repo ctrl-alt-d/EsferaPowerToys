@@ -64,6 +64,18 @@ export class MateriaUIBuilder {
                 row.appendChild(tdButton);
 
                 table.appendChild(row);
+
+
+                const btnPendent = document.createElement("button");
+                btnPendent.textContent = "Posar pendent RA buides";
+                btnPendent.className = "btn btn-warning";
+                btnPendent.style.marginLeft = "5px";
+
+                btnPendent.addEventListener("click", () => {
+                    window.PowerToysController.posaPendentsRA(m)
+                });
+
+                tdButton.appendChild(btnPendent);
             });
         }
 
