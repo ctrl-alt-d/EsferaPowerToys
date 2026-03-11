@@ -4,9 +4,16 @@
  * Si detecta que els inputs estan dins d’un fieldset desactivat, només mostra el div i la versió, sense inputs.
  */
 export class MateriaUIBuilder {
-    constructor(logger, onApply, version = '') {
+    /**
+     * @param {PowerToysLogger} logger - Instància del logger.
+     * @param {function} onApply - Callback per aplicar notes (materia, inputVal).
+     * @param {function} onPosaPendents - Callback per posar pendents les RA buides (materia).
+     * @param {string} version - Versió de l'script.
+     */
+    constructor(logger, onApply, onPosaPendents, version = '') {
         this.logger = logger;
         this.onApply = onApply;
+        this.onPosaPendents = onPosaPendents;
         this.version = version;
     }
 
@@ -72,7 +79,7 @@ export class MateriaUIBuilder {
                 btnPendent.style.marginLeft = "5px";
 
                 btnPendent.addEventListener("click", () => {
-                    window.PowerToysController.posaPendentsRA(m)
+                    this.onPosaPendents(m);
                 });
 
                 tdButton.appendChild(btnPendent);

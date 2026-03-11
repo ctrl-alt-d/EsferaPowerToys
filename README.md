@@ -90,33 +90,39 @@ Fes-lo servir sota la teva responsabilitat i sentit comú.
 
 ## 👩‍💻 Ets Developer i vols trastejar?
 
-Si vols compilar el projecte tu mateix:
+### Requisits previs
 
-1. Clona el repositori:
-   ```bash
-   git clone https://github.com/ctrl-alt-d/EsferaPowerToys.git
-   cd EsferaPowerToys
-   ```
+- **Node.js ≥ 22** (recomanat: última LTS). Descarrega'l des de [nodejs.org](https://nodejs.org/).
+- **pnpm** — gestor de paquets. Instal·la'l amb una d'aquestes opcions:
 
-2. Installa les dependències:
-   ```bash
-   npm install
-   ```
+  | Plataforma | Comanda |
+  |---|---|
+  | macOS / Linux | `corepack enable` (ja inclòs amb Node) |
+  | Windows | `corepack enable` (executa com a Administrador) |
+  | Alternativa universal | `npm install -g pnpm` |
 
-3. Compila l'script:
-   ```bash
-   npm run build
-   ```
+  > El camp `packageManager` del `package.json` ja fixa la versió de pnpm. Si fas servir Corepack, s'activarà automàticament la versió correcta.
 
-   Això generarà el fitxer:
-   ```
-   dist/script.user.js
-   ```
+### Compilar i testejar
 
-4. Incrementa la versió modificant el fitxer:
-   ```
-   build/version.js
-   ```
+```bash
+# 1. Clona el repositori
+git clone https://github.com/ctrl-alt-d/EsferaPowerToys.git
+cd EsferaPowerToys
+
+# 2. Instal·la les dependències
+pnpm install
+
+# 3. Compila l'script (genera dist/script.user.js)
+pnpm run build
+
+# 4. Executa els tests
+pnpm test
+```
+
+### Incrementar la versió
+
+Modifica el fitxer `build/version.js` i torna a compilar.
 
 ## Notes
 
