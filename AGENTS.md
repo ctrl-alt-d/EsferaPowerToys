@@ -45,7 +45,7 @@ pnpm run build        # sincronitzar versió + generar dist/script.user.js
 ### Patrons del projecte
 
 - **Cada fitxer `src/` exporta exactament una classe** amb `export class NomClasse`.
-- **Injecció de dependències via constructor**: totes les classes reben un `logger` (i altres dependències) com a paràmetre.
+- **Injecció de dependències via constructor**: totes les classes reben un `logger` (i altres dependències) com a paràmetre. **No accedeixis a altres classes via `window` ni globals** — passa sempre callbacks o instàncies pel constructor.
 - **No hi ha framework**: el DOM es manipula directament amb `document.querySelector`, `createElement`, etc.
 - **El punt d'entrada** és `src/main.js`, que crea una IIFE i inicialitza `PowerToysController`.
 - **La versió es gestiona a `build/version.js`** (font de veritat) i es sincronitza a `package.json` amb `build/sync-version.js`.
