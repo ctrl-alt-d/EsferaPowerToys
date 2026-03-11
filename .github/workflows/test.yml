@@ -9,38 +9,46 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [22.x, 24.x]
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
+        cache: pnpm
 
     - name: Install dependencies
-      run: npm install
+      run: pnpm install --frozen-lockfile
 
     - name: Run tests
-      run: npm test
+      run: pnpm test
 
   build:
     runs-on: ubuntu-latest
-    needs: test  # <-- espera que el job 'test' acabi correctament
+    needs: test
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 20.x
+        node-version: 22.x
+        cache: pnpm
 
     - name: Install dependencies
-      run: npm install
+      run: pnpm install --frozen-lockfile
 
     - name: Run build
-      run: npm run build
+      run: pnpm run build
