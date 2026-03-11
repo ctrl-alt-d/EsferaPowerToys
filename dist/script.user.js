@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Esfer@ PowerToys
 // @namespace    https://github.com/ctrl-alt-d/EsferaPowerToys
-// @version      1.7.0
+// @version      1.8.0
 // @description  Millores per a la plataforma Esfer@
 // @author       ctrl-alt-d
 // @license      MIT
@@ -56,7 +56,7 @@
      */
     setDebug(value) {
       this.debug = value;
-      console.log(`[PowerToys] Debug mode ${value ? "activat" : "desactivat"}`);
+      console.log("[PowerToys] Debug mode ".concat(value ? "activat" : "desactivat"));
     }
   };
 
@@ -165,10 +165,10 @@
       const isDisabled = fieldset && fieldset.disabled;
       if (!isDisabled) {
         materies.forEach((m) => {
-          this.logger.log(`MateriaUIBuilder \u2192 afegint fila per: ${m.codi}`);
+          this.logger.log("MateriaUIBuilder \u2192 afegint fila per: ".concat(m.codi));
           const row = document.createElement("tr");
           const tdNom = document.createElement("td");
-          tdNom.textContent = `${m.codi} \u2014 ${m.nom}`;
+          tdNom.textContent = "".concat(m.codi, " \u2014 ").concat(m.nom);
           Object.assign(tdNom.style, {
             width: "30%",
             borderBottom: "1px solid #ddd",
@@ -189,18 +189,26 @@
           btn.className = "btn btn-primary";
           btn.addEventListener("click", () => {
             const inputVal = input.value.trim();
-            this.logger.log(`MateriaUIBuilder \u2192 clic Aplica per ${m.codi}, valor: ${inputVal}`);
+            this.logger.log("MateriaUIBuilder \u2192 clic Aplica per ".concat(m.codi, ", valor: ").concat(inputVal));
             this.onApply(m, inputVal);
           });
           tdButton.appendChild(btn);
           row.appendChild(tdInput);
           row.appendChild(tdButton);
           table.appendChild(row);
+          const btnPendent = document.createElement("button");
+          btnPendent.textContent = "Posar pendent RA buides";
+          btnPendent.className = "btn btn-warning";
+          btnPendent.style.marginLeft = "5px";
+          btnPendent.addEventListener("click", () => {
+            window.PowerToysController.posaPendentsRA(m);
+          });
+          tdButton.appendChild(btnPendent);
         });
       }
       container.appendChild(table);
       const versionDiv = document.createElement("div");
-      versionDiv.innerHTML = `<a href="https://github.com/ctrl-alt-d/EsferaPowerToys" target="_blank" style="text-decoration:none;">Esfer@ Power Toys</a> v. ${this.version}`;
+      versionDiv.innerHTML = '<a href="https://github.com/ctrl-alt-d/EsferaPowerToys" target="_blank" style="text-decoration:none;">Esfer@ Power Toys</a> v. '.concat(this.version);
       Object.assign(versionDiv.style, {
         textAlign: "right",
         fontSize: "0.8em",
@@ -243,9 +251,9 @@
       const valors = text.trim().replace(/\t/g, " ").replace(/\s+/g, " ").split(" ");
       const tradu\u00EFdes = valors.map((v) => {
         const vNet = v.replace(",", ".").trim().toUpperCase();
-        if (vNet === "" || vNet === "." || vNet === "X" || vNet === "NP") return "";
+        if (vNet === "" || vNet === "." || vNet === "X") return "";
         if (/^A(10|[5-9])$|^NA$|^EP$|^PDT$/.test(vNet)) return vNet;
-        if (vNet.startsWith("PENDENT")) return "PDT";
+        if (vNet.startsWith("PENDENT") || vNet === "NP") return "PDT";
         const num = parseFloat(vNet);
         if (isNaN(num)) return null;
         if (num >= 9.5) return "A10";
@@ -276,28 +284,28 @@
       }
       raCodiList.forEach((raCodi, index) => {
         const nota = valors[index];
-        const valorIntern = nota ? `string:${nota}` : "";
+        const valorIntern = nota ? "string:".concat(nota) : "";
         const td = Array.from(document.querySelectorAll("tr.alturallistat td:first-child")).find((td2) => td2.textContent.trim().replace(/\s/g, "") === raCodi);
         if (!td) {
-          this.logger.warn(`MateriaApplier \u2192 no trobat td per RA: ${raCodi}`);
+          this.logger.warn("MateriaApplier \u2192 no trobat td per RA: ".concat(raCodi));
           return;
         }
         const row = td.parentElement;
         const select = row.querySelector("select");
         if (!select) {
-          this.logger.warn(`MateriaApplier \u2192 no trobat select per RA: ${raCodi}`);
+          this.logger.warn("MateriaApplier \u2192 no trobat select per RA: ".concat(raCodi));
           return;
         }
         if (select.disabled) {
-          this.logger.warn(`MateriaApplier \u2192 select desactivat per RA: ${raCodi}`);
+          this.logger.warn("MateriaApplier \u2192 select desactivat per RA: ".concat(raCodi));
           return;
         }
         if (Array.from(select.options).map((opt) => opt.value).includes(valorIntern)) {
           select.value = valorIntern;
           select.dispatchEvent(new Event("change", { bubbles: true }));
-          this.logger.log(`MateriaApplier \u2192 aplicat ${valorIntern} a ${raCodi}`);
+          this.logger.log("MateriaApplier \u2192 aplicat ".concat(valorIntern, " a ").concat(raCodi));
         } else {
-          this.logger.warn(`MateriaApplier \u2192 valor no v\xE0lid per ${raCodi}: ${valorIntern}`);
+          this.logger.warn("MateriaApplier \u2192 valor no v\xE0lid per ".concat(raCodi, ": ").concat(valorIntern));
         }
       });
     }
@@ -323,9 +331,9 @@
         return;
       }
       const selector = "td.ng-binding.ng-scope";
-      const targetTd = Array.from(document.querySelectorAll(selector)).find((td) => td.textContent.includes(`\xAC(${materia.codi})`));
+      const targetTd = Array.from(document.querySelectorAll(selector)).find((td) => td.textContent.includes("\xAC(".concat(materia.codi, ")")));
       if (targetTd) {
-        this.logger.log(`ScrollHelper \u2192 trobada fila visual per ${materia.codi}, fent scroll`);
+        this.logger.log("ScrollHelper \u2192 trobada fila visual per ".concat(materia.codi, ", fent scroll"));
         targetTd.scrollIntoView({ behavior: "smooth", block: "start" });
         targetTd.style.transition = "background-color 0.5s ease";
         targetTd.style.backgroundColor = "#ffffcc";
@@ -333,13 +341,13 @@
           targetTd.style.backgroundColor = "";
         }, 1500);
       } else {
-        this.logger.warn(`ScrollHelper \u2192 no s'ha trobat la fila visual per ${materia.codi}`);
+        this.logger.warn("ScrollHelper \u2192 no s'ha trobat la fila visual per ".concat(materia.codi));
       }
     }
   };
 
   // build/version.js
-  var version = "1.7.0";
+  var version = "1.8.0";
 
   // src/CSSApplier.js
   var CSSApplier = class {
@@ -351,20 +359,7 @@
       if (document.getElementById("powertoy-styles")) return;
       const style = document.createElement("style");
       style.id = "powertoy-styles";
-      style.textContent = `
-            .powertoy-pass { background-color: #d4edda !important; }
-            .powertoy-fail { background-color: #f8d7da !important; }
-            .powertoy-pendent { background-color: #d1ecf1 !important; }
-            .powertoy-proces { background-color: #fff3cd !important; }
-            .powertoy-pq { background-color: #d1ecf1 !important; }
-            .powertoy-pass select,
-            .powertoy-fail select,
-            .powertoy-pendent select,
-            .powertoy-proces select,
-            .powertoy-pq select {
-                background-color: inherit !important;
-            }
-        `;
+      style.textContent = "\n            .powertoy-pass { background-color: #d4edda !important; }\n            .powertoy-fail { background-color: #f8d7da !important; }\n            .powertoy-pendent { background-color: #d1ecf1 !important; }\n            .powertoy-proces { background-color: #fff3cd !important; }\n            .powertoy-pq { background-color: #d1ecf1 !important; }\n            .powertoy-pass select,\n            .powertoy-fail select,\n            .powertoy-pendent select,\n            .powertoy-proces select,\n            .powertoy-pq select {\n                background-color: inherit !important;\n            }\n        ";
       document.head.appendChild(style);
       this.logger.log("CSSApplier \u2192 estils injectats");
     }
@@ -388,7 +383,7 @@
         } else if (/A(10|[5-9])/.test(value)) {
           tr.classList.add("powertoy-pass");
         } else {
-          this.logger.warn(`CSSApplier \u2192 valor desconegut: ${value}`);
+          this.logger.warn("CSSApplier \u2192 valor desconegut: ".concat(value));
         }
       });
     }
@@ -426,13 +421,13 @@
      * @returns {void}
      */
     onApply(materia, inputVal) {
-      this.logger.log(`PowerToysController \u2192 onApply per ${materia.codi}: ${inputVal}`);
+      this.logger.log("PowerToysController \u2192 onApply per ".concat(materia.codi, ": ").concat(inputVal));
       const notes = this.applier.tradueixNotes(inputVal);
       if (notes && notes.length === materia.RAs.length) {
         this.applier.aplicaNotesARAs(materia.RAs, notes);
         this.scrollHelper.enfocaAssignatura(materia);
       } else {
-        alert(`Error: les notes no s\xF3n v\xE0lides o no coincideixen amb el nombre de RAs (${materia.RAs.length}).`);
+        alert("Error: les notes no s\xF3n v\xE0lides o no coincideixen amb el nombre de RAs (".concat(materia.RAs.length, ")."));
       }
     }
     /**
@@ -457,11 +452,35 @@
           return;
         }
         this.lastStudent = studentName;
-        this.logger.log(`reinicialitza \u2192 processant alumne: ${studentName}`);
+        this.logger.log("reinicialitza \u2192 processant alumne: ".concat(studentName));
         const materies = this.parser.parse(Array.from(files));
         const html = this.uiBuilder.createHTML(materies);
         this.uiBuilder.insertDiv(html, form);
       }, 100);
+    }
+    /**
+     * Posa totes les RA buides a pendent.
+     * @param {{ codi: string, nom: string, RAs: string[] }} materia - La matèria seleccionada.
+     */
+    posaPendentsRA(materia) {
+      this.logger.log("PDT al m\xF2dul ".concat(materia.codi));
+      const rows = document.querySelectorAll("tr.alturallistat");
+      rows.forEach((row) => {
+        const tdCodi = row.querySelector("td:first-child");
+        if (!tdCodi) return;
+        const codi = tdCodi.textContent.trim();
+        if (!codi.startsWith(materia.codi)) return;
+        const select = row.querySelector("select");
+        if (!select || select.disabled || select.value) return;
+        const opcions = [...select.options].map((o) => o.value);
+        if (opcions.includes("string:PDT")) {
+          select.value = "string:PDT";
+        } else if (opcions.includes("string:PQ")) {
+          select.value = "string:PQ";
+        }
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      this.cssApplier.aplicaEstils();
     }
   };
 
