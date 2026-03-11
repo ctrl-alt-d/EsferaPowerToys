@@ -28,7 +28,12 @@ export class PowerToysController {
         this.scrollHelper = new ScrollHelper(this.logger);
 
         /** @type {MateriaUIBuilder} */
-        this.uiBuilder = new MateriaUIBuilder(this.logger, (materia, inputVal) => this.onApply(materia, inputVal), version);
+        this.uiBuilder = new MateriaUIBuilder(
+            this.logger,
+            (materia, inputVal) => this.onApply(materia, inputVal),
+            (materia) => this.posaPendentsRA(materia),
+            version
+        );
 
         /** @type {CSSApplier} */
         this.cssApplier = new CSSApplier(this.logger);
