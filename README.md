@@ -41,7 +41,7 @@ Per instal·lar aquest script necessites:
 - ✅ Traducció automàtica de notes numèriques a valors com `A10`, `A7`, `PDT`, etc.
 - ✅ Scroll automàtic a l'assignatura per veure els canvis.
 - ✅ Interfície afegida al principi de la pàgina amb inputs i botons útils.
-- ✅ Botó per a ficar totes les RAs d'un Mòdul a pendants, incloent-hi l'estada a l'empresa i el mòdul.
+- ✅ Botó per a ficar a pendent totes les RAs d'un Mòdul que no tenen nota (això inclou la nota d'estada aen empresa i la nota del mòdul)
 
 ---
 
