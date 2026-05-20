@@ -21,14 +21,41 @@ export class MateriaUIBuilder {
         this.logger.log('MateriaUIBuilder → inici');
         const container = document.createElement('div');
         container.id = 'powertoy-div';
+        container.classList.add('powertoy-container');
         Object.assign(container.style, {
             marginBottom: '20px',
-            padding: '10px',
+            padding: '30px 10px 10px 10px',
             border: '1px solid #ccc',
-            backgroundColor: '#f9f9f9'
+            backgroundColor: '#f9f9f9',
+            position: 'relative',
+            overflow: 'auto',
+            'max-height': '20em'
         });
 
+        // Botó per comprimir/expandir
+        const toggleBtn = document.createElement('button');
+        toggleBtn.id = 'powertoy-toggle-btn';
+        toggleBtn.textContent = '−';
+        toggleBtn.type = 'button';
+        toggleBtn.className = 'btn btn-secondary btn-sm';
+        Object.assign(toggleBtn.style, {
+            position: 'absolute',
+            top: '5px',
+            right: '5px',
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            padding: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            lineHeight: '1'
+        });
+        toggleBtn.addEventListener('click', () => this.toggleContainer());
+        container.appendChild(toggleBtn);
+
         const table = document.createElement('table');
+        table.classList.add('powertoy-table');
         Object.assign(table.style, { width: '100%', borderCollapse: 'collapse' });
 
         const fieldset = document.querySelector('div.main div.ng-scope fieldset.ng-scope');
@@ -90,6 +117,7 @@ export class MateriaUIBuilder {
 
         const versionDiv = document.createElement('div');
         versionDiv.innerHTML = `<a href="https://github.com/ctrl-alt-d/EsferaPowerToys" target="_blank" style="text-decoration:none;">Esfer@ Power Toys</a> v. ${this.version}`;
+        versionDiv.className = 'powertoy-version';
         Object.assign(versionDiv.style, {
             textAlign: 'right',
             fontSize: '0.8em',
@@ -114,5 +142,32 @@ export class MateriaUIBuilder {
 
         window.dispatchEvent(new Event('resize'));
 
+    }
+
+    /**
+     * Torna comprimeix/expandeix l'interfície de PowerToys.
+     * Accedeix al container actual per l'id.
+     */
+    toggleContainer() {
+        const container = document.getElementById('powertoy-div');
+        if (!container) return;
+
+        const table = container.querySelector('.powertoy-table');
+        const versionDiv = container.querySelector('.powertoy-version');
+        const toggleBtn = document.getElementById('powertoy-toggle-btn');
+
+        if (table && toggleBtn) {
+
+            const isHidden = table.style.display === 'none';
+            if (isHidden) {
+                table.style.display = '';
+                versionDiv.style.marginTop = '20px';
+                toggleBtn.textContent = '−';
+            } else {
+                table.style.display = 'none';
+                versionDiv.style.marginTop = '20px';
+                toggleBtn.textContent = '+';
+            }
+        }
     }
 }

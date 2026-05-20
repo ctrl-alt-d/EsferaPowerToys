@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Esfer@ PowerToys
 // @namespace    https://github.com/ctrl-alt-d/EsferaPowerToys
-// @version      1.9.0
+// @version      1.10.0
 // @description  Millores per a la plataforma Esfer@
 // @author       ctrl-alt-d
 // @license      MIT
@@ -144,22 +144,54 @@
 
   // src/MateriaUIBuilder.js
   var MateriaUIBuilder = class {
-    constructor(logger, onApply, version2 = "") {
+    /**
+     * @param {PowerToysLogger} logger - Instància del logger.
+     * @param {function} onApply - Callback per aplicar notes (materia, inputVal).
+     * @param {function} onPosaPendents - Callback per posar pendents les RA buides (materia).
+     * @param {string} version - Versió de l'script.
+     */
+    constructor(logger, onApply, onPosaPendents, version2 = "") {
       this.logger = logger;
       this.onApply = onApply;
+      this.onPosaPendents = onPosaPendents;
       this.version = version2;
     }
     createHTML(materies) {
       this.logger.log("MateriaUIBuilder \u2192 inici");
       const container = document.createElement("div");
       container.id = "powertoy-div";
+      container.classList.add("powertoy-container");
       Object.assign(container.style, {
         marginBottom: "20px",
-        padding: "10px",
+        padding: "30px 10px 10px 10px",
         border: "1px solid #ccc",
-        backgroundColor: "#f9f9f9"
+        backgroundColor: "#f9f9f9",
+        position: "relative",
+        overflow: "auto",
+        "max-height": "20em"
       });
+      const toggleBtn = document.createElement("button");
+      toggleBtn.id = "powertoy-toggle-btn";
+      toggleBtn.textContent = "\u2212";
+      toggleBtn.type = "button";
+      toggleBtn.className = "btn btn-secondary btn-sm";
+      Object.assign(toggleBtn.style, {
+        position: "absolute",
+        top: "5px",
+        right: "5px",
+        width: "32px",
+        height: "32px",
+        borderRadius: "50%",
+        padding: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        lineHeight: "1"
+      });
+      toggleBtn.addEventListener("click", () => this.toggleContainer());
+      container.appendChild(toggleBtn);
       const table = document.createElement("table");
+      table.classList.add("powertoy-table");
       Object.assign(table.style, { width: "100%", borderCollapse: "collapse" });
       const fieldset = document.querySelector("div.main div.ng-scope fieldset.ng-scope");
       const isDisabled = fieldset && fieldset.disabled;
@@ -201,7 +233,7 @@
           btnPendent.className = "btn btn-warning";
           btnPendent.style.marginLeft = "5px";
           btnPendent.addEventListener("click", () => {
-            window.PowerToysController.posaPendentsRA(m);
+            this.onPosaPendents(m);
           });
           tdButton.appendChild(btnPendent);
         });
@@ -209,6 +241,7 @@
       container.appendChild(table);
       const versionDiv = document.createElement("div");
       versionDiv.innerHTML = '<a href="https://github.com/ctrl-alt-d/EsferaPowerToys" target="_blank" style="text-decoration:none;">Esfer@ Power Toys</a> v. '.concat(this.version);
+      versionDiv.className = "powertoy-version";
       Object.assign(versionDiv.style, {
         textAlign: "right",
         fontSize: "0.8em",
@@ -229,6 +262,29 @@
       abansDe.parentElement.insertBefore(div, abansDe);
       this.logger.log("MateriaUIBuilder \u2192 div inserit");
       window.dispatchEvent(new Event("resize"));
+    }
+    /**
+     * Torna comprimeix/expandeix l'interfície de PowerToys.
+     * Accedeix al container actual per l'id.
+     */
+    toggleContainer() {
+      const container = document.getElementById("powertoy-div");
+      if (!container) return;
+      const table = container.querySelector(".powertoy-table");
+      const versionDiv = container.querySelector(".powertoy-version");
+      const toggleBtn = document.getElementById("powertoy-toggle-btn");
+      if (table && toggleBtn) {
+        const isHidden = table.style.display === "none";
+        if (isHidden) {
+          table.style.display = "";
+          versionDiv.style.marginTop = "20px";
+          toggleBtn.textContent = "\u2212";
+        } else {
+          table.style.display = "none";
+          versionDiv.style.marginTop = "20px";
+          toggleBtn.textContent = "+";
+        }
+      }
     }
   };
 
@@ -347,7 +403,7 @@
   };
 
   // build/version.js
-  var version = "1.9.0";
+  var version = "1.10.0";
 
   // src/CSSApplier.js
   var CSSApplier = class {
@@ -400,7 +456,12 @@
       this.parser = new MateriaParser(this.logger);
       this.applier = new MateriaApplier(this.logger);
       this.scrollHelper = new ScrollHelper(this.logger);
-      this.uiBuilder = new MateriaUIBuilder(this.logger, (materia, inputVal) => this.onApply(materia, inputVal), version);
+      this.uiBuilder = new MateriaUIBuilder(
+        this.logger,
+        (materia, inputVal) => this.onApply(materia, inputVal),
+        (materia) => this.posaPendentsRA(materia),
+        version
+      );
       this.cssApplier = new CSSApplier(this.logger);
       this.lastStudent = "";
       this.reinicialitzaTimeout = null;
