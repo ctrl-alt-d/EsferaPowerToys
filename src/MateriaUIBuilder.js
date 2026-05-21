@@ -154,14 +154,14 @@ export class MateriaUIBuilder {
 
         const table = container.querySelector('.powertoy-table');
         const versionDiv = container.querySelector('.powertoy-version');
-        const toggleBtn = document.getElementById('powertoy-toggle-btn');
+        const toggleBtn = container.querySelector('#powertoy-toggle-btn');
 
         if (table && toggleBtn) {
 
             const isHidden = table.style.display === 'none';
             if (isHidden) {
                 table.style.display = '';
-                versionDiv.style.marginTop = '20px';
+                versionDiv.style.marginTop = '8px';
                 toggleBtn.textContent = '−';
             } else {
                 table.style.display = 'none';
