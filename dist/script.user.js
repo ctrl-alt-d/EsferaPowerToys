@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Esfer@ PowerToys
 // @namespace    https://github.com/ctrl-alt-d/EsferaPowerToys
-// @version      1.9.0
+// @version      1.10.0
 // @description  Millores per a la plataforma Esfer@
 // @author       ctrl-alt-d
 // @license      MIT
@@ -99,7 +99,7 @@
      * @returns {Set<string>} Conjunt de codis RA.
      */
     _filterRAs(codis) {
-      const raRegex = /^[A-Z0-9]{4}_[A-Z0-9]+_[0-9]{2}RA$/;
+      const raRegex = /^[A-z0-9]{2,4}_[A-Z0-9]+_[0-9]{0,2}RA[0-9]{0,2}$/;
       return new Set(codis.filter((codi) => raRegex.test(codi)));
     }
     /**
@@ -144,49 +144,87 @@
 
   // src/MateriaUIBuilder.js
   var MateriaUIBuilder = class {
-    constructor(logger, onApply, version2 = "") {
+    /**
+     * @param {PowerToysLogger} logger - Instància del logger.
+     * @param {function} onApply - Callback per aplicar notes (materia, inputVal).
+     * @param {function} onPosaPendents - Callback per posar pendents les RA buides (materia).
+     * @param {string} version - Versió de l'script.
+     */
+    constructor(logger, onApply, onPosaPendents, version2 = "") {
       this.logger = logger;
       this.onApply = onApply;
+      this.onPosaPendents = onPosaPendents;
       this.version = version2;
     }
     createHTML(materies) {
       this.logger.log("MateriaUIBuilder \u2192 inici");
       const container = document.createElement("div");
       container.id = "powertoy-div";
+      container.classList.add("powertoy-container");
       Object.assign(container.style, {
         marginBottom: "20px",
-        padding: "10px",
+        padding: "30px 10px 10px 10px",
         border: "1px solid #ccc",
-        backgroundColor: "#f9f9f9"
+        backgroundColor: "#f9f9f9",
+        position: "relative",
+        overflow: "auto",
+        "max-height": "20em"
       });
+      const toggleBtn = document.createElement("button");
+      toggleBtn.id = "powertoy-toggle-btn";
+      toggleBtn.textContent = "\u2212";
+      toggleBtn.type = "button";
+      toggleBtn.className = "btn btn-secondary btn-sm";
+      Object.assign(toggleBtn.style, {
+        position: "absolute",
+        top: "5px",
+        right: "5px",
+        width: "32px",
+        height: "32px",
+        borderRadius: "50%",
+        padding: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        lineHeight: "1"
+      });
+      toggleBtn.addEventListener("click", () => this.toggleContainer());
+      container.appendChild(toggleBtn);
+      const tableWrapper = document.createElement("div");
+      tableWrapper.className = "powertoy-table-wrapper";
+      tableWrapper.style.cssText = "\n            max-width: 100%;\n            overflow-x: auto;\n            -webkit-overflow-scrolling: touch;\n        ";
       const table = document.createElement("table");
-      Object.assign(table.style, { width: "100%", borderCollapse: "collapse" });
+      table.classList.add("powertoy-table");
+      table.style.cssText = "width: 98%; border-collapse: collapse; min-width: 320px;";
       const fieldset = document.querySelector("div.main div.ng-scope fieldset.ng-scope");
       const isDisabled = fieldset && fieldset.disabled;
       if (!isDisabled) {
+        console.log("materies" + materies);
         materies.forEach((m) => {
           this.logger.log("MateriaUIBuilder \u2192 afegint fila per: ".concat(m.codi));
           const row = document.createElement("tr");
           const tdNom = document.createElement("td");
           tdNom.textContent = "".concat(m.codi, " \u2014 ").concat(m.nom);
           Object.assign(tdNom.style, {
-            width: "30%",
             borderBottom: "1px solid #ddd",
             whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis"
+            padding: "8px 4px",
+            textAlign: "left"
           });
           row.appendChild(tdNom);
           const tdInput = document.createElement("td");
-          tdInput.style.width = "60%";
+          tdInput.style.minWidth = "180px";
           const input = document.createElement("input");
           input.type = "text";
           input.style.width = "100%";
+          input.style.boxSizing = "border-box";
           tdInput.appendChild(input);
           const tdButton = document.createElement("td");
+          tdButton.style.minWidth = "140px";
           const btn = document.createElement("button");
           btn.textContent = "Aplica";
           btn.className = "btn btn-primary";
+          btn.style.width = "max-content";
           btn.addEventListener("click", () => {
             const inputVal = input.value.trim();
             this.logger.log("MateriaUIBuilder \u2192 clic Aplica per ".concat(m.codi, ", valor: ").concat(inputVal));
@@ -197,18 +235,21 @@
           row.appendChild(tdButton);
           table.appendChild(row);
           const btnPendent = document.createElement("button");
-          btnPendent.textContent = "Posar pendent RA buides";
-          btnPendent.className = "btn btn-warning";
-          btnPendent.style.marginLeft = "5px";
+          btnPendent.textContent = "Posar pendent";
+          btnPendent.className = "btn btn-warning btn-sm";
+          btnPendent.style.marginLeft = "4px";
+          btnPendent.style.width = "max-content;";
           btnPendent.addEventListener("click", () => {
-            window.PowerToysController.posaPendentsRA(m);
+            this.onPosaPendents(m);
           });
           tdButton.appendChild(btnPendent);
         });
       }
-      container.appendChild(table);
+      tableWrapper.appendChild(table);
+      container.appendChild(tableWrapper);
       const versionDiv = document.createElement("div");
       versionDiv.innerHTML = '<a href="https://github.com/ctrl-alt-d/EsferaPowerToys" target="_blank" style="text-decoration:none;">Esfer@ Power Toys</a> v. '.concat(this.version);
+      versionDiv.className = "powertoy-version";
       Object.assign(versionDiv.style, {
         textAlign: "right",
         fontSize: "0.8em",
@@ -229,6 +270,29 @@
       abansDe.parentElement.insertBefore(div, abansDe);
       this.logger.log("MateriaUIBuilder \u2192 div inserit");
       window.dispatchEvent(new Event("resize"));
+    }
+    /**
+     * Torna comprimeix/expandeix l'interfície de PowerToys.
+     * Accedeix al container actual per l'id.
+     */
+    toggleContainer() {
+      const container = document.getElementById("powertoy-div");
+      if (!container) return;
+      const tableWrapper = container.querySelector(".powertoy-table").closest("div");
+      const versionDiv = container.querySelector(".powertoy-version");
+      const toggleBtn = container.querySelector("#powertoy-toggle-btn");
+      if (tableWrapper && toggleBtn) {
+        const isHidden = tableWrapper.style.display === "none";
+        if (isHidden) {
+          tableWrapper.style.display = "";
+          versionDiv.style.marginTop = "8px";
+          toggleBtn.textContent = "\u2212";
+        } else {
+          tableWrapper.style.display = "none";
+          versionDiv.style.marginTop = "8px";
+          toggleBtn.textContent = "+";
+        }
+      }
     }
   };
 
@@ -347,7 +411,7 @@
   };
 
   // build/version.js
-  var version = "1.9.0";
+  var version = "1.10.0";
 
   // src/CSSApplier.js
   var CSSApplier = class {
@@ -359,7 +423,7 @@
       if (document.getElementById("powertoy-styles")) return;
       const style = document.createElement("style");
       style.id = "powertoy-styles";
-      style.textContent = "\n            .powertoy-pass { background-color: #d4edda !important; }\n            .powertoy-fail { background-color: #f8d7da !important; }\n            .powertoy-pendent { background-color: #d1ecf1 !important; }\n            .powertoy-proces { background-color: #fff3cd !important; }\n            .powertoy-pq { background-color: #d1ecf1 !important; }\n            .powertoy-pass select,\n            .powertoy-fail select,\n            .powertoy-pendent select,\n            .powertoy-proces select,\n            .powertoy-pq select {\n                background-color: inherit !important;\n            }\n        ";
+      style.textContent = "\n            .powertoy-pass { background-color: #d4edda !important; }\n            .powertoy-fail { background-color: #f8d7da !important; }\n            .powertoy-pendent { background-color: #d1ecf1 !important; }\n            .powertoy-proces { background-color: #fff3cd !important; }\n            .powertoy-pq { background-color: #d1ecf1 !important; }\n            .powertoy-pass select,\n            .powertoy-fail select,\n            .powertoy-pendent select,\n            .powertoy-proces select,\n            .powertoy-pq select {\n                background-color: inherit !important;\n            }\n\n            /* 1. For\xE7a l'al\xE7ada del fieldset relativa a l'al\xE7ada real de la finestra */\n            fieldset.col-md-12.bordure {\n                padding: 0 !important;\n                height: calc(100vh - 250px) !important;\n                max-height: calc(100vh - 190px) !important;\n                overflow-y: auto !important;\n                display: block !important;\n                box-sizing: border-box !important;\n            }\n\n            /* 2. Elimina l'al\xE7ada fixa injectada per JS i deixa que ocupi tot l'espai disponible */\n            fieldset.col-md-12.bordure .container-auto-resize {\n                height: auto !important;\n                max-height: none !important;\n                flex: 1 !important;\n                min-height: 0 !important;\n                overflow: visible !important;\n            }\n\n            /* 3. Assegura que la taula no generi desbordaments horitzontals que trenquin el layout */\n            fieldset.col-md-12.bordure table.grades-table {\n                min-width: 0 !important;\n                table-layout: fixed !important;\n            }\n        ";
       document.head.appendChild(style);
       this.logger.log("CSSApplier \u2192 estils injectats");
     }
@@ -400,7 +464,12 @@
       this.parser = new MateriaParser(this.logger);
       this.applier = new MateriaApplier(this.logger);
       this.scrollHelper = new ScrollHelper(this.logger);
-      this.uiBuilder = new MateriaUIBuilder(this.logger, (materia, inputVal) => this.onApply(materia, inputVal), version);
+      this.uiBuilder = new MateriaUIBuilder(
+        this.logger,
+        (materia, inputVal) => this.onApply(materia, inputVal),
+        (materia) => this.posaPendentsRA(materia),
+        version
+      );
       this.cssApplier = new CSSApplier(this.logger);
       this.lastStudent = "";
       this.reinicialitzaTimeout = null;

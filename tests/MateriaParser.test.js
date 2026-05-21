@@ -48,6 +48,24 @@ describe('MateriaParser', () => {
     expect(result[0].RAs).toEqual(['OPT1_IC10_01RA']);
   });
 
+  test('hauria de parsejar correctament matèries opcionals en un altre format', () => {
+    const html = `
+      <table>
+        <tr><td>OpT1</td><td>Pensament computacional</td></tr>
+        <tr><td>OpT1_IC10_RA1</td><td>Pensament computacional - (OPT1_IC10_01RA)</td></tr>
+      </table>
+    `;
+    const dom = new JSDOM(html);
+    const files = Array.from(dom.window.document.querySelectorAll('tr'));
+
+    const result = parser.parse(files);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].codi).toBe('OpT1');
+    expect(result[0].nom).toBe('Pensament computacional');
+    expect(result[0].RAs).toEqual(['OpT1_IC10_RA1']);
+  });
+
 
   test('hauria de retornar array buit si no hi ha files vàlides', () => {
     const html = `<table><tr><td>ALTRE</td><td>Assignatura</td></tr></table>`;

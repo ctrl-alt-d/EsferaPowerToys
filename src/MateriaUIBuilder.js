@@ -21,20 +21,57 @@ export class MateriaUIBuilder {
         this.logger.log('MateriaUIBuilder → inici');
         const container = document.createElement('div');
         container.id = 'powertoy-div';
+        container.classList.add('powertoy-container');
         Object.assign(container.style, {
             marginBottom: '20px',
-            padding: '10px',
+            padding: '30px 10px 10px 10px',
             border: '1px solid #ccc',
-            backgroundColor: '#f9f9f9'
+            backgroundColor: '#f9f9f9',
+            position: 'relative',
+            overflow: 'auto',
+            'max-height': '20em'
         });
 
+        // Botó per comprimir/expandir
+        const toggleBtn = document.createElement('button');
+        toggleBtn.id = 'powertoy-toggle-btn';
+        toggleBtn.textContent = '−';
+        toggleBtn.type = 'button';
+        toggleBtn.className = 'btn btn-secondary btn-sm';
+        Object.assign(toggleBtn.style, {
+            position: 'absolute',
+            top: '5px',
+            right: '5px',
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            padding: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            lineHeight: '1'
+        });
+        toggleBtn.addEventListener('click', () => this.toggleContainer());
+        container.appendChild(toggleBtn);
+
+        // Contenidor responsive per la taula
+        const tableWrapper = document.createElement('div');
+        tableWrapper.className = 'powertoy-table-wrapper';
+        tableWrapper.style.cssText = `
+            max-width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        `;
+
         const table = document.createElement('table');
-        Object.assign(table.style, { width: '100%', borderCollapse: 'collapse' });
+        table.classList.add('powertoy-table');
+        table.style.cssText = 'width: 98%; border-collapse: collapse; min-width: 320px;';
 
         const fieldset = document.querySelector('div.main div.ng-scope fieldset.ng-scope');
         const isDisabled = fieldset && fieldset.disabled;
 
         if (!isDisabled) {
+            console.log("materies"+ materies);
             materies.forEach(m => {
 
                 this.logger.log(`MateriaUIBuilder → afegint fila per: ${m.codi}`);
@@ -43,23 +80,28 @@ export class MateriaUIBuilder {
                 const tdNom = document.createElement('td');
                 tdNom.textContent = `${m.codi} — ${m.nom}`;
                 Object.assign(tdNom.style, {
-                    width: '30%', borderBottom: '1px solid #ddd',
-                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                    borderBottom: '1px solid #ddd',
+                    whiteSpace: 'nowrap',
+                    padding: '8px 4px',
+                    textAlign: 'left'
                 });
 
                 row.appendChild(tdNom);
 
                 const tdInput = document.createElement('td');
-                tdInput.style.width = '60%';
+                tdInput.style.minWidth = '180px';
                 const input = document.createElement('input');
                 input.type = 'text';
                 input.style.width = '100%';
+                input.style.boxSizing = 'border-box';
                 tdInput.appendChild(input);
 
                 const tdButton = document.createElement('td');
+                tdButton.style.minWidth = '140px';
                 const btn = document.createElement('button');
                 btn.textContent = 'Aplica';
                 btn.className = 'btn btn-primary';
+                btn.style.width = 'max-content';
                 btn.addEventListener('click', () => {
                     const inputVal = input.value.trim();
                     this.logger.log(`MateriaUIBuilder → clic Aplica per ${m.codi}, valor: ${inputVal}`);
@@ -74,9 +116,10 @@ export class MateriaUIBuilder {
 
 
                 const btnPendent = document.createElement("button");
-                btnPendent.textContent = "Posar pendent RA buides";
-                btnPendent.className = "btn btn-warning";
-                btnPendent.style.marginLeft = "5px";
+                btnPendent.textContent = "Posar pendent";
+                btnPendent.className = "btn btn-warning btn-sm";
+                btnPendent.style.marginLeft = "4px";
+                btnPendent.style.width = "max-content;";
 
                 btnPendent.addEventListener("click", () => {
                     this.onPosaPendents(m);
@@ -86,10 +129,12 @@ export class MateriaUIBuilder {
             });
         }
 
-        container.appendChild(table);
+        tableWrapper.appendChild(table);
+        container.appendChild(tableWrapper);
 
         const versionDiv = document.createElement('div');
         versionDiv.innerHTML = `<a href="https://github.com/ctrl-alt-d/EsferaPowerToys" target="_blank" style="text-decoration:none;">Esfer@ Power Toys</a> v. ${this.version}`;
+        versionDiv.className = 'powertoy-version';
         Object.assign(versionDiv.style, {
             textAlign: 'right',
             fontSize: '0.8em',
@@ -114,5 +159,32 @@ export class MateriaUIBuilder {
 
         window.dispatchEvent(new Event('resize'));
 
+    }
+
+    /**
+     * Torna comprimeix/expandeix l'interfície de PowerToys.
+     * Accedeix al container actual per l'id.
+     */
+    toggleContainer() {
+        const container = document.getElementById('powertoy-div');
+        if (!container) return;
+
+        const tableWrapper = container.querySelector('.powertoy-table').closest('div');
+        const versionDiv = container.querySelector('.powertoy-version');
+        const toggleBtn = container.querySelector('#powertoy-toggle-btn');
+
+        if (tableWrapper && toggleBtn) {
+
+            const isHidden = tableWrapper.style.display === 'none';
+            if (isHidden) {
+                tableWrapper.style.display = '';
+                versionDiv.style.marginTop = '8px';
+                toggleBtn.textContent = '−';
+            } else {
+                tableWrapper.style.display = 'none';
+                versionDiv.style.marginTop = '8px';
+                toggleBtn.textContent = '+';
+            }
+        }
     }
 }

@@ -38,19 +38,30 @@ describe('MateriaUIBuilder', () => {
 
     test('hauria de crear una fila per cada matèria', () => {
         const container = builder.createHTML(materies);
-        const rows = container.querySelectorAll('table tr');
+        const tableWrapper = container.querySelector('.powertoy-table-wrapper');
+        const table = tableWrapper ? tableWrapper.querySelector('.powertoy-table') : container.querySelector('.powertoy-table');
+        const rows = table ? table.querySelectorAll('tr') : [];
         expect(rows).toHaveLength(materies.length);
     });
 
     test('hauria de mostrar el codi i nom de cada matèria', () => {
         const container = builder.createHTML(materies);
-        const firstCell = container.querySelector('table tr td');
+        const tableWrapper = container.querySelector('.powertoy-table-wrapper');
+        const table = tableWrapper ? tableWrapper.querySelector('.powertoy-table') : container.querySelector('.powertoy-table');
+        const firstCell = table ? table.querySelector('tr td') : null;
         expect(firstCell.textContent).toBe('2024_MAT01 — Matemàtiques');
+    });
+
+    test('hauria de tenir un wrapper per la taula amb overflow auto', () => {
+        const container = builder.createHTML(materies);
+        const tableWrapper = container.querySelector('.powertoy-table-wrapper');
+        expect(tableWrapper).not.toBeNull();
+        expect(tableWrapper.style.overflowX).toBe('auto');
     });
 
     test('hauria de mostrar la versió', () => {
         const container = builder.createHTML(materies);
-        const versionDiv = container.querySelector('div');
+        const versionDiv = container.querySelector('.powertoy-version');
         expect(versionDiv.textContent).toContain('1.0.0');
     });
 
@@ -80,7 +91,92 @@ describe('MateriaUIBuilder', () => {
         body.innerHTML = '<div class="main"><div class="ng-scope"><fieldset class="ng-scope" disabled></fieldset></div></div>';
 
         const container = builder.createHTML(materies);
-        const rows = container.querySelectorAll('table tr');
+        const rows = container.querySelectorAll('.powertoy-table tr');
         expect(rows).toHaveLength(0);
+    });
+
+    test('hauria de tenir un botó de toggle amb id powertoy-toggle-btn', () => {
+        const container = builder.createHTML(materies);
+        const toggleBtn = container.querySelector('#powertoy-toggle-btn');
+        expect(toggleBtn).not.toBeNull();
+        expect(toggleBtn.textContent).toBe('−');
+    });
+
+    test('hauria de tenir un botó de toggle amb classe btn btn-secondary btn-sm', () => {
+        const container = builder.createHTML(materies);
+        const toggleBtn = container.querySelector('#powertoy-toggle-btn');
+        expect(toggleBtn.className).toBe('btn btn-secondary btn-sm');
+    });
+
+    test('hauria de tenir una taula amb classe powertoy-table', () => {
+        const container = builder.createHTML(materies);
+        const table = container.querySelector('.powertoy-table');
+        expect(table).not.toBeNull();
+    });
+
+    test('hauria de tenir un versionDiv amb classe powertoy-version', () => {
+        const container = builder.createHTML(materies);
+        const versionDiv = container.querySelector('.powertoy-version');
+        expect(versionDiv).not.toBeNull();
+    });
+
+    test('hauria de tenir el contenedor amb classes powertoy-container i estils relatius', () => {
+        const container = builder.createHTML(materies);
+        expect(container.classList.contains('powertoy-container')).toBe(true);
+        expect(container.style.position).toBe('relative');
+    });
+
+    test('toggleContainer hauria d\'ocultar la taula i canviar el botó a +', () => {
+        const container = builder.createHTML(materies);
+        const body = dom.window.document.body;
+        body.appendChild(container); // Inserir al DOM perquè getElementById funcioni
+        const toggleBtn = container.querySelector('#powertoy-toggle-btn');
+        const tableWrapper = container.querySelector('div[style*="overflow-x"]');
+        const table = tableWrapper ? tableWrapper.querySelector('.powertoy-table') : container.querySelector('.powertoy-table');
+
+        // Estat inicial: visible
+        expect(tableWrapper.style.display).toBe('');
+        expect(toggleBtn.textContent).toBe('−');
+
+        // Clic per comprimir
+        builder.toggleContainer();
+        expect(tableWrapper.style.display).toBe('none');
+        expect(toggleBtn.textContent).toBe('+');
+    });
+
+    test('toggleContainer hauria de mostrar la taula de nou si ja està oculta', () => {
+        const container = builder.createHTML(materies);
+        const body = dom.window.document.body;
+        body.appendChild(container); // Inserir al DOM perquè getElementById funcioni
+        const toggleBtn = container.querySelector('#powertoy-toggle-btn');
+        const tableWrapper = container.querySelector('div[style*="overflow-x"]');
+        const table = tableWrapper ? tableWrapper.querySelector('.powertoy-table') : container.querySelector('.powertoy-table');
+
+        // Primera vegada: comprimir
+        builder.toggleContainer();
+        expect(tableWrapper.style.display).toBe('none');
+
+        // Segona vegada: expandir
+        builder.toggleContainer();
+        expect(tableWrapper.style.display).toBe('');
+        expect(toggleBtn.textContent).toBe('−');
+    });
+
+    test('toggleContainer hauria d\'accedir al container mitjançant id', () => {
+        const container = builder.createHTML(materies);
+        const body = dom.window.document.body;
+        body.appendChild(container); // Inserir al DOM
+
+        const toggleBtn = container.querySelector('#powertoy-toggle-btn');
+        const tableWrapper = container.querySelector('div[style*="overflow-x"]');
+        const table = tableWrapper ? tableWrapper.querySelector('.powertoy-table') : container.querySelector('.powertoy-table');
+
+        // Comprimir
+        builder.toggleContainer();
+        expect(tableWrapper.style.display).toBe('none');
+
+        // Expandir
+        builder.toggleContainer();
+        expect(tableWrapper.style.display).toBe('');
     });
 });
