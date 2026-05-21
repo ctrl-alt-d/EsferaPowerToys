@@ -17,6 +17,11 @@ Per instal·lar aquest script necessites:
 - 🔌 [Tampermonkey](https://www.tampermonkey.net/) — una extensió per a navegadors que permet executar scripts d'usuari.
 - 🌐 Un navegador compatible (Chrome, Firefox, Edge...).
 
+
+> [!IMPORTANT]
+> Més fàcila amb Firefox. Actualment Chrome ha posat més restriccions de seguretat, per tal que s'executi en Chrome cal un pas més, cal anar a la [configuració de les extensions]( chrome://extensions/), entrar a Tampermonkey i marcar _'Permet els scripts d'usuari'_ (i reiniciar Chrome).
+
+
 ---
 
 ## 🚀 Instal·lació
