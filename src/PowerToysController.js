@@ -5,7 +5,8 @@ import { MateriaApplier } from './MateriaApplier.js';
 import { ScrollHelper } from './ScrollHelper.js';
 import { version } from '../build/version.js';
 import { CSSApplier } from './CSSApplier.js';
-
+import { CSVManager } from './CSVManager.js';
+import { CSVUIBuilder } from './CSVUIBuilder.js';
 /**
  * Classe principal que coordina les funcionalitats d'Esfer@ PowerToys.
  */
@@ -38,7 +39,11 @@ export class PowerToysController {
         /** @type {CSSApplier} */
         this.cssApplier = new CSSApplier(this.logger);
 
+        /** @type {CSVManager} */
+        this.csvManager = new CSVManager(this.logger);
 
+        /** @type {CSVUIBuilder} */
+        this.csvUIBuilder = new CSVUIBuilder(this.logger, () => this.csvManager.procésDescàrregaCSV());
 
         this.lastStudent = '';
         this.reinicialitzaTimeout = null;
@@ -84,12 +89,16 @@ export class PowerToysController {
 
         this.cssApplier.aplicaEstils();
 
-        clearTimeout(this.reinicialitzaTimeout);
-        this.reinicialitzaTimeout = setTimeout(() => {
+        // 1️⃣ Gestiona la taula (ara s'executa a cada mutació fins que trobi la taula)
+        this.csvUIBuilder.injectHeaderButtonIfNeeded();
+
+        // 2️⃣ Gestiona el formulari (el teu codi original)
+        clearTimeout(this._formTimeout);
+        this._formTimeout = setTimeout(() => {
             const form = document.querySelector('form[name="grupAlumne"]');
-            const files = document.querySelectorAll('tr.alturallistat');
+            const files = document.querySelectorAll("tr.alturallistat");
             if (!form || files.length === 0) {
-                this.logger.log('reinicialitza → no hi ha form o files, esperant...');
+                this.logger.log("reinicialitza → no hi ha form o files, esperant...");
                 return;
             }
 
@@ -102,12 +111,13 @@ export class PowerToysController {
             this.lastStudent = studentName;
 
             this.logger.log(`reinicialitza → processant alumne: ${studentName}`);
-
             const materies = this.parser.parse(Array.from(files));
             const html = this.uiBuilder.createHTML(materies);
             this.uiBuilder.insertDiv(html, form);
         }, 100);
     }
+
+
 
     /**
      * Posa totes les RA buides a pendent.
@@ -149,3 +159,4 @@ export class PowerToysController {
         this.cssApplier.aplicaEstils();
     }
 }
+
