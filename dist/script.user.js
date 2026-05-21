@@ -99,7 +99,7 @@
      * @returns {Set<string>} Conjunt de codis RA.
      */
     _filterRAs(codis) {
-      const raRegex = /^[A-Z0-9]{4}_[A-Z0-9]+_[0-9]{2}RA$/;
+      const raRegex = /^[A-z0-9]{2,4}_[A-Z0-9]+_[0-9]{0,2}RA[0-9]{0,2}$/;
       return new Set(codis.filter((codi) => raRegex.test(codi)));
     }
     /**
@@ -190,35 +190,41 @@
       });
       toggleBtn.addEventListener("click", () => this.toggleContainer());
       container.appendChild(toggleBtn);
+      const tableWrapper = document.createElement("div");
+      tableWrapper.className = "powertoy-table-wrapper";
+      tableWrapper.style.cssText = "\n            max-width: 100%;\n            overflow-x: auto;\n            -webkit-overflow-scrolling: touch;\n        ";
       const table = document.createElement("table");
       table.classList.add("powertoy-table");
-      Object.assign(table.style, { width: "100%", borderCollapse: "collapse" });
+      table.style.cssText = "width: 98%; border-collapse: collapse; min-width: 320px;";
       const fieldset = document.querySelector("div.main div.ng-scope fieldset.ng-scope");
       const isDisabled = fieldset && fieldset.disabled;
       if (!isDisabled) {
+        console.log("materies" + materies);
         materies.forEach((m) => {
           this.logger.log("MateriaUIBuilder \u2192 afegint fila per: ".concat(m.codi));
           const row = document.createElement("tr");
           const tdNom = document.createElement("td");
           tdNom.textContent = "".concat(m.codi, " \u2014 ").concat(m.nom);
           Object.assign(tdNom.style, {
-            width: "30%",
             borderBottom: "1px solid #ddd",
             whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis"
+            padding: "8px 4px",
+            textAlign: "left"
           });
           row.appendChild(tdNom);
           const tdInput = document.createElement("td");
-          tdInput.style.width = "60%";
+          tdInput.style.minWidth = "180px";
           const input = document.createElement("input");
           input.type = "text";
           input.style.width = "100%";
+          input.style.boxSizing = "border-box";
           tdInput.appendChild(input);
           const tdButton = document.createElement("td");
+          tdButton.style.minWidth = "140px";
           const btn = document.createElement("button");
           btn.textContent = "Aplica";
           btn.className = "btn btn-primary";
+          btn.style.width = "max-content";
           btn.addEventListener("click", () => {
             const inputVal = input.value.trim();
             this.logger.log("MateriaUIBuilder \u2192 clic Aplica per ".concat(m.codi, ", valor: ").concat(inputVal));
@@ -229,16 +235,18 @@
           row.appendChild(tdButton);
           table.appendChild(row);
           const btnPendent = document.createElement("button");
-          btnPendent.textContent = "Posar pendent RA buides";
-          btnPendent.className = "btn btn-warning";
-          btnPendent.style.marginLeft = "5px";
+          btnPendent.textContent = "Posar pendent";
+          btnPendent.className = "btn btn-warning btn-sm";
+          btnPendent.style.marginLeft = "4px";
+          btnPendent.style.width = "max-content;";
           btnPendent.addEventListener("click", () => {
             this.onPosaPendents(m);
           });
           tdButton.appendChild(btnPendent);
         });
       }
-      container.appendChild(table);
+      tableWrapper.appendChild(table);
+      container.appendChild(tableWrapper);
       const versionDiv = document.createElement("div");
       versionDiv.innerHTML = '<a href="https://github.com/ctrl-alt-d/EsferaPowerToys" target="_blank" style="text-decoration:none;">Esfer@ Power Toys</a> v. '.concat(this.version);
       versionDiv.className = "powertoy-version";
@@ -270,18 +278,18 @@
     toggleContainer() {
       const container = document.getElementById("powertoy-div");
       if (!container) return;
-      const table = container.querySelector(".powertoy-table");
+      const tableWrapper = container.querySelector(".powertoy-table").closest("div");
       const versionDiv = container.querySelector(".powertoy-version");
       const toggleBtn = container.querySelector("#powertoy-toggle-btn");
-      if (table && toggleBtn) {
-        const isHidden = table.style.display === "none";
+      if (tableWrapper && toggleBtn) {
+        const isHidden = tableWrapper.style.display === "none";
         if (isHidden) {
-          table.style.display = "";
+          tableWrapper.style.display = "";
           versionDiv.style.marginTop = "8px";
           toggleBtn.textContent = "\u2212";
         } else {
-          table.style.display = "none";
-          versionDiv.style.marginTop = "20px";
+          tableWrapper.style.display = "none";
+          versionDiv.style.marginTop = "8px";
           toggleBtn.textContent = "+";
         }
       }
@@ -415,7 +423,7 @@
       if (document.getElementById("powertoy-styles")) return;
       const style = document.createElement("style");
       style.id = "powertoy-styles";
-      style.textContent = "\n            .powertoy-pass { background-color: #d4edda !important; }\n            .powertoy-fail { background-color: #f8d7da !important; }\n            .powertoy-pendent { background-color: #d1ecf1 !important; }\n            .powertoy-proces { background-color: #fff3cd !important; }\n            .powertoy-pq { background-color: #d1ecf1 !important; }\n            .powertoy-pass select,\n            .powertoy-fail select,\n            .powertoy-pendent select,\n            .powertoy-proces select,\n            .powertoy-pq select {\n                background-color: inherit !important;\n            }\n        ";
+      style.textContent = "\n            .powertoy-pass { background-color: #d4edda !important; }\n            .powertoy-fail { background-color: #f8d7da !important; }\n            .powertoy-pendent { background-color: #d1ecf1 !important; }\n            .powertoy-proces { background-color: #fff3cd !important; }\n            .powertoy-pq { background-color: #d1ecf1 !important; }\n            .powertoy-pass select,\n            .powertoy-fail select,\n            .powertoy-pendent select,\n            .powertoy-proces select,\n            .powertoy-pq select {\n                background-color: inherit !important;\n            }\n\n            /* 1. For\xE7a l'al\xE7ada del fieldset relativa a l'al\xE7ada real de la finestra */\n            fieldset.col-md-12.bordure {\n                padding: 0 !important;\n                height: calc(100vh - 190px) !important;\n                max-height: calc(100vh - 190px) !important;\n                overflow-y: auto !important;\n                display: block !important;\n                box-sizing: border-box !important;\n            }\n\n            /* 2. Elimina l'al\xE7ada fixa injectada per JS i deixa que ocupi tot l'espai disponible */\n            fieldset.col-md-12.bordure .container-auto-resize {\n                height: auto !important;\n                max-height: none !important;\n                flex: 1 !important;\n                min-height: 0 !important;\n                overflow: visible !important;\n            }\n\n            /* 3. Assegura que la taula no generi desbordaments horitzontals que trenquin el layout */\n            fieldset.col-md-12.bordure table.grades-table {\n                min-width: 0 !important;\n                table-layout: fixed !important;\n            }\n        ";
       document.head.appendChild(style);
       this.logger.log("CSSApplier \u2192 estils injectats");
     }

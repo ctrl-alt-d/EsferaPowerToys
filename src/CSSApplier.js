@@ -22,6 +22,31 @@ export class CSSApplier {
             .powertoy-pq select {
                 background-color: inherit !important;
             }
+
+            /* 1. Força l'alçada del fieldset relativa a l'alçada real de la finestra */
+            fieldset.col-md-12.bordure {
+                padding: 0 !important;
+                height: calc(100vh - 250px) !important;
+                max-height: calc(100vh - 190px) !important;
+                overflow-y: auto !important;
+                display: block !important;
+                box-sizing: border-box !important;
+            }
+
+            /* 2. Elimina l'alçada fixa injectada per JS i deixa que ocupi tot l'espai disponible */
+            fieldset.col-md-12.bordure .container-auto-resize {
+                height: auto !important;
+                max-height: none !important;
+                flex: 1 !important;
+                min-height: 0 !important;
+                overflow: visible !important;
+            }
+
+            /* 3. Assegura que la taula no generi desbordaments horitzontals que trenquin el layout */
+            fieldset.col-md-12.bordure table.grades-table {
+                min-width: 0 !important;
+                table-layout: fixed !important;
+            }
         `;
 
         document.head.appendChild(style);

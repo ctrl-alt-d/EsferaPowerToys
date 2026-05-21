@@ -54,14 +54,24 @@ export class MateriaUIBuilder {
         toggleBtn.addEventListener('click', () => this.toggleContainer());
         container.appendChild(toggleBtn);
 
+        // Contenidor responsive per la taula
+        const tableWrapper = document.createElement('div');
+        tableWrapper.className = 'powertoy-table-wrapper';
+        tableWrapper.style.cssText = `
+            max-width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        `;
+
         const table = document.createElement('table');
         table.classList.add('powertoy-table');
-        Object.assign(table.style, { width: '100%', borderCollapse: 'collapse' });
+        table.style.cssText = 'width: 98%; border-collapse: collapse; min-width: 320px;';
 
         const fieldset = document.querySelector('div.main div.ng-scope fieldset.ng-scope');
         const isDisabled = fieldset && fieldset.disabled;
 
         if (!isDisabled) {
+            console.log("materies"+ materies);
             materies.forEach(m => {
 
                 this.logger.log(`MateriaUIBuilder → afegint fila per: ${m.codi}`);
@@ -70,23 +80,28 @@ export class MateriaUIBuilder {
                 const tdNom = document.createElement('td');
                 tdNom.textContent = `${m.codi} — ${m.nom}`;
                 Object.assign(tdNom.style, {
-                    width: '30%', borderBottom: '1px solid #ddd',
-                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                    borderBottom: '1px solid #ddd',
+                    whiteSpace: 'nowrap',
+                    padding: '8px 4px',
+                    textAlign: 'left'
                 });
 
                 row.appendChild(tdNom);
 
                 const tdInput = document.createElement('td');
-                tdInput.style.width = '60%';
+                tdInput.style.minWidth = '180px';
                 const input = document.createElement('input');
                 input.type = 'text';
                 input.style.width = '100%';
+                input.style.boxSizing = 'border-box';
                 tdInput.appendChild(input);
 
                 const tdButton = document.createElement('td');
+                tdButton.style.minWidth = '140px';
                 const btn = document.createElement('button');
                 btn.textContent = 'Aplica';
                 btn.className = 'btn btn-primary';
+                btn.style.width = 'max-content';
                 btn.addEventListener('click', () => {
                     const inputVal = input.value.trim();
                     this.logger.log(`MateriaUIBuilder → clic Aplica per ${m.codi}, valor: ${inputVal}`);
@@ -101,9 +116,10 @@ export class MateriaUIBuilder {
 
 
                 const btnPendent = document.createElement("button");
-                btnPendent.textContent = "Posar pendent RA buides";
-                btnPendent.className = "btn btn-warning";
-                btnPendent.style.marginLeft = "5px";
+                btnPendent.textContent = "Posar pendent";
+                btnPendent.className = "btn btn-warning btn-sm";
+                btnPendent.style.marginLeft = "4px";
+                btnPendent.style.width = "max-content;";
 
                 btnPendent.addEventListener("click", () => {
                     this.onPosaPendents(m);
@@ -113,7 +129,8 @@ export class MateriaUIBuilder {
             });
         }
 
-        container.appendChild(table);
+        tableWrapper.appendChild(table);
+        container.appendChild(tableWrapper);
 
         const versionDiv = document.createElement('div');
         versionDiv.innerHTML = `<a href="https://github.com/ctrl-alt-d/EsferaPowerToys" target="_blank" style="text-decoration:none;">Esfer@ Power Toys</a> v. ${this.version}`;
@@ -152,20 +169,20 @@ export class MateriaUIBuilder {
         const container = document.getElementById('powertoy-div');
         if (!container) return;
 
-        const table = container.querySelector('.powertoy-table');
+        const tableWrapper = container.querySelector('.powertoy-table').closest('div');
         const versionDiv = container.querySelector('.powertoy-version');
         const toggleBtn = container.querySelector('#powertoy-toggle-btn');
 
-        if (table && toggleBtn) {
+        if (tableWrapper && toggleBtn) {
 
-            const isHidden = table.style.display === 'none';
+            const isHidden = tableWrapper.style.display === 'none';
             if (isHidden) {
-                table.style.display = '';
+                tableWrapper.style.display = '';
                 versionDiv.style.marginTop = '8px';
                 toggleBtn.textContent = '−';
             } else {
-                table.style.display = 'none';
-                versionDiv.style.marginTop = '20px';
+                tableWrapper.style.display = 'none';
+                versionDiv.style.marginTop = '8px';
                 toggleBtn.textContent = '+';
             }
         }
