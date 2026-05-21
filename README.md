@@ -43,6 +43,10 @@ Per instal·lar aquest script necessites:
 - ✅ Interfície afegida al principi de la pàgina amb inputs i botons útils.
 - ✅ Botó per a ficar a pendent totes les RAs d'un Mòdul que no tenen nota (això inclou la nota d'estada aen empresa i la nota del mòdul)
 
+### Noves funcionalitats
+- ✅ Permet plegar el contenidor per a ficar notes
+
+
 ---
 
 ![Captura de pantalla](./docs/video.gif)
