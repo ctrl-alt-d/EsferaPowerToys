@@ -17,6 +17,12 @@ export class CSVManager {
     async procésDescàrregaCSV(evaluation = 1) {
         this.logger.log("CSVManager → procésDescàrregaCSV inici");
 
+        const idGrup = this.extractIdGrup();
+        if (idGrup === null) {
+            this.logger.error("CSVManager → No s'ha pogut extreure idGrup");
+            return;
+        }
+
         var element = document.documentElement;
         var injector = window.angular ? window.angular.element(element).injector() : null;
 
@@ -30,16 +36,14 @@ export class CSVManager {
         // Obté el servei factory de l'injector
         var factory = injector.get("newFinalAvaluacioGrupAlumneFactory");
 
-        const idGrup = this.extractIdGrup();
-
         var matricules = await this.extractIdMatricula(factory, idGrup);
-
-        const nomGrup = matricules[0].nomGrup;
 
         if (!matricules || matricules.length === 0) {
             this.logger.error("CSVManager → No hi ha matricules per recuperar");
             return;
         }
+
+        const nomGrup = matricules[0].nomGrup;
 
         try {
             const tasks = matricules.map((alumne, idx) => () =>
