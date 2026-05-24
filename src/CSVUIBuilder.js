@@ -69,7 +69,7 @@ export class CSVUIBuilder {
             </div>
         `;
         
-        const container = this.containerBuilder.createContainer(contentDiv, "powertoys-csv-div");
+        const container = this.containerBuilder.createContainer(contentDiv, "powertoys-info-box");
         this.containerBuilder.insertDiv(container, table);
 
         const btnCSV = document.getElementById("btn-descargar-csv");
