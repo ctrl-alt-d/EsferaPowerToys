@@ -40,6 +40,9 @@ export class ContainerUIBuilder {
         toggleBtn.textContent = '−';
         toggleBtn.type = 'button';
         toggleBtn.className = 'btn btn-secondary btn-sm';
+        toggleBtn.setAttribute('aria-label', 'Minimitza PowerToys');
+        toggleBtn.setAttribute('aria-expanded', 'true');
+        toggleBtn.title = 'Minimitza PowerToys';
         Object.assign(toggleBtn.style, {
             position: 'absolute',
             top: '5px',
@@ -58,14 +61,21 @@ export class ContainerUIBuilder {
         contentWrapper.className = 'powertoy-content-wrapper';
         contentWrapper.appendChild(contentElement);
 
+        const actualitzaEstatToggle = (expanded) => {
+            toggleBtn.textContent = expanded ? '−' : '+';
+            toggleBtn.setAttribute('aria-expanded', String(expanded));
+            toggleBtn.setAttribute('aria-label', expanded ? 'Minimitza PowerToys' : 'Expandeix PowerToys');
+            toggleBtn.title = expanded ? 'Minimitza PowerToys' : 'Expandeix PowerToys';
+        };
+
         toggleBtn.addEventListener('click', () => {
             const isHidden = contentWrapper.style.display === 'none';
             if (isHidden) {
                 contentWrapper.style.display = '';
-                toggleBtn.textContent = '−';
+                actualitzaEstatToggle(true);
             } else {
                 contentWrapper.style.display = 'none';
-                toggleBtn.textContent = '+';
+                actualitzaEstatToggle(false);
             }
         });
         

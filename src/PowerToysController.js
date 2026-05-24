@@ -50,7 +50,7 @@ export class PowerToysController {
         this.csvUIBuilder = new CSVUIBuilder(this.logger, (evaluation) => this.csvManager.procésDescàrregaCSV(evaluation), this.containerBuilder);
 
         this.lastStudent = '';
-        this.reinicialitzaTimeout = null;
+        this._formTimeout = null;
 
         const mainContainer = document.querySelector('#mainView') || document.body;
         this.observer = new MutationObserver(() => this.reinicialitza());
@@ -163,4 +163,3 @@ export class PowerToysController {
         this.cssApplier.aplicaEstils();
     }
 }
-

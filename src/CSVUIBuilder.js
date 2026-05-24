@@ -19,17 +19,13 @@ export class CSVUIBuilder {
      * Insereix automàticament el panell informatiu o actualitza la vista si s'està carregant la taula admesa.
      */
     injectHeaderButtonIfNeeded() {
-        var _a;
         const table = document.querySelector(
             'table[data-st-table="matriculaAlumneAva"]',
         );
 
         if (!table) return;
 
-        if (
-            ((_a = table.previousElementSibling) == null ? void 0 : _a.id) ===
-            "powertoys-info-box"
-        ) {
+        if (table.previousElementSibling?.id === "powertoys-info-box") {
             return;
         }
 

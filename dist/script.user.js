@@ -56,7 +56,7 @@
      */
     setDebug(value) {
       this.debug = value;
-      console.log("[PowerToys] Debug mode ".concat(value ? "activat" : "desactivat"));
+      console.log(`[PowerToys] Debug mode ${value ? "activat" : "desactivat"}`);
     }
   };
 
@@ -88,10 +88,7 @@
      * @returns {string[]} Llista de codis.
      */
     _extractCodis(files) {
-      return files.map((row) => {
-        var _a;
-        return (_a = row.querySelector("td:nth-child(1)")) == null ? void 0 : _a.textContent.trim().replace(/\s/g, "");
-      }).filter((codi) => codi);
+      return files.map((row) => row.querySelector("td:nth-child(1)")?.textContent.trim().replace(/\s/g, "")).filter((codi) => codi);
     }
     /**
      * Filtra els codis que són RAs.
@@ -130,12 +127,11 @@
      */
     _buildMateries(files, modules, ras) {
       return Array.from(modules).map((modulCodi) => {
-        var _a;
         const row = files.find((r) => {
           const cell = r.querySelector("td:nth-child(1)");
           return cell && cell.textContent.trim().replace(/\s/g, "") === modulCodi;
         });
-        const nom = ((_a = row == null ? void 0 : row.querySelector("td:nth-child(2)")) == null ? void 0 : _a.textContent.trim()) || "";
+        const nom = row?.querySelector("td:nth-child(2)")?.textContent.trim() || "";
         const raList = Array.from(ras).filter((ra) => ra.startsWith(modulCodi + "_"));
         return { codi: modulCodi, nom, RAs: raList };
       });
@@ -160,7 +156,11 @@
       this.logger.log("MateriaUIBuilder \u2192 inici");
       const tableWrapper = document.createElement("div");
       tableWrapper.className = "powertoy-table-wrapper";
-      tableWrapper.style.cssText = "\n            max-width: 100%;\n            overflow-x: auto;\n            -webkit-overflow-scrolling: touch;\n        ";
+      tableWrapper.style.cssText = `
+            max-width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        `;
       const table = document.createElement("table");
       table.classList.add("powertoy-table");
       table.style.cssText = "width: 98%; border-collapse: collapse; min-width: 320px;";
@@ -169,10 +169,10 @@
       if (!isDisabled) {
         console.log("materies" + materies);
         materies.forEach((m) => {
-          this.logger.log("MateriaUIBuilder \u2192 afegint fila per: ".concat(m.codi));
+          this.logger.log(`MateriaUIBuilder \u2192 afegint fila per: ${m.codi}`);
           const row = document.createElement("tr");
           const tdNom = document.createElement("td");
-          tdNom.textContent = "".concat(m.codi, " \u2014 ").concat(m.nom);
+          tdNom.textContent = `${m.codi} \u2014 ${m.nom}`;
           Object.assign(tdNom.style, {
             borderBottom: "1px solid #ddd",
             whiteSpace: "nowrap",
@@ -195,7 +195,7 @@
           btn.style.width = "max-content";
           btn.addEventListener("click", () => {
             const inputVal = input.value.trim();
-            this.logger.log("MateriaUIBuilder \u2192 clic Aplica per ".concat(m.codi, ", valor: ").concat(inputVal));
+            this.logger.log(`MateriaUIBuilder \u2192 clic Aplica per ${m.codi}, valor: ${inputVal}`);
             this.onApply(m, inputVal);
           });
           tdButton.appendChild(btn);
@@ -271,28 +271,28 @@
       }
       raCodiList.forEach((raCodi, index) => {
         const nota = valors[index];
-        const valorIntern = nota ? "string:".concat(nota) : "";
+        const valorIntern = nota ? `string:${nota}` : "";
         const td = Array.from(document.querySelectorAll("tr.alturallistat td:first-child")).find((td2) => td2.textContent.trim().replace(/\s/g, "") === raCodi);
         if (!td) {
-          this.logger.warn("MateriaApplier \u2192 no trobat td per RA: ".concat(raCodi));
+          this.logger.warn(`MateriaApplier \u2192 no trobat td per RA: ${raCodi}`);
           return;
         }
         const row = td.parentElement;
         const select = row.querySelector("select");
         if (!select) {
-          this.logger.warn("MateriaApplier \u2192 no trobat select per RA: ".concat(raCodi));
+          this.logger.warn(`MateriaApplier \u2192 no trobat select per RA: ${raCodi}`);
           return;
         }
         if (select.disabled) {
-          this.logger.warn("MateriaApplier \u2192 select desactivat per RA: ".concat(raCodi));
+          this.logger.warn(`MateriaApplier \u2192 select desactivat per RA: ${raCodi}`);
           return;
         }
         if (Array.from(select.options).map((opt) => opt.value).includes(valorIntern)) {
           select.value = valorIntern;
           select.dispatchEvent(new Event("change", { bubbles: true }));
-          this.logger.log("MateriaApplier \u2192 aplicat ".concat(valorIntern, " a ").concat(raCodi));
+          this.logger.log(`MateriaApplier \u2192 aplicat ${valorIntern} a ${raCodi}`);
         } else {
-          this.logger.warn("MateriaApplier \u2192 valor no v\xE0lid per ".concat(raCodi, ": ").concat(valorIntern));
+          this.logger.warn(`MateriaApplier \u2192 valor no v\xE0lid per ${raCodi}: ${valorIntern}`);
         }
       });
     }
@@ -318,9 +318,9 @@
         return;
       }
       const selector = "td.ng-binding.ng-scope";
-      const targetTd = Array.from(document.querySelectorAll(selector)).find((td) => td.textContent.includes("\xAC(".concat(materia.codi, ")")));
+      const targetTd = Array.from(document.querySelectorAll(selector)).find((td) => td.textContent.includes(`\xAC(${materia.codi})`));
       if (targetTd) {
-        this.logger.log("ScrollHelper \u2192 trobada fila visual per ".concat(materia.codi, ", fent scroll"));
+        this.logger.log(`ScrollHelper \u2192 trobada fila visual per ${materia.codi}, fent scroll`);
         targetTd.scrollIntoView({ behavior: "smooth", block: "start" });
         targetTd.style.transition = "background-color 0.5s ease";
         targetTd.style.backgroundColor = "#ffffcc";
@@ -328,7 +328,7 @@
           targetTd.style.backgroundColor = "";
         }, 1500);
       } else {
-        this.logger.warn("ScrollHelper \u2192 no s'ha trobat la fila visual per ".concat(materia.codi));
+        this.logger.warn(`ScrollHelper \u2192 no s'ha trobat la fila visual per ${materia.codi}`);
       }
     }
   };
@@ -346,7 +346,45 @@
       if (document.getElementById("powertoy-styles")) return;
       const style = document.createElement("style");
       style.id = "powertoy-styles";
-      style.textContent = "\n            .powertoy-pass { background-color: #d4edda !important; }\n            .powertoy-fail { background-color: #f8d7da !important; }\n            .powertoy-pendent { background-color: #d1ecf1 !important; }\n            .powertoy-proces { background-color: #fff3cd !important; }\n            .powertoy-pq { background-color: #d1ecf1 !important; }\n            .powertoy-pass select,\n            .powertoy-fail select,\n            .powertoy-pendent select,\n            .powertoy-proces select,\n            .powertoy-pq select {\n                background-color: inherit !important;\n            }\n\n            /* 1. For\xE7a l'al\xE7ada del fieldset relativa a l'al\xE7ada real de la finestra */\n            fieldset.col-md-12.bordure {\n                padding: 0 !important;\n                height: calc(100vh - 250px) !important;\n                max-height: calc(100vh - 190px) !important;\n                overflow-y: auto !important;\n                display: block !important;\n                box-sizing: border-box !important;\n            }\n\n            /* 2. Elimina l'al\xE7ada fixa injectada per JS i deixa que ocupi tot l'espai disponible */\n            fieldset.col-md-12.bordure .container-auto-resize {\n                height: auto !important;\n                max-height: none !important;\n                flex: 1 !important;\n                min-height: 0 !important;\n                overflow: visible !important;\n            }\n\n            /* 3. Assegura que la taula no generi desbordaments horitzontals que trenquin el layout */\n            fieldset.col-md-12.bordure table.grades-table {\n                min-width: 0 !important;\n                table-layout: fixed !important;\n            }\n        ";
+      style.textContent = `
+            .powertoy-pass { background-color: #d4edda !important; }
+            .powertoy-fail { background-color: #f8d7da !important; }
+            .powertoy-pendent { background-color: #d1ecf1 !important; }
+            .powertoy-proces { background-color: #fff3cd !important; }
+            .powertoy-pq { background-color: #d1ecf1 !important; }
+            .powertoy-pass select,
+            .powertoy-fail select,
+            .powertoy-pendent select,
+            .powertoy-proces select,
+            .powertoy-pq select {
+                background-color: inherit !important;
+            }
+
+            /* 1. For\xE7a l'al\xE7ada del fieldset relativa a l'al\xE7ada real de la finestra */
+            fieldset.col-md-12.bordure {
+                padding: 0 !important;
+                height: calc(100vh - 250px) !important;
+                max-height: calc(100vh - 190px) !important;
+                overflow-y: auto !important;
+                display: block !important;
+                box-sizing: border-box !important;
+            }
+
+            /* 2. Elimina l'al\xE7ada fixa injectada per JS i deixa que ocupi tot l'espai disponible */
+            fieldset.col-md-12.bordure .container-auto-resize {
+                height: auto !important;
+                max-height: none !important;
+                flex: 1 !important;
+                min-height: 0 !important;
+                overflow: visible !important;
+            }
+
+            /* 3. Assegura que la taula no generi desbordaments horitzontals que trenquin el layout */
+            fieldset.col-md-12.bordure table.grades-table {
+                min-width: 0 !important;
+                table-layout: fixed !important;
+            }
+        `;
       document.head.appendChild(style);
       this.logger.log("CSSApplier \u2192 estils injectats");
     }
@@ -370,7 +408,7 @@
         } else if (/A(10|[5-9])/.test(value)) {
           tr.classList.add("powertoy-pass");
         } else {
-          this.logger.warn("CSSApplier \u2192 valor desconegut: ".concat(value));
+          this.logger.warn(`CSSApplier \u2192 valor desconegut: ${value}`);
         }
       });
     }
@@ -390,35 +428,39 @@
      */
     async proc\u00E9sDesc\u00E0rregaCSV(evaluation = 1) {
       this.logger.log("CSVManager \u2192 proc\xE9sDesc\xE0rregaCSV inici");
+      const idGrup = this.extractIdGrup();
+      if (idGrup === null) {
+        this.logger.error("CSVManager \u2192 No s'ha pogut extreure idGrup");
+        return;
+      }
       var element = document.documentElement;
       var injector = window.angular ? window.angular.element(element).injector() : null;
       if (!injector) {
-        console.error(
-          "No s'ha pogut obtenir l'injector. Potser Angular no est\xE0 bootstrapat encara."
+        this.logger.error(
+          "CSVManager \u2192 No s'ha pogut obtenir l'injector. Potser Angular no est\xE0 bootstrapat encara."
         );
         return;
       }
       var factory = injector.get("newFinalAvaluacioGrupAlumneFactory");
-      const idGrup = this.extractIdGrup();
       var matricules = await this.extractIdMatricula(factory, idGrup);
-      const nomGrup = matricules[0].nomGrup;
       if (!matricules || matricules.length === 0) {
         this.logger.error("CSVManager \u2192 No hi ha matricules per recuperar");
         return;
       }
+      const nomGrup = matricules[0].nomGrup;
       try {
         const tasks = matricules.map(
           (alumne, idx) => () => new Promise(async (resolve) => {
             const idMat = alumne.idMatricula;
             if (!idMat || !idGrup) {
-              this.logger.warn("CSVManager \u2192 Alumne ".concat(alumne.nomComplet, " sense IDs \u2192 saltant"));
+              this.logger.warn(`CSVManager \u2192 Alumne ${alumne.nomComplet} sense IDs \u2192 saltant`);
               return resolve({ skipped: true, nom: alumne.nomComplet });
             }
             try {
-              this.logger.log("CSVManager \u2192 \u23F3 [".concat(idx + 1, "/").concat(matricules.length, "] Carregant ").concat(alumne.nomComplet, "..."));
+              this.logger.log(`CSVManager \u2192 \u23F3 [${idx + 1}/${matricules.length}] Carregant ${alumne.nomComplet}...`);
               const dadesAlumne = await this.fetchAvaluacioData(factory, idMat, idGrup);
               if (!dadesAlumne || !dadesAlumne.lContinguts) {
-                this.logger.warn("CSVManager \u2192 No s'han rebut dades per ".concat(alumne.nomComplet));
+                this.logger.warn(`CSVManager \u2192 No s'han rebut dades per ${alumne.nomComplet}`);
                 return resolve({ skipped: true, nom: alumne.nomComplet });
               }
               resolve({
@@ -430,7 +472,7 @@
                 avaluacions: dadesAlumne.lAvaluacions
               });
             } catch (err) {
-              this.logger.error("CSVManager \u2192 Error amb ".concat(alumne.nomComplet, ":"), err);
+              this.logger.error(`CSVManager \u2192 Error amb ${alumne.nomComplet}:`, err);
               resolve({ error: true, nom: alumne.nomComplet, err });
             }
           })
@@ -455,15 +497,30 @@
      */
     descarregaCSV(dadesAlumnes, evaluation, nomGrup) {
       const csvEscape = (val) => {
-        const str = String(val != null ? val : "");
-        return str.includes(",") || str.includes('"') || str.includes("\n") ? '"'.concat(str.replace(/"/g, '""'), '"') : str;
+        const str = String(val ?? "");
+        return str.includes(",") || str.includes('"') || str.includes("\n") ? `"${str.replace(/"/g, '""')}"` : str;
+      };
+      const getNotesAvaluacioSeleccionada = (alumne) => {
+        let idAvaluacio = null;
+        const targetCodi = `FINAL_${evaluation}`;
+        if (alumne.avaluacions && Array.isArray(alumne.avaluacions)) {
+          const ava = alumne.avaluacions.find((a) => a.codiExternAva === targetCodi);
+          if (ava) {
+            idAvaluacio = ava.id;
+          }
+        }
+        if (idAvaluacio && alumne.notes[idAvaluacio]) {
+          return alumne.notes[idAvaluacio];
+        }
+        const notesValues = Object.values(alumne.notes);
+        return notesValues.at(-2) || notesValues.at(-1) || [];
       };
       const alumnesValids = dadesAlumnes.filter((a) => a && a.notes);
       const moduls = /* @__PURE__ */ new Map();
       alumnesValids.forEach((alumne) => {
-        const lastVal = Object.values(alumne.notes).at(-1);
-        if (!lastVal || !Array.isArray(lastVal)) return;
-        lastVal.forEach((mod) => {
+        const notes = getNotesAvaluacioSeleccionada(alumne);
+        if (!notes || !Array.isArray(notes)) return;
+        notes.forEach((mod) => {
           if (!mod || !mod.codiExternContingut) return;
           if (!moduls.has(mod.codiExternContingut)) {
             moduls.set(mod.codiExternContingut, {
@@ -479,27 +536,14 @@
       modulsArray.forEach(([codi, info]) => {
         if (info.jerarquia == "2") {
           header1.push(csvEscape(info.nom));
-          header2.push(codi);
+          header2.push(csvEscape(codi));
         } else {
           header1.push("");
-          header2.push(codi);
+          header2.push(csvEscape(codi));
         }
       });
       const files = alumnesValids.map((alumne) => {
-        let idAvaluacio = null;
-        const targetCodi = "FINAL_".concat(evaluation);
-        if (alumne.avaluacions && Array.isArray(alumne.avaluacions)) {
-          const ava = alumne.avaluacions.find((a) => a.codiExternAva === targetCodi);
-          if (ava) {
-            idAvaluacio = ava.id;
-          }
-        }
-        let notes;
-        if (idAvaluacio && alumne.notes[idAvaluacio]) {
-          notes = alumne.notes[idAvaluacio];
-        } else {
-          notes = Object.values(alumne.notes).at(-2) || {};
-        }
+        const notes = getNotesAvaluacioSeleccionada(alumne);
         const fila = [csvEscape(alumne.idAlumne), csvEscape(alumne.nom)];
         modulsArray.forEach(([codi]) => {
           let modData = null;
@@ -518,7 +562,7 @@
             } else {
               fila.push("");
             }
-          } catch (e) {
+          } catch {
             fila.push("");
           }
         });
@@ -533,10 +577,10 @@
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = "Esfera_Notes_av_".concat(evaluation, "_").concat((/* @__PURE__ */ new Date()).toISOString().slice(0, 10), "_").concat(nomGrup, ".csv");
+      link.download = `Esfera_Notes_av_${evaluation}_${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}_${nomGrup}.csv`;
       link.click();
       URL.revokeObjectURL(url);
-      console.log("CSVManager \u2192 CSV descarregat correctament");
+      this.logger.log("CSVManager \u2192 CSV descarregat correctament");
     }
     /**
      * @param {Object} factory
@@ -544,9 +588,12 @@
      * @returns {Promise<Array|null>}
      */
     extractIdMatricula(factory, idGrup) {
-      console.error("inici idMatricula");
+      this.logger.log("CSVManager \u2192 inici idMatricula");
       var injector = window.angular ? window.angular.element(document.documentElement).injector() : null;
-      if (!injector) return console.error("CSVManager \u2192 Injector Angular no disponible");
+      if (!injector) {
+        this.logger.error("CSVManager \u2192 Injector Angular no disponible");
+        return Promise.resolve(null);
+      }
       var factoryGrup = injector.get("finalavaluaciogrupalumneFactory");
       return factoryGrup.getGrupClasseById(idGrup).then((resGrup) => {
         var fkGrup = resGrup.data.fkGrup;
@@ -555,7 +602,7 @@
         var matricules = resAlumnes.data.matriculesGrupDTOList;
         return matricules;
       }).catch((err) => {
-        console.error("CSVManager \u2192 Error obtenint el grup:", err);
+        this.logger.error("CSVManager \u2192 Error obtenint el grup:", err);
         return null;
       });
     }
@@ -577,8 +624,8 @@
       return factory.obtenirDadesGrupIAlumneFinal(idMat, idGrup).then(function(res) {
         var dadesAlumne = res.data.avaluacioGrupIAlumneWrapper;
         return dadesAlumne;
-      }).catch(function(err) {
-        console.error("CSVManager \u2192 ERROR EN LA PETICI\xD3:", err);
+      }).catch((err) => {
+        this.logger.error("CSVManager \u2192 ERROR EN LA PETICI\xD3:", err);
       });
     }
   };
@@ -645,20 +692,47 @@
      * Insereix automàticament el panell informatiu o actualitza la vista si s'està carregant la taula admesa.
      */
     injectHeaderButtonIfNeeded() {
-      var _a;
       const table = document.querySelector(
         'table[data-st-table="matriculaAlumneAva"]'
       );
       if (!table) return;
-      if (((_a = table.previousElementSibling) == null ? void 0 : _a.id) === "powertoys-info-box") {
+      if (table.previousElementSibling?.id === "powertoys-info-box") {
         return;
       }
       const contentDiv = document.createElement("div");
       let optionsHTML = "";
       for (let i = 1; i <= MAX_AVALUACIONS; i++) {
-        optionsHTML += '<option value="'.concat(i, '">Avaluaci\xF3 ').concat(i, "</option>");
+        optionsHTML += `<option value="${i}">Avaluaci\xF3 ${i}</option>`;
       }
-      contentDiv.innerHTML = '\n            <div>\n                <strong>PowerToys - Exportaci\xF3 CSV</strong><br>\n                <span style="font-size:0.9em">Selecciona l\'avaluaci\xF3 per descarregar les notes:</span>\n            <br>\n            <select id="powertoys-evaluation-select" style="\n                margin-top: 10px;\n                padding: 5px;\n                border-radius: 4px;\n                border: 1px solid #ccc;\n                font-family: sans-serif;\n            ">\n                '.concat(optionsHTML, '\n            </select>\n            <button id="btn-descargar-csv" style="\n                background-color: #22c55e;\n                color: white;\n                border: none;\n                border-radius: 6px;\n                padding: 8px 16px;\n                font-size: 14px;\n                font-weight: 500;\n                cursor: pointer;\n                align-self: flex-start;\n                margin-top: 10px;\n                transition: background 0.2s;\n            ">Descargar CSV</button>\n            </div>\n        ');
+      contentDiv.innerHTML = `
+            <div>
+                <strong>PowerToys - Exportaci\xF3 CSV</strong><br>
+                <span style="font-size:0.9em">Selecciona l'avaluaci\xF3 per descarregar les notes:</span>
+            <br>
+            <select id="powertoys-evaluation-select" style="
+                margin-top: 10px;
+                padding: 5px;
+                border-radius: 4px;
+                border: 1px solid #ccc;
+                font-family: sans-serif;
+            ">
+                ${optionsHTML}
+            </select>
+            <button id="btn-descargar-csv" style="
+                background-color: #22c55e;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                align-self: flex-start;
+                margin-top: 10px;
+                transition: background 0.2s;
+            ">Descargar CSV</button>
+            </div>
+        `;
       const container = this.containerBuilder.createContainer(contentDiv, "powertoys-info-box");
       this.containerBuilder.insertDiv(container, table);
       const btnCSV = document.getElementById("btn-descargar-csv");
@@ -690,7 +764,7 @@
      * @returns {HTMLElement} - El contenidor creat.
      */
     createContainer(contentElement, id = "powertoy-div") {
-      this.logger.log("ContainerUIBuilder \u2192 creant contenidor: ".concat(id));
+      this.logger.log(`ContainerUIBuilder \u2192 creant contenidor: ${id}`);
       const container = document.createElement("div");
       container.id = id;
       container.classList.add("powertoy-container");
@@ -704,10 +778,13 @@
         "max-height": "20em"
       });
       const toggleBtn = document.createElement("button");
-      toggleBtn.id = "".concat(id, "-toggle-btn");
+      toggleBtn.id = `${id}-toggle-btn`;
       toggleBtn.textContent = "\u2212";
       toggleBtn.type = "button";
       toggleBtn.className = "btn btn-secondary btn-sm";
+      toggleBtn.setAttribute("aria-label", "Minimitza PowerToys");
+      toggleBtn.setAttribute("aria-expanded", "true");
+      toggleBtn.title = "Minimitza PowerToys";
       Object.assign(toggleBtn.style, {
         position: "absolute",
         top: "5px",
@@ -724,20 +801,26 @@
       const contentWrapper = document.createElement("div");
       contentWrapper.className = "powertoy-content-wrapper";
       contentWrapper.appendChild(contentElement);
+      const actualitzaEstatToggle = (expanded) => {
+        toggleBtn.textContent = expanded ? "\u2212" : "+";
+        toggleBtn.setAttribute("aria-expanded", String(expanded));
+        toggleBtn.setAttribute("aria-label", expanded ? "Minimitza PowerToys" : "Expandeix PowerToys");
+        toggleBtn.title = expanded ? "Minimitza PowerToys" : "Expandeix PowerToys";
+      };
       toggleBtn.addEventListener("click", () => {
         const isHidden = contentWrapper.style.display === "none";
         if (isHidden) {
           contentWrapper.style.display = "";
-          toggleBtn.textContent = "\u2212";
+          actualitzaEstatToggle(true);
         } else {
           contentWrapper.style.display = "none";
-          toggleBtn.textContent = "+";
+          actualitzaEstatToggle(false);
         }
       });
       container.appendChild(toggleBtn);
       container.appendChild(contentWrapper);
       const versionDiv = document.createElement("div");
-      versionDiv.innerHTML = '<a href="https://github.com/ctrl-alt-d/EsferaPowerToys" target="_blank" style="text-decoration:none;">Esfer@ Power Toys</a> v. '.concat(this.version);
+      versionDiv.innerHTML = `<a href="https://github.com/ctrl-alt-d/EsferaPowerToys" target="_blank" style="text-decoration:none;">Esfer@ Power Toys</a> v. ${this.version}`;
       versionDiv.className = "powertoy-version";
       Object.assign(versionDiv.style, {
         textAlign: "right",
@@ -755,10 +838,10 @@
      * @param {HTMLElement} abansDe - Element previ on s'ha d'inserir el contenidor.
      */
     insertDiv(div, abansDe) {
-      this.logger.log("ContainerUIBuilder \u2192 intentant inserir div amb ID ".concat(div.id));
+      this.logger.log(`ContainerUIBuilder \u2192 intentant inserir div amb ID ${div.id}`);
       const existent = document.getElementById(div.id);
       if (existent) {
-        this.logger.log("ContainerUIBuilder \u2192 eliminant existent ".concat(div.id));
+        this.logger.log(`ContainerUIBuilder \u2192 eliminant existent ${div.id}`);
         existent.remove();
       }
       abansDe.parentElement.insertBefore(div, abansDe);
@@ -789,7 +872,7 @@
       this.csvManager = new CSVManager(this.logger);
       this.csvUIBuilder = new CSVUIBuilder(this.logger, (evaluation) => this.csvManager.proc\u00E9sDesc\u00E0rregaCSV(evaluation), this.containerBuilder);
       this.lastStudent = "";
-      this.reinicialitzaTimeout = null;
+      this._formTimeout = null;
       const mainContainer = document.querySelector("#mainView") || document.body;
       this.observer = new MutationObserver(() => this.reinicialitza());
       this.observer.observe(mainContainer, { childList: true, subtree: true });
@@ -807,13 +890,13 @@
      * @returns {void}
      */
     onApply(materia, inputVal) {
-      this.logger.log("PowerToysController \u2192 onApply per ".concat(materia.codi, ": ").concat(inputVal));
+      this.logger.log(`PowerToysController \u2192 onApply per ${materia.codi}: ${inputVal}`);
       const notes = this.applier.tradueixNotes(inputVal);
       if (notes && notes.length === materia.RAs.length) {
         this.applier.aplicaNotesARAs(materia.RAs, notes);
         this.scrollHelper.enfocaAssignatura(materia);
       } else {
-        alert("Error: les notes no s\xF3n v\xE0lides o no coincideixen amb el nombre de RAs (".concat(materia.RAs.length, ")."));
+        alert(`Error: les notes no s\xF3n v\xE0lides o no coincideixen amb el nombre de RAs (${materia.RAs.length}).`);
       }
     }
     /**
@@ -839,7 +922,7 @@
           return;
         }
         this.lastStudent = studentName;
-        this.logger.log("reinicialitza \u2192 processant alumne: ".concat(studentName));
+        this.logger.log(`reinicialitza \u2192 processant alumne: ${studentName}`);
         const materies = this.parser.parse(Array.from(files));
         const html = this.uiBuilder.createHTML(materies);
         this.containerBuilder.insertDiv(html, form);
@@ -850,7 +933,7 @@
      * @param {{ codi: string, nom: string, RAs: string[] }} materia - La matèria seleccionada.
      */
     posaPendentsRA(materia) {
-      this.logger.log("PDT al m\xF2dul ".concat(materia.codi));
+      this.logger.log(`PDT al m\xF2dul ${materia.codi}`);
       const rows = document.querySelectorAll("tr.alturallistat");
       rows.forEach((row) => {
         const tdCodi = row.querySelector("td:first-child");
