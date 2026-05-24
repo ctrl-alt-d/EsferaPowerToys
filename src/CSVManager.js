@@ -27,7 +27,7 @@ export class CSVManager {
         var injector = window.angular ? window.angular.element(element).injector() : null;
 
         if (!injector) {
-            console.error(
+            this.logger.error(
                 "No s'ha pogut obtenir l'injector. Potser Angular no està bootstrapat encara.",
             );
             return;
