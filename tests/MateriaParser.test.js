@@ -1,5 +1,5 @@
 import { JSDOM } from 'jsdom';
-import { MateriaParser } from '../src/MateriaParser.js';
+import { MateriaParser } from '../src/materia/MateriaParser.js';
 import { PowerToysLogger } from '../src/PowerToysLogger.js';
 
 describe('MateriaParser', () => {
