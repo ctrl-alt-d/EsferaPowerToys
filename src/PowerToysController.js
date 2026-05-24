@@ -1,12 +1,14 @@
 import { PowerToysLogger } from './PowerToysLogger.js';
-import { MateriaParser } from './MateriaParser.js';
-import { MateriaUIBuilder } from './MateriaUIBuilder.js';
-import { MateriaApplier } from './MateriaApplier.js';
+import { MateriaParser } from './materia/MateriaParser.js';
+import { MateriaUIBuilder } from './materia/MateriaUIBuilder.js';
+import { MateriaApplier } from './materia/MateriaApplier.js';
 import { ScrollHelper } from './ScrollHelper.js';
 import { version } from '../build/version.js';
 import { CSSApplier } from './CSSApplier.js';
-import { CSVManager } from './CSVManager.js';
-import { CSVUIBuilder } from './CSVUIBuilder.js';
+import { ExcelExportDataProvider } from './excel/ExcelExportDataProvider.js';
+import { ExcelExportManager } from './excel/ExcelExportManager.js';
+import { ExcelUIBuilder } from './excel/ExcelUIBuilder.js';
+import { ExcelNotesWorkbookBuilder } from './excel/ExcelNotesWorkbookBuilder.js';
 import { ContainerUIBuilder } from './ContainerUIBuilder.js';
 /**
  * Classe principal que coordina les funcionalitats d'Esfer@ PowerToys.
@@ -43,11 +45,15 @@ export class PowerToysController {
         /** @type {CSSApplier} */
         this.cssApplier = new CSSApplier(this.logger);
 
-        /** @type {CSVManager} */
-        this.csvManager = new CSVManager(this.logger);
+        /** @type {ExcelExportManager} */
+        this.excelExportManager = new ExcelExportManager(
+            this.logger,
+            new ExcelExportDataProvider(this.logger),
+            new ExcelNotesWorkbookBuilder(),
+        );
 
-        /** @type {CSVUIBuilder} */
-        this.csvUIBuilder = new CSVUIBuilder(this.logger, (evaluation) => this.csvManager.procésDescàrregaCSV(evaluation), this.containerBuilder);
+        /** @type {ExcelUIBuilder} */
+        this.excelUIBuilder = new ExcelUIBuilder(this.logger, (evaluation) => this.excelExportManager.procésDescàrregaExcel(evaluation), this.containerBuilder);
 
         this.lastStudent = '';
         this._formTimeout = null;
@@ -94,7 +100,7 @@ export class PowerToysController {
         this.cssApplier.aplicaEstils();
 
         // 1️⃣ Gestiona la taula (ara s'executa a cada mutació fins que trobi la taula)
-        this.csvUIBuilder.injectHeaderButtonIfNeeded();
+        this.excelUIBuilder.injectHeaderButtonIfNeeded();
 
         // 2️⃣ Gestiona el formulari (el teu codi original)
         clearTimeout(this._formTimeout);

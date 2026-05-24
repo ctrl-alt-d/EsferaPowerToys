@@ -23763,7 +23763,7 @@
     }
   };
 
-  // src/MateriaParser.js
+  // src/materia/MateriaParser.js
   var MateriaParser = class {
     /**
      * Constructor del parser.
@@ -23841,13 +23841,13 @@
     }
   };
 
-  // src/MateriaUIBuilder.js
+  // src/materia/MateriaUIBuilder.js
   var MateriaUIBuilder = class {
     /**
      * @param {PowerToysLogger} logger - Instància del logger.
      * @param {function} onApply - Callback per aplicar notes (materia, inputVal).
      * @param {function} onPosaPendents - Callback per posar pendents les RA buides (materia).
-     * @param {import('./ContainerUIBuilder.js').ContainerUIBuilder} containerBuilder - Constructor base del contenidor.
+     * @param {import('../ContainerUIBuilder.js').ContainerUIBuilder} containerBuilder - Constructor base del contenidor.
      */
     constructor(logger, onApply, onPosaPendents, containerBuilder) {
       this.logger = logger;
@@ -23922,7 +23922,7 @@
     }
   };
 
-  // src/MateriaApplier.js
+  // src/materia/MateriaApplier.js
   var MateriaApplier = class {
     /**
      * Constructor de l’applier.
@@ -24117,91 +24117,207 @@
     }
   };
 
-  // src/CSVManager.js
-  var import_exceljs = __toESM(require_exceljs_min(), 1);
-  var CSVManager = class {
+  // src/excel/ExcelExportDataProvider.js
+  var ExcelExportDataProvider = class {
     /**
-     * @param {import('./PowerToysLogger.js').PowerToysLogger} logger
+     * @param {import('../PowerToysLogger.js').PowerToysLogger} logger
      */
     constructor(logger) {
       this.logger = logger;
     }
     /**
-     * Inicia i coordina el procés de descàrrega
-     * @returns {Promise<void>}
+     * Obté totes les dades necessàries per exportar les notes del grup actual.
+     * @returns {Promise<{notesAlumnes: Array<Object>, nomGrup: string}|null>}
      */
-    async proc\u00E9sDesc\u00E0rregaCSV(evaluation = 1) {
-      this.logger.log("CSVManager \u2192 proc\xE9sDesc\xE0rregaXLSX inici");
+    async obt\u00E9DadesExportaci\u00F3() {
       const idGrup = this.extractIdGrup();
       if (idGrup === null) {
-        this.logger.error("CSVManager \u2192 No s'ha pogut extreure idGrup");
-        return;
+        this.logger.error("ExcelExportDataProvider \u2192 No s'ha pogut extreure idGrup");
+        return null;
       }
-      var element = document.documentElement;
-      var injector = window.angular ? window.angular.element(element).injector() : null;
+      const injector = this.obt\u00E9InjectorAngular();
       if (!injector) {
         this.logger.error(
-          "CSVManager \u2192 No s'ha pogut obtenir l'injector. Potser Angular no est\xE0 bootstrapat encara."
+          "ExcelExportDataProvider \u2192 No s'ha pogut obtenir l'injector. Potser Angular no est\xE0 bootstrapat encara."
         );
-        return;
+        return null;
       }
-      var factory = injector.get("newFinalAvaluacioGrupAlumneFactory");
-      var matricules = await this.extractIdMatricula(factory, idGrup);
+      const factory = injector.get("newFinalAvaluacioGrupAlumneFactory");
+      const matricules = await this.extractIdMatricula(factory, idGrup, injector);
       if (!matricules || matricules.length === 0) {
-        this.logger.error("CSVManager \u2192 No hi ha matricules per recuperar");
-        return;
+        this.logger.error("ExcelExportDataProvider \u2192 No hi ha matricules per recuperar");
+        return null;
       }
-      const nomGrup = matricules[0].nomGrup;
+      const tasks = matricules.map((alumne, idx) => () => this.obt\u00E9DadesAlumne(factory, alumne, idx, matricules.length, idGrup));
+      const notesAlumnes = await this.executeQueue(tasks, {
+        concurrency: 1,
+        limit: Infinity,
+        interval: 500
+      });
+      return {
+        notesAlumnes,
+        nomGrup: matricules[0].nomGrup
+      };
+    }
+    /**
+     * Obté l'injector Angular de la pàgina d'Esfer@ si està disponible.
+     */
+    obt\u00E9InjectorAngular() {
+      const element = document.documentElement;
+      return window.angular ? window.angular.element(element).injector() : null;
+    }
+    /**
+     * Obté les dades d'avaluació d'un alumne i les adapta al format del constructor Excel.
+     */
+    async obt\u00E9DadesAlumne(factory, alumne, idx, total, idGrup) {
+      const idMat = alumne.idMatricula;
+      if (!idMat || !idGrup) {
+        this.logger.warn(`ExcelExportDataProvider \u2192 Alumne ${alumne.nomComplet} sense IDs \u2192 saltant`);
+        return { skipped: true, nom: alumne.nomComplet };
+      }
       try {
-        const tasks = matricules.map(
-          (alumne, idx) => () => new Promise(async (resolve) => {
-            const idMat = alumne.idMatricula;
-            if (!idMat || !idGrup) {
-              this.logger.warn(`CSVManager \u2192 Alumne ${alumne.nomComplet} sense IDs \u2192 saltant`);
-              return resolve({ skipped: true, nom: alumne.nomComplet });
-            }
-            try {
-              this.logger.log(`CSVManager \u2192 \u23F3 [${idx + 1}/${matricules.length}] Carregant ${alumne.nomComplet}...`);
-              const dadesAlumne = await this.fetchAvaluacioData(factory, idMat, idGrup);
-              if (!dadesAlumne || !dadesAlumne.lContinguts) {
-                this.logger.warn(`CSVManager \u2192 No s'han rebut dades per ${alumne.nomComplet}`);
-                return resolve({ skipped: true, nom: alumne.nomComplet });
-              }
-              resolve({
-                success: true,
-                idAlumne: alumne.identificadorAlumne,
-                idMatricula: idMat,
-                nom: alumne.nomComplet,
-                notes: dadesAlumne.lContinguts,
-                avaluacions: dadesAlumne.lAvaluacions
-              });
-            } catch (err) {
-              this.logger.error(`CSVManager \u2192 Error amb ${alumne.nomComplet}:`, err);
-              resolve({ error: true, nom: alumne.nomComplet, err });
-            }
-          })
-        );
-        const config = {
-          concurrency: 1,
-          // maxim peticions alhora
-          limit: Infinity,
-          // Màxim de peticions per interval
-          interval: 500
-          // Interval entre peticions en ms (1000 = 1 segon)
+        this.logger.log(`ExcelExportDataProvider \u2192 \u23F3 [${idx + 1}/${total}] Carregant ${alumne.nomComplet}...`);
+        const dadesAlumne = await this.fetchAvaluacioData(factory, idMat, idGrup);
+        if (!dadesAlumne || !dadesAlumne.lContinguts) {
+          this.logger.warn(`ExcelExportDataProvider \u2192 No s'han rebut dades per ${alumne.nomComplet}`);
+          return { skipped: true, nom: alumne.nomComplet };
+        }
+        return {
+          success: true,
+          idAlumne: alumne.identificadorAlumne,
+          idMatricula: idMat,
+          nom: alumne.nomComplet,
+          notes: dadesAlumne.lContinguts,
+          avaluacions: dadesAlumne.lAvaluacions
         };
-        const notesAlumnes = await executeQueue(tasks, config);
-        await this.descarregaXLSX(notesAlumnes, evaluation, nomGrup);
-      } catch (error) {
-        this.logger.error("Error cr\xEDtic al CSVManager:", error);
+      } catch (err) {
+        this.logger.error(`ExcelExportDataProvider \u2192 Error amb ${alumne.nomComplet}:`, err);
+        return { error: true, nom: alumne.nomComplet, err };
       }
     }
     /**
-     * Genera i descarrega un XLSX amb totes les notes del grup
+     * @param {Object} factory
+     * @param {number} idGrup
+     * @param {Object} injector
+     * @returns {Promise<Array|null>}
+     */
+    extractIdMatricula(factory, idGrup, injector = this.obt\u00E9InjectorAngular()) {
+      this.logger.log("ExcelExportDataProvider \u2192 inici idMatricula");
+      if (!injector) {
+        this.logger.error("ExcelExportDataProvider \u2192 Injector Angular no disponible");
+        return Promise.resolve(null);
+      }
+      const factoryGrup = injector.get("finalavaluaciogrupalumneFactory");
+      return factoryGrup.getGrupClasseById(idGrup).then((resGrup) => {
+        const fkGrup = resGrup.data.fkGrup;
+        return factory.getAlumnesGrupById(fkGrup);
+      }).then((resAlumnes) => resAlumnes.data.matriculesGrupDTOList).catch((err) => {
+        this.logger.error("ExcelExportDataProvider \u2192 Error obtenint el grup:", err);
+        return null;
+      });
+    }
+    /**
+     * @returns {number|null}
+     */
+    extractIdGrup() {
+      const urlGrup = new URL(window.location.href).href;
+      const grup = urlGrup.replace(/\/+$/, "").split("/").pop().match(/\d+/);
+      return grup ? parseInt(grup[0], 10) : null;
+    }
+    /**
+     * @param {Object} factory
+     * @param {string|number} idMat
+     * @param {number} idGrup
+     * @returns {Promise<object>}
+     */
+    async fetchAvaluacioData(factory, idMat, idGrup) {
+      return factory.obtenirDadesGrupIAlumneFinal(idMat, idGrup).then(function(res) {
+        return res.data.avaluacioGrupIAlumneWrapper;
+      }).catch((err) => {
+        this.logger.error("ExcelExportDataProvider \u2192 ERROR EN LA PETICI\xD3:", err);
+      });
+    }
+    /**
+     * Executa peticions asíncrones controlant concurrència i interval.
+     */
+    async executeQueue(tasks, { concurrency = Infinity, limit = Infinity, interval = 0 } = {}) {
+      const results = new Array(tasks.length);
+      const queue = tasks.map((task, index) => ({ task, index }));
+      let activeCount = 0;
+      let launchedInInterval = 0;
+      let lastIntervalStart = Date.now();
+      return new Promise((resolve) => {
+        const next = async () => {
+          if (queue.length === 0 && activeCount === 0) {
+            return resolve(results);
+          }
+          const now = Date.now();
+          if (interval > 0 && now - lastIntervalStart >= interval) {
+            launchedInInterval = 0;
+            lastIntervalStart = now;
+          }
+          while (queue.length > 0) {
+            if (activeCount >= concurrency) break;
+            if (interval > 0 && launchedInInterval >= limit) {
+              const delay = interval - (Date.now() - lastIntervalStart);
+              setTimeout(next, Math.max(0, delay));
+              return;
+            }
+            const { task, index } = queue.shift();
+            activeCount++;
+            launchedInInterval++;
+            (async (i) => {
+              try {
+                results[i] = await task();
+              } catch (err) {
+                results[i] = err;
+              } finally {
+                activeCount--;
+                next();
+              }
+            })(index);
+          }
+        };
+        next();
+      });
+    }
+  };
+
+  // src/excel/ExcelExportManager.js
+  var ExcelExportManager = class {
+    /**
+     * @param {import('../PowerToysLogger.js').PowerToysLogger} logger
+     * @param {import('./ExcelExportDataProvider.js').ExcelExportDataProvider} dataProvider
+     * @param {import('./ExcelNotesWorkbookBuilder.js').ExcelNotesWorkbookBuilder} workbookBuilder
+     */
+    constructor(logger, dataProvider, workbookBuilder) {
+      this.logger = logger;
+      this.dataProvider = dataProvider;
+      this.workbookBuilder = workbookBuilder;
+    }
+    /**
+     * Inicia i coordina el procés de descàrrega del fitxer Excel.
+     * @returns {Promise<void>}
+     */
+    async proc\u00E9sDesc\u00E0rregaExcel(evaluation = 1) {
+      this.logger.log("ExcelExportManager \u2192 proc\xE9sDesc\xE0rregaExcel inici");
+      try {
+        const dadesExportaci\u00F3 = await this.dataProvider.obt\u00E9DadesExportaci\u00F3();
+        if (!dadesExportaci\u00F3) return;
+        await this.descarregaXLSX(dadesExportaci\u00F3.notesAlumnes, evaluation, dadesExportaci\u00F3.nomGrup);
+      } catch (error) {
+        this.logger.error("Error cr\xEDtic a ExcelExportManager:", error);
+      }
+    }
+    /**
+     * Genera i descarrega un XLSX amb totes les notes del grup.
      * @param {Array<Object>} dadesAlumnes
+     * @param {number} evaluation
+     * @param {string} nomGrup
      * @returns {Promise<void>}
      */
     async descarregaXLSX(dadesAlumnes, evaluation, nomGrup) {
-      const workbook = this.construeixWorkbookNotes(dadesAlumnes, evaluation);
+      const workbook = this.workbookBuilder.construeixWorkbookNotes(dadesAlumnes, evaluation);
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
       const url = URL.createObjectURL(blob);
@@ -24210,19 +24326,89 @@
       link.download = `Esfera_Notes_av_${evaluation}_${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}_${nomGrup}.xlsx`;
       link.click();
       URL.revokeObjectURL(url);
-      this.logger.log("CSVManager \u2192 XLSX descarregat correctament");
+      this.logger.log("ExcelExportManager \u2192 XLSX descarregat correctament");
+    }
+  };
+
+  // src/excel/ExcelUIBuilder.js
+  var ExcelUIBuilder = class {
+    /**
+     * @param {import('../PowerToysLogger.js').PowerToysLogger} logger
+     * @param {function} onDownload Callback activat a l'apretar el botó d'Excel
+     * @param {import('../ContainerUIBuilder.js').ContainerUIBuilder} containerBuilder - Constructor base del contenidor.
+     */
+    constructor(logger, onDownload, containerBuilder) {
+      this.logger = logger;
+      this.onDownload = onDownload;
+      this.containerBuilder = containerBuilder;
+      this.maxAvaluacions = 3;
     }
     /**
-     * Manté compatibilitat amb crides antigues del gestor CSV.
-     * @param {Array<Object>} dadesAlumnes
-     * @returns {Promise<void>}
+     * Insereix automàticament el panell informatiu o actualitza la vista si s'està carregant la taula admesa.
      */
-    descarregaCSV(dadesAlumnes, evaluation, nomGrup) {
-      return this.descarregaXLSX(dadesAlumnes, evaluation, nomGrup);
+    injectHeaderButtonIfNeeded() {
+      const table = document.querySelector(
+        'table[data-st-table="matriculaAlumneAva"]'
+      );
+      if (!table) return;
+      if (table.previousElementSibling?.id === "powertoys-info-box") {
+        return;
+      }
+      const contentDiv = document.createElement("div");
+      let optionsHTML = "";
+      for (let i = 1; i <= this.maxAvaluacions; i++) {
+        optionsHTML += `<option value="${i}">Avaluaci\xF3 ${i}</option>`;
+      }
+      contentDiv.innerHTML = `
+            <div>
+                <strong>PowerToys - Exportaci\xF3 Excel</strong><br>
+                <span style="font-size:0.9em">Selecciona l'avaluaci\xF3 per descarregar les notes:</span>
+            <br>
+            <select id="powertoys-evaluation-select" style="
+                margin-top: 10px;
+                padding: 5px;
+                border-radius: 4px;
+                border: 1px solid #ccc;
+                font-family: sans-serif;
+            ">
+                ${optionsHTML}
+            </select>
+            <button id="btn-descargar-xlsx" style="
+                background-color: #22c55e;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                align-self: flex-start;
+                margin-top: 10px;
+                transition: background 0.2s;
+            ">Descarregar Excel</button>
+            </div>
+        `;
+      const container = this.containerBuilder.createContainer(contentDiv, "powertoys-info-box");
+      this.containerBuilder.insertDiv(container, table);
+      const btnExcel = document.getElementById("btn-descargar-xlsx");
+      const selectAvaluacio = document.getElementById("powertoys-evaluation-select");
+      if (btnExcel) {
+        btnExcel.addEventListener("click", () => {
+          const evaluation = selectAvaluacio ? parseInt(selectAvaluacio.value, 10) : 1;
+          this.onDownload(evaluation);
+        });
+      }
+      this.logger.log("ExcelUIBuilder \u2192 div inserit correctament");
     }
+  };
+
+  // src/excel/ExcelNotesWorkbookBuilder.js
+  var import_exceljs = __toESM(require_exceljs_min(), 1);
+  var ExcelNotesWorkbookBuilder = class {
     /**
      * Construeix el llibre Excel amb capçaleres, dades i estils.
      * @param {Array<Object>} dadesAlumnes
+     * @param {number} evaluation
      * @returns {ExcelJS.Workbook}
      */
     construeixWorkbookNotes(dadesAlumnes, evaluation) {
@@ -24429,169 +24615,6 @@
       }
       return false;
     }
-    /**
-     * @param {Object} factory
-     * @param {number} idGrup
-     * @returns {Promise<Array|null>}
-     */
-    extractIdMatricula(factory, idGrup) {
-      this.logger.log("CSVManager \u2192 inici idMatricula");
-      var injector = window.angular ? window.angular.element(document.documentElement).injector() : null;
-      if (!injector) {
-        this.logger.error("CSVManager \u2192 Injector Angular no disponible");
-        return Promise.resolve(null);
-      }
-      var factoryGrup = injector.get("finalavaluaciogrupalumneFactory");
-      return factoryGrup.getGrupClasseById(idGrup).then((resGrup) => {
-        var fkGrup = resGrup.data.fkGrup;
-        return factory.getAlumnesGrupById(fkGrup);
-      }).then((resAlumnes) => {
-        var matricules = resAlumnes.data.matriculesGrupDTOList;
-        return matricules;
-      }).catch((err) => {
-        this.logger.error("CSVManager \u2192 Error obtenint el grup:", err);
-        return null;
-      });
-    }
-    /**
-     * @returns {number|null}
-     */
-    extractIdGrup() {
-      const url_grup = new URL(window.location.href).href;
-      const grup = url_grup.replace(/\/+$/, "").split("/").pop().match(/\d+/);
-      return grup ? parseInt(grup[0], 10) : null;
-    }
-    /**
-     * @param {Object} factory
-     * @param {string|number} idMat
-     * @param {number} idGrup
-     * @returns {Promise<object>}
-     */
-    async fetchAvaluacioData(factory, idMat, idGrup) {
-      return factory.obtenirDadesGrupIAlumneFinal(idMat, idGrup).then(function(res) {
-        var dadesAlumne = res.data.avaluacioGrupIAlumneWrapper;
-        return dadesAlumne;
-      }).catch((err) => {
-        this.logger.error("CSVManager \u2192 ERROR EN LA PETICI\xD3:", err);
-      });
-    }
-  };
-  async function executeQueue(tasks, {
-    concurrency = Infinity,
-    limit = Infinity,
-    interval = 0
-  } = {}) {
-    const results = new Array(tasks.length);
-    const queue = tasks.map((task, index) => ({ task, index }));
-    let activeCount = 0;
-    let launchedInInterval = 0;
-    let lastIntervalStart = Date.now();
-    return new Promise((resolve) => {
-      const next = async () => {
-        if (queue.length === 0 && activeCount === 0) {
-          return resolve(results);
-        }
-        const now = Date.now();
-        if (interval > 0 && now - lastIntervalStart >= interval) {
-          launchedInInterval = 0;
-          lastIntervalStart = now;
-        }
-        while (queue.length > 0) {
-          if (activeCount >= concurrency) break;
-          if (interval > 0 && launchedInInterval >= limit) {
-            const delay = interval - (Date.now() - lastIntervalStart);
-            setTimeout(next, Math.max(0, delay));
-            return;
-          }
-          const { task, index } = queue.shift();
-          activeCount++;
-          launchedInInterval++;
-          (async (i) => {
-            try {
-              results[i] = await task();
-            } catch (err) {
-              results[i] = err;
-            } finally {
-              activeCount--;
-              next();
-            }
-          })(index);
-        }
-      };
-      next();
-    });
-  }
-
-  // src/CSVUIBuilder.js
-  var MAX_AVALUACIONS = 3;
-  var CSVUIBuilder = class {
-    /**
-     * @param {import('./PowerToysLogger.js').PowerToysLogger} logger
-     * @param {function} onDownload Callback activat a l'apretar el botó d'Excel
-     * @param {import('./ContainerUIBuilder.js').ContainerUIBuilder} containerBuilder - Constructor base del contenidor.
-     */
-    constructor(logger, onDownload, containerBuilder) {
-      this.logger = logger;
-      this.onDownload = onDownload;
-      this.containerBuilder = containerBuilder;
-    }
-    /**
-     * Insereix automàticament el panell informatiu o actualitza la vista si s'està carregant la taula admesa.
-     */
-    injectHeaderButtonIfNeeded() {
-      const table = document.querySelector(
-        'table[data-st-table="matriculaAlumneAva"]'
-      );
-      if (!table) return;
-      if (table.previousElementSibling?.id === "powertoys-info-box") {
-        return;
-      }
-      const contentDiv = document.createElement("div");
-      let optionsHTML = "";
-      for (let i = 1; i <= MAX_AVALUACIONS; i++) {
-        optionsHTML += `<option value="${i}">Avaluaci\xF3 ${i}</option>`;
-      }
-      contentDiv.innerHTML = `
-            <div>
-                <strong>PowerToys - Exportaci\xF3 Excel</strong><br>
-                <span style="font-size:0.9em">Selecciona l'avaluaci\xF3 per descarregar les notes:</span>
-            <br>
-            <select id="powertoys-evaluation-select" style="
-                margin-top: 10px;
-                padding: 5px;
-                border-radius: 4px;
-                border: 1px solid #ccc;
-                font-family: sans-serif;
-            ">
-                ${optionsHTML}
-            </select>
-            <button id="btn-descargar-xlsx" style="
-                background-color: #22c55e;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 8px 16px;
-                font-size: 14px;
-                font-weight: 500;
-                cursor: pointer;
-                align-self: flex-start;
-                margin-top: 10px;
-                transition: background 0.2s;
-            ">Descarregar Excel</button>
-            </div>
-        `;
-      const container = this.containerBuilder.createContainer(contentDiv, "powertoys-info-box");
-      this.containerBuilder.insertDiv(container, table);
-      const btnCSV = document.getElementById("btn-descargar-xlsx");
-      const selectAvaluacio = document.getElementById("powertoys-evaluation-select");
-      if (btnCSV) {
-        btnCSV.addEventListener("click", () => {
-          const evaluation = selectAvaluacio ? parseInt(selectAvaluacio.value, 10) : 1;
-          this.onDownload(evaluation);
-        });
-      }
-      this.logger.log("CSVUIBuilder \u2192 div inserit correctament");
-    }
   };
 
   // src/ContainerUIBuilder.js
@@ -24716,8 +24739,12 @@
         this.containerBuilder
       );
       this.cssApplier = new CSSApplier(this.logger);
-      this.csvManager = new CSVManager(this.logger);
-      this.csvUIBuilder = new CSVUIBuilder(this.logger, (evaluation) => this.csvManager.proc\u00E9sDesc\u00E0rregaCSV(evaluation), this.containerBuilder);
+      this.excelExportManager = new ExcelExportManager(
+        this.logger,
+        new ExcelExportDataProvider(this.logger),
+        new ExcelNotesWorkbookBuilder()
+      );
+      this.excelUIBuilder = new ExcelUIBuilder(this.logger, (evaluation) => this.excelExportManager.proc\u00E9sDesc\u00E0rregaExcel(evaluation), this.containerBuilder);
       this.lastStudent = "";
       this._formTimeout = null;
       const mainContainer = document.querySelector("#mainView") || document.body;
@@ -24753,7 +24780,7 @@
     reinicialitza() {
       this.logger.log("reinicialitza \u2192 inici");
       this.cssApplier.aplicaEstils();
-      this.csvUIBuilder.injectHeaderButtonIfNeeded();
+      this.excelUIBuilder.injectHeaderButtonIfNeeded();
       clearTimeout(this._formTimeout);
       this._formTimeout = setTimeout(() => {
         const form = document.querySelector('form[name="grupAlumne"]');

@@ -1,6 +1,6 @@
 import { jest, describe, test, expect, beforeEach, afterEach } from '@jest/globals';
 import { JSDOM } from 'jsdom';
-import { MateriaUIBuilder } from '../src/MateriaUIBuilder.js';
+import { MateriaUIBuilder } from '../src/materia/MateriaUIBuilder.js';
 import { ContainerUIBuilder } from '../src/ContainerUIBuilder.js';
 import { PowerToysLogger } from '../src/PowerToysLogger.js';
 

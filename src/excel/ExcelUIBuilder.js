@@ -1,18 +1,17 @@
 /**
- * Classe per a la creació i gestió del panell d'ajustes de PowerToys, incloent l'accés a descàrrega de dades d'avaluació en Excel.
+ * Classe per a la creació i gestió del panell de descàrrega de notes en Excel.
  */
-export const MAX_AVALUACIONS = 3;
-
-export class CSVUIBuilder {
+export class ExcelUIBuilder {
     /**
-     * @param {import('./PowerToysLogger.js').PowerToysLogger} logger
+     * @param {import('../PowerToysLogger.js').PowerToysLogger} logger
      * @param {function} onDownload Callback activat a l'apretar el botó d'Excel
-     * @param {import('./ContainerUIBuilder.js').ContainerUIBuilder} containerBuilder - Constructor base del contenidor.
+     * @param {import('../ContainerUIBuilder.js').ContainerUIBuilder} containerBuilder - Constructor base del contenidor.
      */
     constructor(logger, onDownload, containerBuilder) {
         this.logger = logger;
         this.onDownload = onDownload;
         this.containerBuilder = containerBuilder;
+        this.maxAvaluacions = 3;
     }
 
     /**
@@ -25,13 +24,13 @@ export class CSVUIBuilder {
 
         if (!table) return;
 
-        if (table.previousElementSibling?.id === "powertoys-info-box") {
+        if (table.previousElementSibling?.id === 'powertoys-info-box') {
             return;
         }
 
-        const contentDiv = document.createElement("div");
+        const contentDiv = document.createElement('div');
         let optionsHTML = '';
-        for (let i = 1; i <= MAX_AVALUACIONS; i++) {
+        for (let i = 1; i <= this.maxAvaluacions; i++) {
             optionsHTML += `<option value="${i}">Avaluació ${i}</option>`;
         }
 
@@ -64,19 +63,19 @@ export class CSVUIBuilder {
             ">Descarregar Excel</button>
             </div>
         `;
-        
-        const container = this.containerBuilder.createContainer(contentDiv, "powertoys-info-box");
+
+        const container = this.containerBuilder.createContainer(contentDiv, 'powertoys-info-box');
         this.containerBuilder.insertDiv(container, table);
 
-        const btnCSV = document.getElementById("btn-descargar-xlsx");
-        const selectAvaluacio = document.getElementById("powertoys-evaluation-select");
-        if (btnCSV) {
-            btnCSV.addEventListener("click", () => {
+        const btnExcel = document.getElementById('btn-descargar-xlsx');
+        const selectAvaluacio = document.getElementById('powertoys-evaluation-select');
+        if (btnExcel) {
+            btnExcel.addEventListener('click', () => {
                 const evaluation = selectAvaluacio ? parseInt(selectAvaluacio.value, 10) : 1;
                 this.onDownload(evaluation);
             });
         }
 
-        this.logger.log("CSVUIBuilder → div inserit correctament");
+        this.logger.log('ExcelUIBuilder → div inserit correctament');
     }
 }

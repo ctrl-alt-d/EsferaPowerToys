@@ -1,14 +1,8 @@
-import { jest, describe, test, expect, beforeEach, afterEach } from '@jest/globals';
-import { JSDOM } from 'jsdom';
-import { CSVManager } from '../src/CSVManager.js';
-import { PowerToysLogger } from '../src/PowerToysLogger.js';
+import { describe, test, expect, beforeEach } from '@jest/globals';
+import { ExcelNotesWorkbookBuilder } from '../src/excel/ExcelNotesWorkbookBuilder.js';
 
-describe('CSVManager', () => {
-    let dom;
-    let manager;
-    let originalBlob;
-    let originalUrl;
-    let clickedDownload;
+describe('ExcelNotesWorkbookBuilder', () => {
+    let builder;
 
     const creaDadesAlumnes = () => ([
         {
@@ -34,53 +28,12 @@ describe('CSVManager', () => {
     ]);
 
     const creaWorksheet = (dadesAlumnes = creaDadesAlumnes(), evaluation = 1) => {
-        const workbook = manager.construeixWorkbookNotes(dadesAlumnes, evaluation);
+        const workbook = builder.construeixWorkbookNotes(dadesAlumnes, evaluation);
         return workbook.getWorksheet('Notes');
     };
 
     beforeEach(() => {
-        dom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
-        global.document = dom.window.document;
-        global.window = dom.window;
-
-        originalBlob = global.Blob;
-        originalUrl = global.URL;
-        clickedDownload = null;
-
-        global.Blob = jest.fn(function (parts, options) {
-            this.parts = parts;
-            this.options = options;
-        });
-        global.URL = {
-            createObjectURL: jest.fn(() => 'blob:test'),
-            revokeObjectURL: jest.fn(),
-        };
-
-        jest.spyOn(dom.window.HTMLAnchorElement.prototype, 'click').mockImplementation(function () {
-            clickedDownload = this.download;
-        });
-
-        manager = new CSVManager(new PowerToysLogger(false));
-    });
-
-    afterEach(() => {
-        jest.restoreAllMocks();
-        global.Blob = originalBlob;
-        global.URL = originalUrl;
-        delete global.document;
-        delete global.window;
-    });
-
-    test('hauria de descarregar un fitxer XLSX amb el tipus Blob correcte', async () => {
-        await manager.descarregaXLSX(creaDadesAlumnes(), 1, 'Grup Test');
-
-        expect(global.Blob).toHaveBeenCalledWith(
-            [expect.any(Object)],
-            { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
-        );
-        expect(clickedDownload).toMatch(/^Esfera_Notes_av_1_\d{4}-\d{2}-\d{2}_Grup Test\.xlsx$/);
-        expect(global.URL.createObjectURL).toHaveBeenCalledWith(expect.any(global.Blob));
-        expect(global.URL.revokeObjectURL).toHaveBeenCalledWith('blob:test');
+        builder = new ExcelNotesWorkbookBuilder();
     });
 
     test('hauria de congelar les dues primeres files i columnes', () => {

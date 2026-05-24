@@ -8,7 +8,7 @@ export class MateriaUIBuilder {
      * @param {PowerToysLogger} logger - Instància del logger.
      * @param {function} onApply - Callback per aplicar notes (materia, inputVal).
      * @param {function} onPosaPendents - Callback per posar pendents les RA buides (materia).
-     * @param {import('./ContainerUIBuilder.js').ContainerUIBuilder} containerBuilder - Constructor base del contenidor.
+     * @param {import('../ContainerUIBuilder.js').ContainerUIBuilder} containerBuilder - Constructor base del contenidor.
      */
     constructor(logger, onApply, onPosaPendents, containerBuilder) {
         this.logger = logger;
