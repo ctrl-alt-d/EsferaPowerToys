@@ -451,7 +451,7 @@
     }
     /**
      * Genera i descarrega un CSV amb totes les notes del grup
-     * @param {Array<Object>} dadesAlumnes 
+     * @param {Array<Object>} dadesAlumnes
      */
     descarregaCSV(dadesAlumnes, evaluation, nomGrup) {
       const csvEscape = (val) => {
@@ -513,6 +513,8 @@
               } else {
                 fila.push(csvEscape(modData.qualitativa));
               }
+            } else if (modData && modData.jerarquia == 2 && modData.quantitativa) {
+              fila.push(modData.quantitativa);
             } else {
               fila.push("");
             }
@@ -537,8 +539,8 @@
       console.log("CSVManager \u2192 CSV descarregat correctament");
     }
     /**
-     * @param {Object} factory 
-     * @param {number} idGrup 
+     * @param {Object} factory
+     * @param {number} idGrup
      * @returns {Promise<Array|null>}
      */
     extractIdMatricula(factory, idGrup) {
@@ -566,9 +568,9 @@
       return grup ? parseInt(grup[0], 10) : null;
     }
     /**
-     * @param {Object} factory 
-     * @param {string|number} idMat 
-     * @param {number} idGrup 
+     * @param {Object} factory
+     * @param {string|number} idMat
+     * @param {number} idGrup
      * @returns {Promise<object>}
      */
     async fetchAvaluacioData(factory, idMat, idGrup) {

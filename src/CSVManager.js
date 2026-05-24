@@ -94,7 +94,7 @@ export class CSVManager {
 
     /**
      * Genera i descarrega un CSV amb totes les notes del grup
-     * @param {Array<Object>} dadesAlumnes 
+     * @param {Array<Object>} dadesAlumnes
      */
     descarregaCSV(dadesAlumnes, evaluation, nomGrup) {
         // 1. FUNCIÓ AUXILIAR: Escapar valors per a CSV
@@ -174,7 +174,10 @@ export class CSVManager {
                         } else {
                             fila.push(csvEscape(modData.qualitativa));
                         }
-                    } else {
+                    } else if(modData && modData.jerarquia == 2 && modData.quantitativa) {
+                        fila.push(modData.quantitativa);
+                    }
+                    else{
                         fila.push("");
                     }
                 } catch {
@@ -203,8 +206,8 @@ export class CSVManager {
     }
 
     /**
-     * @param {Object} factory 
-     * @param {number} idGrup 
+     * @param {Object} factory
+     * @param {number} idGrup
      * @returns {Promise<Array|null>}
      */
     extractIdMatricula(factory, idGrup) {
@@ -240,9 +243,9 @@ export class CSVManager {
     }
 
     /**
-     * @param {Object} factory 
-     * @param {string|number} idMat 
-     * @param {number} idGrup 
+     * @param {Object} factory
+     * @param {string|number} idMat
+     * @param {number} idGrup
      * @returns {Promise<object>}
      */
     async fetchAvaluacioData(factory, idMat, idGrup) {
