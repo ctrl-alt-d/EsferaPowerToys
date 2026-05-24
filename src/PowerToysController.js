@@ -7,6 +7,7 @@ import { version } from '../build/version.js';
 import { CSSApplier } from './CSSApplier.js';
 import { CSVManager } from './CSVManager.js';
 import { CSVUIBuilder } from './CSVUIBuilder.js';
+import { ContainerUIBuilder } from './ContainerUIBuilder.js';
 /**
  * Classe principal que coordina les funcionalitats d'Esfer@ PowerToys.
  */
@@ -28,12 +29,15 @@ export class PowerToysController {
         /** @type {ScrollHelper} */
         this.scrollHelper = new ScrollHelper(this.logger);
 
+        /** @type {ContainerUIBuilder} */
+        this.containerBuilder = new ContainerUIBuilder(this.logger, version);
+
         /** @type {MateriaUIBuilder} */
         this.uiBuilder = new MateriaUIBuilder(
             this.logger,
             (materia, inputVal) => this.onApply(materia, inputVal),
             (materia) => this.posaPendentsRA(materia),
-            version
+            this.containerBuilder
         );
 
         /** @type {CSSApplier} */
@@ -43,7 +47,7 @@ export class PowerToysController {
         this.csvManager = new CSVManager(this.logger);
 
         /** @type {CSVUIBuilder} */
-        this.csvUIBuilder = new CSVUIBuilder(this.logger, () => this.csvManager.procésDescàrregaCSV());
+        this.csvUIBuilder = new CSVUIBuilder(this.logger, (evaluation) => this.csvManager.procésDescàrregaCSV(evaluation), this.containerBuilder);
 
         this.lastStudent = '';
         this.reinicialitzaTimeout = null;
@@ -113,7 +117,7 @@ export class PowerToysController {
             this.logger.log(`reinicialitza → processant alumne: ${studentName}`);
             const materies = this.parser.parse(Array.from(files));
             const html = this.uiBuilder.createHTML(materies);
-            this.uiBuilder.insertDiv(html, form);
+            this.containerBuilder.insertDiv(html, form);
         }, 100);
     }
 

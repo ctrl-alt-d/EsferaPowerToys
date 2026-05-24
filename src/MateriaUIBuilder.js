@@ -8,51 +8,17 @@ export class MateriaUIBuilder {
      * @param {PowerToysLogger} logger - Instància del logger.
      * @param {function} onApply - Callback per aplicar notes (materia, inputVal).
      * @param {function} onPosaPendents - Callback per posar pendents les RA buides (materia).
-     * @param {string} version - Versió de l'script.
+     * @param {import('./ContainerUIBuilder.js').ContainerUIBuilder} containerBuilder - Constructor base del contenidor.
      */
-    constructor(logger, onApply, onPosaPendents, version = '') {
+    constructor(logger, onApply, onPosaPendents, containerBuilder) {
         this.logger = logger;
         this.onApply = onApply;
         this.onPosaPendents = onPosaPendents;
-        this.version = version;
+        this.containerBuilder = containerBuilder;
     }
 
     createHTML(materies) {
         this.logger.log('MateriaUIBuilder → inici');
-        const container = document.createElement('div');
-        container.id = 'powertoy-div';
-        container.classList.add('powertoy-container');
-        Object.assign(container.style, {
-            marginBottom: '20px',
-            padding: '30px 10px 10px 10px',
-            border: '1px solid #ccc',
-            backgroundColor: '#f9f9f9',
-            position: 'relative',
-            overflow: 'auto',
-            'max-height': '20em'
-        });
-
-        // Botó per comprimir/expandir
-        const toggleBtn = document.createElement('button');
-        toggleBtn.id = 'powertoy-toggle-btn';
-        toggleBtn.textContent = '−';
-        toggleBtn.type = 'button';
-        toggleBtn.className = 'btn btn-secondary btn-sm';
-        Object.assign(toggleBtn.style, {
-            position: 'absolute',
-            top: '5px',
-            right: '5px',
-            width: '32px',
-            height: '32px',
-            borderRadius: '50%',
-            padding: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            lineHeight: '1'
-        });
-        toggleBtn.addEventListener('click', () => this.toggleContainer());
-        container.appendChild(toggleBtn);
 
         // Contenidor responsive per la taula
         const tableWrapper = document.createElement('div');
@@ -130,61 +96,8 @@ export class MateriaUIBuilder {
         }
 
         tableWrapper.appendChild(table);
-        container.appendChild(tableWrapper);
 
-        const versionDiv = document.createElement('div');
-        versionDiv.innerHTML = `<a href="https://github.com/ctrl-alt-d/EsferaPowerToys" target="_blank" style="text-decoration:none;">Esfer@ Power Toys</a> v. ${this.version}`;
-        versionDiv.className = 'powertoy-version';
-        Object.assign(versionDiv.style, {
-            textAlign: 'right',
-            fontSize: '0.8em',
-            marginTop: '8px',
-            color: '#666'
-        });
-        container.appendChild(versionDiv);
-
-        this.logger.log('MateriaUIBuilder → container creat');
-        return container;
-    }
-
-    insertDiv(div, abansDe) {
-        this.logger.log('MateriaUIBuilder → intentant inserir div');
-        const existent = document.getElementById('powertoy-div');
-        if (existent) {
-            this.logger.log('MateriaUIBuilder → eliminant existent');
-            existent.remove();
-        }
-        abansDe.parentElement.insertBefore(div, abansDe);
-        this.logger.log('MateriaUIBuilder → div inserit');
-
-        window.dispatchEvent(new Event('resize'));
-
-    }
-
-    /**
-     * Torna comprimeix/expandeix l'interfície de PowerToys.
-     * Accedeix al container actual per l'id.
-     */
-    toggleContainer() {
-        const container = document.getElementById('powertoy-div');
-        if (!container) return;
-
-        const tableWrapper = container.querySelector('.powertoy-table').closest('div');
-        const versionDiv = container.querySelector('.powertoy-version');
-        const toggleBtn = container.querySelector('#powertoy-toggle-btn');
-
-        if (tableWrapper && toggleBtn) {
-
-            const isHidden = tableWrapper.style.display === 'none';
-            if (isHidden) {
-                tableWrapper.style.display = '';
-                versionDiv.style.marginTop = '8px';
-                toggleBtn.textContent = '−';
-            } else {
-                tableWrapper.style.display = 'none';
-                versionDiv.style.marginTop = '8px';
-                toggleBtn.textContent = '+';
-            }
-        }
+        this.logger.log('MateriaUIBuilder → component creat');
+        return this.containerBuilder.createContainer(tableWrapper, 'powertoy-div');
     }
 }

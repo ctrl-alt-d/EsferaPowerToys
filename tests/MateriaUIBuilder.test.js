@@ -1,12 +1,14 @@
 import { jest, describe, test, expect, beforeEach, afterEach } from '@jest/globals';
 import { JSDOM } from 'jsdom';
 import { MateriaUIBuilder } from '../src/MateriaUIBuilder.js';
+import { ContainerUIBuilder } from '../src/ContainerUIBuilder.js';
 import { PowerToysLogger } from '../src/PowerToysLogger.js';
 
 describe('MateriaUIBuilder', () => {
     let logger;
     let onApply;
     let onPosaPendents;
+    let containerBuilder;
     let builder;
     let dom;
 
@@ -19,7 +21,8 @@ describe('MateriaUIBuilder', () => {
         logger = new PowerToysLogger(false);
         onApply = jest.fn();
         onPosaPendents = jest.fn();
-        builder = new MateriaUIBuilder(logger, onApply, onPosaPendents, '1.0.0');
+        containerBuilder = new ContainerUIBuilder(logger, '1.0.0');
+        builder = new MateriaUIBuilder(logger, onApply, onPosaPendents, containerBuilder);
 
         dom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
         global.document = dom.window.document;
@@ -97,14 +100,14 @@ describe('MateriaUIBuilder', () => {
 
     test('hauria de tenir un botó de toggle amb id powertoy-toggle-btn', () => {
         const container = builder.createHTML(materies);
-        const toggleBtn = container.querySelector('#powertoy-toggle-btn');
+        const toggleBtn = container.querySelector('#powertoy-div-toggle-btn');
         expect(toggleBtn).not.toBeNull();
         expect(toggleBtn.textContent).toBe('−');
     });
 
     test('hauria de tenir un botó de toggle amb classe btn btn-secondary btn-sm', () => {
         const container = builder.createHTML(materies);
-        const toggleBtn = container.querySelector('#powertoy-toggle-btn');
+        const toggleBtn = container.querySelector('#powertoy-div-toggle-btn');
         expect(toggleBtn.className).toBe('btn btn-secondary btn-sm');
     });
 
@@ -126,57 +129,54 @@ describe('MateriaUIBuilder', () => {
         expect(container.style.position).toBe('relative');
     });
 
-    test('toggleContainer hauria d\'ocultar la taula i canviar el botó a +', () => {
+    test('toggle button hauria d\'ocultar la taula i canviar el text a +', () => {
         const container = builder.createHTML(materies);
         const body = dom.window.document.body;
         body.appendChild(container); // Inserir al DOM perquè getElementById funcioni
-        const toggleBtn = container.querySelector('#powertoy-toggle-btn');
-        const tableWrapper = container.querySelector('div[style*="overflow-x"]');
-        const table = tableWrapper ? tableWrapper.querySelector('.powertoy-table') : container.querySelector('.powertoy-table');
+        const toggleBtn = container.querySelector('#powertoy-div-toggle-btn');
+        const contentWrapper = container.querySelector('.powertoy-content-wrapper');
 
         // Estat inicial: visible
-        expect(tableWrapper.style.display).toBe('');
+        expect(contentWrapper.style.display).toBe('');
         expect(toggleBtn.textContent).toBe('−');
 
         // Clic per comprimir
-        builder.toggleContainer();
-        expect(tableWrapper.style.display).toBe('none');
+        toggleBtn.click();
+        expect(contentWrapper.style.display).toBe('none');
         expect(toggleBtn.textContent).toBe('+');
     });
 
-    test('toggleContainer hauria de mostrar la taula de nou si ja està oculta', () => {
+    test('toggle button hauria de mostrar la taula de nou si ja està oculta', () => {
         const container = builder.createHTML(materies);
         const body = dom.window.document.body;
         body.appendChild(container); // Inserir al DOM perquè getElementById funcioni
-        const toggleBtn = container.querySelector('#powertoy-toggle-btn');
-        const tableWrapper = container.querySelector('div[style*="overflow-x"]');
-        const table = tableWrapper ? tableWrapper.querySelector('.powertoy-table') : container.querySelector('.powertoy-table');
+        const toggleBtn = container.querySelector('#powertoy-div-toggle-btn');
+        const contentWrapper = container.querySelector('.powertoy-content-wrapper');
 
         // Primera vegada: comprimir
-        builder.toggleContainer();
-        expect(tableWrapper.style.display).toBe('none');
+        toggleBtn.click();
+        expect(contentWrapper.style.display).toBe('none');
 
         // Segona vegada: expandir
-        builder.toggleContainer();
-        expect(tableWrapper.style.display).toBe('');
+        toggleBtn.click();
+        expect(contentWrapper.style.display).toBe('');
         expect(toggleBtn.textContent).toBe('−');
     });
 
-    test('toggleContainer hauria d\'accedir al container mitjançant id', () => {
+    test('toggle button hauria d\'accedir al container mitjançant interacció', () => {
         const container = builder.createHTML(materies);
         const body = dom.window.document.body;
         body.appendChild(container); // Inserir al DOM
 
-        const toggleBtn = container.querySelector('#powertoy-toggle-btn');
-        const tableWrapper = container.querySelector('div[style*="overflow-x"]');
-        const table = tableWrapper ? tableWrapper.querySelector('.powertoy-table') : container.querySelector('.powertoy-table');
+        const toggleBtn = container.querySelector('#powertoy-div-toggle-btn');
+        const contentWrapper = container.querySelector('.powertoy-content-wrapper');
 
         // Comprimir
-        builder.toggleContainer();
-        expect(tableWrapper.style.display).toBe('none');
+        toggleBtn.click();
+        expect(contentWrapper.style.display).toBe('none');
 
         // Expandir
-        builder.toggleContainer();
-        expect(tableWrapper.style.display).toBe('');
+        toggleBtn.click();
+        expect(contentWrapper.style.display).toBe('');
     });
 });

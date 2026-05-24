@@ -148,48 +148,16 @@
      * @param {PowerToysLogger} logger - Instància del logger.
      * @param {function} onApply - Callback per aplicar notes (materia, inputVal).
      * @param {function} onPosaPendents - Callback per posar pendents les RA buides (materia).
-     * @param {string} version - Versió de l'script.
+     * @param {import('./ContainerUIBuilder.js').ContainerUIBuilder} containerBuilder - Constructor base del contenidor.
      */
-    constructor(logger, onApply, onPosaPendents, version2 = "") {
+    constructor(logger, onApply, onPosaPendents, containerBuilder) {
       this.logger = logger;
       this.onApply = onApply;
       this.onPosaPendents = onPosaPendents;
-      this.version = version2;
+      this.containerBuilder = containerBuilder;
     }
     createHTML(materies) {
       this.logger.log("MateriaUIBuilder \u2192 inici");
-      const container = document.createElement("div");
-      container.id = "powertoy-div";
-      container.classList.add("powertoy-container");
-      Object.assign(container.style, {
-        marginBottom: "20px",
-        padding: "30px 10px 10px 10px",
-        border: "1px solid #ccc",
-        backgroundColor: "#f9f9f9",
-        position: "relative",
-        overflow: "auto",
-        "max-height": "20em"
-      });
-      const toggleBtn = document.createElement("button");
-      toggleBtn.id = "powertoy-toggle-btn";
-      toggleBtn.textContent = "\u2212";
-      toggleBtn.type = "button";
-      toggleBtn.className = "btn btn-secondary btn-sm";
-      Object.assign(toggleBtn.style, {
-        position: "absolute",
-        top: "5px",
-        right: "5px",
-        width: "32px",
-        height: "32px",
-        borderRadius: "50%",
-        padding: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        lineHeight: "1"
-      });
-      toggleBtn.addEventListener("click", () => this.toggleContainer());
-      container.appendChild(toggleBtn);
       const tableWrapper = document.createElement("div");
       tableWrapper.className = "powertoy-table-wrapper";
       tableWrapper.style.cssText = "\n            max-width: 100%;\n            overflow-x: auto;\n            -webkit-overflow-scrolling: touch;\n        ";
@@ -246,53 +214,8 @@
         });
       }
       tableWrapper.appendChild(table);
-      container.appendChild(tableWrapper);
-      const versionDiv = document.createElement("div");
-      versionDiv.innerHTML = '<a href="https://github.com/ctrl-alt-d/EsferaPowerToys" target="_blank" style="text-decoration:none;">Esfer@ Power Toys</a> v. '.concat(this.version);
-      versionDiv.className = "powertoy-version";
-      Object.assign(versionDiv.style, {
-        textAlign: "right",
-        fontSize: "0.8em",
-        marginTop: "8px",
-        color: "#666"
-      });
-      container.appendChild(versionDiv);
-      this.logger.log("MateriaUIBuilder \u2192 container creat");
-      return container;
-    }
-    insertDiv(div, abansDe) {
-      this.logger.log("MateriaUIBuilder \u2192 intentant inserir div");
-      const existent = document.getElementById("powertoy-div");
-      if (existent) {
-        this.logger.log("MateriaUIBuilder \u2192 eliminant existent");
-        existent.remove();
-      }
-      abansDe.parentElement.insertBefore(div, abansDe);
-      this.logger.log("MateriaUIBuilder \u2192 div inserit");
-      window.dispatchEvent(new Event("resize"));
-    }
-    /**
-     * Torna comprimeix/expandeix l'interfície de PowerToys.
-     * Accedeix al container actual per l'id.
-     */
-    toggleContainer() {
-      const container = document.getElementById("powertoy-div");
-      if (!container) return;
-      const tableWrapper = container.querySelector(".powertoy-table").closest("div");
-      const versionDiv = container.querySelector(".powertoy-version");
-      const toggleBtn = container.querySelector("#powertoy-toggle-btn");
-      if (tableWrapper && toggleBtn) {
-        const isHidden = tableWrapper.style.display === "none";
-        if (isHidden) {
-          tableWrapper.style.display = "";
-          versionDiv.style.marginTop = "8px";
-          toggleBtn.textContent = "\u2212";
-        } else {
-          tableWrapper.style.display = "none";
-          versionDiv.style.marginTop = "8px";
-          toggleBtn.textContent = "+";
-        }
-      }
+      this.logger.log("MateriaUIBuilder \u2192 component creat");
+      return this.containerBuilder.createContainer(tableWrapper, "powertoy-div");
     }
   };
 
@@ -465,20 +388,20 @@
      * Inicia i coordina el procés de descàrrega
      * @returns {Promise<void>}
      */
-    async proc\u00E9sDesc\u00E0rregaCSV() {
+    async proc\u00E9sDesc\u00E0rregaCSV(evaluation = 1) {
       this.logger.log("CSVManager \u2192 proc\xE9sDesc\xE0rregaCSV inici");
       var element = document.documentElement;
       var injector = window.angular ? window.angular.element(element).injector() : null;
       if (!injector) {
         console.error(
-          "\u274C No s'ha pogut obtenir l'injector. Potser Angular no est\xE0 bootstrapat encara."
+          "No s'ha pogut obtenir l'injector. Potser Angular no est\xE0 bootstrapat encara."
         );
         return;
       }
       var factory = injector.get("newFinalAvaluacioGrupAlumneFactory");
       const idGrup = this.extractIdGrup();
       var matricules = await this.extractIdMatricula(factory, idGrup);
-      console.log("\u{1F4E6} MATRICULES:", matricules);
+      const nomGrup = matricules[0].nomGrup;
       if (!matricules || matricules.length === 0) {
         this.logger.error("CSVManager \u2192 No hi ha matricules per recuperar");
         return;
@@ -488,14 +411,14 @@
           (alumne, idx) => () => new Promise(async (resolve) => {
             const idMat = alumne.idMatricula;
             if (!idMat || !idGrup) {
-              this.logger.warn("CSVManager \u2192 \u26A0\uFE0F Alumne ".concat(alumne.nomComplet, " sense IDs \u2192 saltant"));
+              this.logger.warn("CSVManager \u2192 Alumne ".concat(alumne.nomComplet, " sense IDs \u2192 saltant"));
               return resolve({ skipped: true, nom: alumne.nomComplet });
             }
             try {
               this.logger.log("CSVManager \u2192 \u23F3 [".concat(idx + 1, "/").concat(matricules.length, "] Carregant ").concat(alumne.nomComplet, "..."));
               const dadesAlumne = await this.fetchAvaluacioData(factory, idMat, idGrup);
               if (!dadesAlumne || !dadesAlumne.lContinguts) {
-                this.logger.warn("CSVManager \u2192 \u26A0\uFE0F No s'han rebut dades per ".concat(alumne.nomComplet));
+                this.logger.warn("CSVManager \u2192 No s'han rebut dades per ".concat(alumne.nomComplet));
                 return resolve({ skipped: true, nom: alumne.nomComplet });
               }
               resolve({
@@ -503,10 +426,11 @@
                 idAlumne: alumne.identificadorAlumne,
                 idMatricula: idMat,
                 nom: alumne.nomComplet,
-                notes: dadesAlumne.lContinguts
+                notes: dadesAlumne.lContinguts,
+                avaluacions: dadesAlumne.lAvaluacions
               });
             } catch (err) {
-              this.logger.error("CSVManager \u2192 \u274C Error amb ".concat(alumne.nomComplet, ":"), err);
+              this.logger.error("CSVManager \u2192 Error amb ".concat(alumne.nomComplet, ":"), err);
               resolve({ error: true, nom: alumne.nomComplet, err });
             }
           })
@@ -519,27 +443,27 @@
           interval: 500
           // Interval entre peticions en ms (1000 = 1 segon)
         };
-        console.log("\u{1F680} Iniciant cua amb config:", config);
         const notesAlumnes = await executeQueue(tasks, config);
-        console.log(notesAlumnes);
-        this.descarregaCSV(notesAlumnes);
+        this.descarregaCSV(notesAlumnes, evaluation, nomGrup);
       } catch (error) {
-        this.logger.error("\u274C Error cr\xEDtic al CSVManager:", error);
+        this.logger.error("Error cr\xEDtic al CSVManager:", error);
       }
     }
     /**
      * Genera i descarrega un CSV amb totes les notes del grup
      * @param {Array<Object>} dadesAlumnes 
      */
-    descarregaCSV(dadesAlumnes) {
+    descarregaCSV(dadesAlumnes, evaluation, nomGrup) {
       const csvEscape = (val) => {
         const str = String(val != null ? val : "");
         return str.includes(",") || str.includes('"') || str.includes("\n") ? '"'.concat(str.replace(/"/g, '""'), '"') : str;
       };
+      const alumnesValids = dadesAlumnes.filter((a) => a && a.notes);
       const moduls = /* @__PURE__ */ new Map();
-      dadesAlumnes.forEach((alumne) => {
-        if (!alumne.notes) return;
-        Object.values(alumne.notes).at(-1).forEach((mod) => {
+      alumnesValids.forEach((alumne) => {
+        const lastVal = Object.values(alumne.notes).at(-1);
+        if (!lastVal || !Array.isArray(lastVal)) return;
+        lastVal.forEach((mod) => {
           if (!mod || !mod.codiExternContingut) return;
           if (!moduls.has(mod.codiExternContingut)) {
             moduls.set(mod.codiExternContingut, {
@@ -561,18 +485,36 @@
           header2.push(codi);
         }
       });
-      const files = dadesAlumnes.map((alumne) => {
-        const notes = Object.values(alumne.notes).at(-2) || {};
+      const files = alumnesValids.map((alumne) => {
+        let idAvaluacio = null;
+        const targetCodi = "FINAL_".concat(evaluation);
+        if (alumne.avaluacions && Array.isArray(alumne.avaluacions)) {
+          const ava = alumne.avaluacions.find((a) => a.codiExternAva === targetCodi);
+          if (ava) {
+            idAvaluacio = ava.id;
+          }
+        }
+        let notes;
+        if (idAvaluacio && alumne.notes[idAvaluacio]) {
+          notes = alumne.notes[idAvaluacio];
+        } else {
+          notes = Object.values(alumne.notes).at(-2) || {};
+        }
         const fila = [csvEscape(alumne.idAlumne), csvEscape(alumne.nom)];
-        console.log(notes);
         modulsArray.forEach(([codi]) => {
-          const modData = notes.filter((m) => m.codiExternContingut == codi) || {};
-          console.log(modData);
+          let modData = null;
+          if (Array.isArray(notes)) {
+            modData = notes.find((m) => m.codiExternContingut == codi);
+          }
           try {
-            if (/^A\d{1,2}$/.test(modData[0].qualitativa)) {
-              fila.push(csvEscape(modData[0].qualitativa.replace(/\D/g, "")));
+            if (modData && modData.qualitativa) {
+              if (/^A\d{1,2}$/.test(modData.qualitativa)) {
+                fila.push(csvEscape(modData.qualitativa.replace(/\D/g, "")));
+              } else {
+                fila.push(csvEscape(modData.qualitativa));
+              }
             } else {
-              fila.push(csvEscape(modData[0].qualitativa));
+              fila.push("");
             }
           } catch (e) {
             fila.push("");
@@ -589,10 +531,10 @@
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = "Esfera_Notes_".concat((/* @__PURE__ */ new Date()).toISOString().slice(0, 10), ".csv");
+      link.download = "Esfera_Notes_av_".concat(evaluation, "_").concat((/* @__PURE__ */ new Date()).toISOString().slice(0, 10), "_").concat(nomGrup, ".csv");
       link.click();
       URL.revokeObjectURL(url);
-      console.log("CSVManager \u2192 \u2705 CSV descarregat correctament");
+      console.log("CSVManager \u2192 CSV descarregat correctament");
     }
     /**
      * @param {Object} factory 
@@ -602,7 +544,7 @@
     extractIdMatricula(factory, idGrup) {
       console.error("inici idMatricula");
       var injector = window.angular ? window.angular.element(document.documentElement).injector() : null;
-      if (!injector) return console.error("CSVManager \u2192 \u274C Injector Angular no disponible");
+      if (!injector) return console.error("CSVManager \u2192 Injector Angular no disponible");
       var factoryGrup = injector.get("finalavaluaciogrupalumneFactory");
       return factoryGrup.getGrupClasseById(idGrup).then((resGrup) => {
         var fkGrup = resGrup.data.fkGrup;
@@ -611,7 +553,7 @@
         var matricules = resAlumnes.data.matriculesGrupDTOList;
         return matricules;
       }).catch((err) => {
-        console.error("CSVManager \u2192 \u274C Error obtenint el grup:", err);
+        console.error("CSVManager \u2192 Error obtenint el grup:", err);
         return null;
       });
     }
@@ -634,7 +576,7 @@
         var dadesAlumne = res.data.avaluacioGrupIAlumneWrapper;
         return dadesAlumne;
       }).catch(function(err) {
-        console.error("CSVManager \u2192 \u274C ERROR EN LA PETICI\xD3:", err);
+        console.error("CSVManager \u2192 ERROR EN LA PETICI\xD3:", err);
       });
     }
   };
@@ -685,14 +627,17 @@
   }
 
   // src/CSVUIBuilder.js
+  var MAX_AVALUACIONS = 3;
   var CSVUIBuilder = class {
     /**
      * @param {import('./PowerToysLogger.js').PowerToysLogger} logger
      * @param {function} onDownload Callback activat a l'apretar el botó de CSV
+     * @param {import('./ContainerUIBuilder.js').ContainerUIBuilder} containerBuilder - Constructor base del contenidor.
      */
-    constructor(logger, onDownload) {
+    constructor(logger, onDownload, containerBuilder) {
       this.logger = logger;
       this.onDownload = onDownload;
+      this.containerBuilder = containerBuilder;
     }
     /**
      * Insereix automàticament el panell informatiu o actualitza la vista si s'està carregant la taula admesa.
@@ -706,18 +651,117 @@
       if (((_a = table.previousElementSibling) == null ? void 0 : _a.id) === "powertoys-info-box") {
         return;
       }
-      const div = document.createElement("div");
-      div.id = "powertoys-info-box";
-      div.style.cssText = "\n            width: 400px;\n            height: 200px;\n            background-color: yellow;\n            border: 2px solid #333;\n            border-radius: 8px;\n            padding: 10px;\n            margin-bottom: 15px;\n            box-sizing: border-box;\n            font-family: sans-serif;\n        ";
-      div.innerHTML = '\n            <div>\n                <strong>PowerToys</strong><br>\n                <span style="font-size:0.9em">Contingut de prova...</span>\n            <button id="btn-descargar-csv" style="\n                background-color: #22c55e;\n                color: white;\n                border: none;\n                border-radius: 6px;\n                padding: 8px 16px;\n                font-size: 14px;\n                font-weight: 500;\n                cursor: pointer;\n                align-self: flex-start;\n                margin-top: 10px;\n                transition: background 0.2s;\n            ">Descargar CSV</button>\n            </div>\n        ';
-      table.parentNode.insertBefore(div, table);
+      const contentDiv = document.createElement("div");
+      let optionsHTML = "";
+      for (let i = 1; i <= MAX_AVALUACIONS; i++) {
+        optionsHTML += '<option value="'.concat(i, '">Avaluaci\xF3 ').concat(i, "</option>");
+      }
+      contentDiv.innerHTML = '\n            <div>\n                <strong>PowerToys - Exportaci\xF3 CSV</strong><br>\n                <span style="font-size:0.9em">Selecciona l\'avaluaci\xF3 per descarregar les notes:</span>\n            <br>\n            <select id="powertoys-evaluation-select" style="\n                margin-top: 10px;\n                padding: 5px;\n                border-radius: 4px;\n                border: 1px solid #ccc;\n                font-family: sans-serif;\n            ">\n                '.concat(optionsHTML, '\n            </select>\n            <button id="btn-descargar-csv" style="\n                background-color: #22c55e;\n                color: white;\n                border: none;\n                border-radius: 6px;\n                padding: 8px 16px;\n                font-size: 14px;\n                font-weight: 500;\n                cursor: pointer;\n                align-self: flex-start;\n                margin-top: 10px;\n                transition: background 0.2s;\n            ">Descargar CSV</button>\n            </div>\n        ');
+      const container = this.containerBuilder.createContainer(contentDiv, "powertoys-info-box");
+      this.containerBuilder.insertDiv(container, table);
       const btnCSV = document.getElementById("btn-descargar-csv");
+      const selectAvaluacio = document.getElementById("powertoys-evaluation-select");
       if (btnCSV) {
         btnCSV.addEventListener("click", () => {
-          this.onDownload();
+          const evaluation = selectAvaluacio ? parseInt(selectAvaluacio.value, 10) : 1;
+          this.onDownload(evaluation);
         });
       }
       this.logger.log("CSVUIBuilder \u2192 div inserit correctament");
+    }
+  };
+
+  // src/ContainerUIBuilder.js
+  var ContainerUIBuilder = class {
+    /**
+     * @param {import('./PowerToysLogger.js').PowerToysLogger} logger
+     * @param {string} version - Versió de l'script per mostrar al peu.
+     */
+    constructor(logger, version2 = "") {
+      this.logger = logger;
+      this.version = version2;
+    }
+    /**
+     * Crea un contenidor HTML estàndard i hi insereix l'element de contingut personalitzat.
+     * @param {HTMLElement} contentElement - Element HTML a mostrar dins del contenidor.
+     * @param {string} id - ID únic del contenidor (per defecte: 'powertoy-div').
+     * @returns {HTMLElement} - El contenidor creat.
+     */
+    createContainer(contentElement, id = "powertoy-div") {
+      this.logger.log("ContainerUIBuilder \u2192 creant contenidor: ".concat(id));
+      const container = document.createElement("div");
+      container.id = id;
+      container.classList.add("powertoy-container");
+      Object.assign(container.style, {
+        marginBottom: "20px",
+        padding: "30px 10px 10px 10px",
+        border: "1px solid #ccc",
+        backgroundColor: "#f9f9f9",
+        position: "relative",
+        overflow: "auto",
+        "max-height": "20em"
+      });
+      const toggleBtn = document.createElement("button");
+      toggleBtn.id = "".concat(id, "-toggle-btn");
+      toggleBtn.textContent = "\u2212";
+      toggleBtn.type = "button";
+      toggleBtn.className = "btn btn-secondary btn-sm";
+      Object.assign(toggleBtn.style, {
+        position: "absolute",
+        top: "5px",
+        right: "5px",
+        width: "32px",
+        height: "32px",
+        borderRadius: "50%",
+        padding: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        lineHeight: "1"
+      });
+      const contentWrapper = document.createElement("div");
+      contentWrapper.className = "powertoy-content-wrapper";
+      contentWrapper.appendChild(contentElement);
+      toggleBtn.addEventListener("click", () => {
+        const isHidden = contentWrapper.style.display === "none";
+        if (isHidden) {
+          contentWrapper.style.display = "";
+          toggleBtn.textContent = "\u2212";
+        } else {
+          contentWrapper.style.display = "none";
+          toggleBtn.textContent = "+";
+        }
+      });
+      container.appendChild(toggleBtn);
+      container.appendChild(contentWrapper);
+      const versionDiv = document.createElement("div");
+      versionDiv.innerHTML = '<a href="https://github.com/ctrl-alt-d/EsferaPowerToys" target="_blank" style="text-decoration:none;">Esfer@ Power Toys</a> v. '.concat(this.version);
+      versionDiv.className = "powertoy-version";
+      Object.assign(versionDiv.style, {
+        textAlign: "right",
+        fontSize: "0.8em",
+        marginTop: "8px",
+        color: "#666"
+      });
+      container.appendChild(versionDiv);
+      return container;
+    }
+    /**
+     * Insereix un contenidor davant d'un altre element de la interfície.
+     * Si ja existeix un element amb el mateix ID, l'elimina.
+     * @param {HTMLElement} div - El contenidor creat.
+     * @param {HTMLElement} abansDe - Element previ on s'ha d'inserir el contenidor.
+     */
+    insertDiv(div, abansDe) {
+      this.logger.log("ContainerUIBuilder \u2192 intentant inserir div amb ID ".concat(div.id));
+      const existent = document.getElementById(div.id);
+      if (existent) {
+        this.logger.log("ContainerUIBuilder \u2192 eliminant existent ".concat(div.id));
+        existent.remove();
+      }
+      abansDe.parentElement.insertBefore(div, abansDe);
+      this.logger.log("ContainerUIBuilder \u2192 div inserit");
+      window.dispatchEvent(new Event("resize"));
     }
   };
 
@@ -732,15 +776,16 @@
       this.parser = new MateriaParser(this.logger);
       this.applier = new MateriaApplier(this.logger);
       this.scrollHelper = new ScrollHelper(this.logger);
+      this.containerBuilder = new ContainerUIBuilder(this.logger, version);
       this.uiBuilder = new MateriaUIBuilder(
         this.logger,
         (materia, inputVal) => this.onApply(materia, inputVal),
         (materia) => this.posaPendentsRA(materia),
-        version
+        this.containerBuilder
       );
       this.cssApplier = new CSSApplier(this.logger);
       this.csvManager = new CSVManager(this.logger);
-      this.csvUIBuilder = new CSVUIBuilder(this.logger, () => this.csvManager.proc\u00E9sDesc\u00E0rregaCSV());
+      this.csvUIBuilder = new CSVUIBuilder(this.logger, (evaluation) => this.csvManager.proc\u00E9sDesc\u00E0rregaCSV(evaluation), this.containerBuilder);
       this.lastStudent = "";
       this.reinicialitzaTimeout = null;
       const mainContainer = document.querySelector("#mainView") || document.body;
@@ -795,7 +840,7 @@
         this.logger.log("reinicialitza \u2192 processant alumne: ".concat(studentName));
         const materies = this.parser.parse(Array.from(files));
         const html = this.uiBuilder.createHTML(materies);
-        this.uiBuilder.insertDiv(html, form);
+        this.containerBuilder.insertDiv(html, form);
       }, 100);
     }
     /**

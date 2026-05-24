@@ -14,7 +14,7 @@ export class CSVManager {
      * Inicia i coordina el procés de descàrrega
      * @returns {Promise<void>}
      */
-    async procésDescàrregaCSV() {
+    async procésDescàrregaCSV(evaluation = 1) {
         this.logger.log("CSVManager → procésDescàrregaCSV inici");
 
         var element = document.documentElement;
@@ -22,7 +22,7 @@ export class CSVManager {
 
         if (!injector) {
             console.error(
-                "❌ No s'ha pogut obtenir l'injector. Potser Angular no està bootstrapat encara.",
+                "No s'ha pogut obtenir l'injector. Potser Angular no està bootstrapat encara.",
             );
             return;
         }
@@ -34,7 +34,7 @@ export class CSVManager {
 
         var matricules = await this.extractIdMatricula(factory, idGrup);
 
-        console.log('📦 MATRICULES:', matricules);
+        const nomGrup = matricules[0].nomGrup;
 
         if (!matricules || matricules.length === 0) {
             this.logger.error("CSVManager → No hi ha matricules per recuperar");
@@ -47,7 +47,7 @@ export class CSVManager {
                     const idMat = alumne.idMatricula;
 
                     if (!idMat || !idGrup) {
-                        this.logger.warn(`CSVManager → ⚠️ Alumne ${alumne.nomComplet} sense IDs → saltant`);
+                        this.logger.warn(`CSVManager → Alumne ${alumne.nomComplet} sense IDs → saltant`);
                         return resolve({ skipped: true, nom: alumne.nomComplet });
                     }
 
@@ -57,7 +57,7 @@ export class CSVManager {
                         const dadesAlumne = await this.fetchAvaluacioData(factory, idMat, idGrup);
 
                         if (!dadesAlumne || !dadesAlumne.lContinguts) {
-                            this.logger.warn(`CSVManager → ⚠️ No s'han rebut dades per ${alumne.nomComplet}`);
+                            this.logger.warn(`CSVManager → No s'han rebut dades per ${alumne.nomComplet}`);
                             return resolve({ skipped: true, nom: alumne.nomComplet });
                         }
 
@@ -66,11 +66,12 @@ export class CSVManager {
                             idAlumne: alumne.identificadorAlumne,
                             idMatricula: idMat,
                             nom: alumne.nomComplet,
-                            notes: dadesAlumne.lContinguts
+                            notes: dadesAlumne.lContinguts,
+                            avaluacions: dadesAlumne.lAvaluacions
                         });
 
                     } catch (err) {
-                        this.logger.error(`CSVManager → ❌ Error amb ${alumne.nomComplet}:`, err);
+                        this.logger.error(`CSVManager → Error amb ${alumne.nomComplet}:`, err);
                         resolve({ error: true, nom: alumne.nomComplet, err });
                     }
                 })
@@ -82,14 +83,12 @@ export class CSVManager {
                 interval: 500          // Interval entre peticions en ms (1000 = 1 segon)
             };
 
-            console.log(`🚀 Iniciant cua amb config:`, config);
             const notesAlumnes = await executeQueue(tasks, config);
-            console.log(notesAlumnes);
 
-            this.descarregaCSV(notesAlumnes);
+            this.descarregaCSV(notesAlumnes, evaluation, nomGrup);
 
         } catch (error) {
-            this.logger.error("❌ Error crític al CSVManager:", error);
+            this.logger.error("Error crític al CSVManager:", error);
         }
     }
 
@@ -97,7 +96,7 @@ export class CSVManager {
      * Genera i descarrega un CSV amb totes les notes del grup
      * @param {Array<Object>} dadesAlumnes 
      */
-    descarregaCSV(dadesAlumnes) {
+    descarregaCSV(dadesAlumnes, evaluation, nomGrup) {
         // 1. FUNCIÓ AUXILIAR: Escapar valors per a CSV
         const csvEscape = (val) => {
             const str = String(val ?? "");
@@ -106,12 +105,16 @@ export class CSVManager {
                 : str;
         };
 
+        // Filtrar alumnes que no tinguin notes (per exemple, si hi ha hagut error)
+        const alumnesValids = dadesAlumnes.filter(a => a && a.notes);
+
         // 2. IDENTIFICAR ESTRUCTURA GLOBAL
         const moduls = new Map();
 
-        dadesAlumnes.forEach(alumne => {
-            if (!alumne.notes) return;
-            (Object.values(alumne.notes).at(-1)).forEach(mod => {
+        alumnesValids.forEach(alumne => {
+            const lastVal = Object.values(alumne.notes).at(-1);
+            if (!lastVal || !Array.isArray(lastVal)) return;
+            lastVal.forEach(mod => {
                 if (!mod || !mod.codiExternContingut) return;
                 if (!moduls.has(mod.codiExternContingut)) {
                     moduls.set(mod.codiExternContingut, {
@@ -139,18 +142,40 @@ export class CSVManager {
         });
 
         // 4. CONSTRUIR FILES D'ALUMNES
-        const files = dadesAlumnes.map(alumne => {
-            const notes = Object.values(alumne.notes).at(-2) || {};
+        const files = alumnesValids.map(alumne => {
+            // Buscar l'ID de l'avaluació seleccionada
+            let idAvaluacio = null;
+            const targetCodi = `FINAL_${evaluation}`;
+            if (alumne.avaluacions && Array.isArray(alumne.avaluacions)) {
+                const ava = alumne.avaluacions.find(a => a.codiExternAva === targetCodi);
+                if (ava) {
+                    idAvaluacio = ava.id;
+                }
+            }
+
+            let notes;
+            if (idAvaluacio && alumne.notes[idAvaluacio]) {
+                notes = alumne.notes[idAvaluacio];
+            } else {
+                notes = Object.values(alumne.notes).at(-2) || {};
+            }
+
             const fila = [csvEscape(alumne.idAlumne), csvEscape(alumne.nom)];
-            console.log(notes);
             modulsArray.forEach(([codi]) => {
-                const modData = notes.filter(m => m.codiExternContingut == codi) || {};
-                console.log(modData);
+                let modData = null;
+                if (Array.isArray(notes)) {
+                    modData = notes.find(m => m.codiExternContingut == codi);
+                }
+                
                 try {
-                    if (/^A\d{1,2}$/.test(modData[0].qualitativa)) {
-                        fila.push(csvEscape(modData[0].qualitativa.replace(/\D/g, "")));
+                    if (modData && modData.qualitativa) {
+                        if (/^A\d{1,2}$/.test(modData.qualitativa)) {
+                            fila.push(csvEscape(modData.qualitativa.replace(/\D/g, "")));
+                        } else {
+                            fila.push(csvEscape(modData.qualitativa));
+                        }
                     } else {
-                        fila.push(csvEscape(modData[0].qualitativa));
+                        fila.push("");
                     }
                 } catch {
                     fila.push("");
@@ -170,11 +195,11 @@ export class CSVManager {
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `Esfera_Notes_${new Date().toISOString().slice(0, 10)}.csv`;
+        link.download = `Esfera_Notes_av_${evaluation}_${new Date().toISOString().slice(0, 10)}_${nomGrup}.csv`;
         link.click();
         URL.revokeObjectURL(url);
 
-        console.log("CSVManager → ✅ CSV descarregat correctament");
+        console.log("CSVManager → CSV descarregat correctament");
     }
 
     /**
@@ -186,7 +211,7 @@ export class CSVManager {
         console.error("inici idMatricula");
 
         var injector = window.angular ? window.angular.element(document.documentElement).injector() : null;
-        if (!injector) return console.error('CSVManager → ❌ Injector Angular no disponible');
+        if (!injector) return console.error('CSVManager → Injector Angular no disponible');
 
         var factoryGrup = injector.get('finalavaluaciogrupalumneFactory');
 
@@ -200,7 +225,7 @@ export class CSVManager {
                 return matricules;
             })
             .catch((err) => {
-                console.error('CSVManager → ❌ Error obtenint el grup:', err);
+                console.error('CSVManager → Error obtenint el grup:', err);
                 return null;
             });
     }
@@ -228,7 +253,7 @@ export class CSVManager {
                 return dadesAlumne;
             })
             .catch(function (err) {
-                console.error("CSVManager → ❌ ERROR EN LA PETICIÓ:", err);
+                console.error("CSVManager → ERROR EN LA PETICIÓ:", err);
             });
     }
 }
