@@ -13,5 +13,5 @@ esbuild.build({
         js: header,
     },
     format: 'iife',
-    target: ['chrome58', 'firefox57'],
+    target: ['es2022'],
 }).catch(() => process.exit(1));
