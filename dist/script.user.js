@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Esfer@ PowerToys
 // @namespace    https://github.com/ctrl-alt-d/EsferaPowerToys
-// @version      1.10.0
+// @version      1.11.0
 // @description  Millores per a la plataforma Esfer@
 // @author       ctrl-alt-d
 // @license      MIT
@@ -334,7 +334,7 @@
   };
 
   // build/version.js
-  var version = "1.10.0";
+  var version = "1.11.0";
 
   // src/CSSApplier.js
   var CSSApplier = class {
