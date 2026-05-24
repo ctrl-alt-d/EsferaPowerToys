@@ -1,12 +1,12 @@
 /**
- * Classe per a la creació i gestió del panell d'ajustes de PowerToys, incloent l'accés a descàrrega de dades d'avaluació en CSV.
+ * Classe per a la creació i gestió del panell d'ajustes de PowerToys, incloent l'accés a descàrrega de dades d'avaluació en Excel.
  */
 export const MAX_AVALUACIONS = 3;
 
 export class CSVUIBuilder {
     /**
      * @param {import('./PowerToysLogger.js').PowerToysLogger} logger
-     * @param {function} onDownload Callback activat a l'apretar el botó de CSV
+     * @param {function} onDownload Callback activat a l'apretar el botó d'Excel
      * @param {import('./ContainerUIBuilder.js').ContainerUIBuilder} containerBuilder - Constructor base del contenidor.
      */
     constructor(logger, onDownload, containerBuilder) {
@@ -37,7 +37,7 @@ export class CSVUIBuilder {
 
         contentDiv.innerHTML = `
             <div>
-                <strong>PowerToys - Exportació CSV</strong><br>
+                <strong>PowerToys - Exportació Excel</strong><br>
                 <span style="font-size:0.9em">Selecciona l'avaluació per descarregar les notes:</span>
             <br>
             <select id="powertoys-evaluation-select" style="
@@ -49,7 +49,7 @@ export class CSVUIBuilder {
             ">
                 ${optionsHTML}
             </select>
-            <button id="btn-descargar-csv" style="
+            <button id="btn-descargar-xlsx" style="
                 background-color: #22c55e;
                 color: white;
                 border: none;
@@ -61,14 +61,14 @@ export class CSVUIBuilder {
                 align-self: flex-start;
                 margin-top: 10px;
                 transition: background 0.2s;
-            ">Descargar CSV</button>
+            ">Descarregar Excel</button>
             </div>
         `;
         
         const container = this.containerBuilder.createContainer(contentDiv, "powertoys-info-box");
         this.containerBuilder.insertDiv(container, table);
 
-        const btnCSV = document.getElementById("btn-descargar-csv");
+        const btnCSV = document.getElementById("btn-descargar-xlsx");
         const selectAvaluacio = document.getElementById("powertoys-evaluation-select");
         if (btnCSV) {
             btnCSV.addEventListener("click", () => {
