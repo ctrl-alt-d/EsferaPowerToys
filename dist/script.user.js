@@ -24672,6 +24672,15 @@
       const contentWrapper = document.createElement("div");
       contentWrapper.className = "powertoy-content-wrapper";
       contentWrapper.appendChild(contentElement);
+      const instructionsDiv = document.createElement("div");
+      instructionsDiv.className = "powertoy-instructions";
+      instructionsDiv.textContent = "Valors acceptats: >=4.5 \u2192 Assolit, <4.5 o NA \u2192 No assolit, EP \u2192 En proc\xE9s, P o PDT \u2192 Pendent, . o X \u2192 Blanc";
+      Object.assign(instructionsDiv.style, {
+        fontSize: "0.85em",
+        marginTop: "8px",
+        color: "#555"
+      });
+      contentWrapper.appendChild(instructionsDiv);
       const actualitzaEstatToggle = (expanded) => {
         toggleBtn.textContent = expanded ? "\u2212" : "+";
         toggleBtn.setAttribute("aria-expanded", String(expanded));
@@ -24690,18 +24699,16 @@
       });
       container.appendChild(toggleBtn);
       container.appendChild(contentWrapper);
-      const instructionsDiv = document.createElement("div");
-      instructionsDiv.className = "powertoy-instructions";
-      instructionsDiv.textContent = "Valors acceptats: >=4.5 \u2192 Assolit, <4.5 \xF3 NA \u2192 No assolit, EP \u2192 En proc\xE9s, P \xF3 PDT \u2192 Pendent, . \xF3 X \u2192 Blanc";
-      Object.assign(instructionsDiv.style, {
-        fontSize: "0.85em",
-        marginTop: "8px",
-        color: "#555"
-      });
-      container.appendChild(instructionsDiv);
       const versionDiv = document.createElement("div");
-      versionDiv.innerHTML = `<a href="https://github.com/ctrl-alt-d/EsferaPowerToys" target="_blank" style="text-decoration:none;">Esfer@ Power Toys</a> v. ${this.version}`;
       versionDiv.className = "powertoy-version";
+      const projectLink = document.createElement("a");
+      projectLink.href = "https://github.com/ctrl-alt-d/EsferaPowerToys";
+      projectLink.target = "_blank";
+      projectLink.rel = "noopener noreferrer";
+      projectLink.style.textDecoration = "none";
+      projectLink.textContent = "Esfer@ Power Toys";
+      versionDiv.appendChild(projectLink);
+      versionDiv.appendChild(document.createTextNode(` v. ${this.version}`));
       Object.assign(versionDiv.style, {
         textAlign: "right",
         fontSize: "0.8em",

@@ -30,6 +30,7 @@ describe('ContainerUIBuilder', () => {
     toggle.click();
 
     expect(wrapper.style.display).toBe('none');
+    expect(wrapper.querySelector('.powertoy-instructions')).not.toBeNull();
     expect(toggle.getAttribute('aria-label')).toBe('Expandeix PowerToys');
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
     expect(toggle.title).toBe('Expandeix PowerToys');
@@ -41,16 +42,33 @@ describe('ContainerUIBuilder', () => {
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
   });
 
-  test('hauria de mostrar les instruccions abans de la versió', () => {
+  test('hauria de mostrar les instruccions dins del contingut i abans de la versió', () => {
     const builder = new ContainerUIBuilder({ log: jest.fn() }, '1.0.0');
     const content = document.createElement('div');
 
     const container = builder.createContainer(content, 'powertoy-test');
+    const wrapper = container.querySelector('.powertoy-content-wrapper');
     const instructions = container.querySelector('.powertoy-instructions');
     const version = container.querySelector('.powertoy-version');
 
     expect(instructions).not.toBeNull();
     expect(instructions.textContent).toContain('Valors acceptats:');
-    expect(version.previousElementSibling).toBe(instructions);
+    expect(instructions.textContent).toContain('<4.5 o NA');
+    expect(instructions.textContent).toContain('P o PDT');
+    expect(instructions.textContent).toContain('. o X');
+    expect(wrapper.contains(instructions)).toBe(true);
+    expect(version.previousElementSibling).toBe(wrapper);
+  });
+
+  test('hauria de crear l’enllaç de versió sense innerHTML i amb rel segur', () => {
+    const builder = new ContainerUIBuilder({ log: jest.fn() }, '1.0.0');
+    const content = document.createElement('div');
+
+    const container = builder.createContainer(content, 'powertoy-test');
+    const link = container.querySelector('.powertoy-version a');
+
+    expect(link.textContent).toBe('Esfer@ Power Toys');
+    expect(link.target).toBe('_blank');
+    expect(link.rel).toBe('noopener noreferrer');
   });
 });
