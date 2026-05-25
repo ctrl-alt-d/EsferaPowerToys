@@ -17,9 +17,10 @@ export class ContainerUIBuilder {
      * Crea un contenidor HTML estàndard i hi insereix l'element de contingut personalitzat.
      * @param {HTMLElement} contentElement - Element HTML a mostrar dins del contenidor.
      * @param {string} id - ID únic del contenidor (per defecte: 'powertoy-div').
+     * @param {string} instruccions - string per a inserir les instruccions.
      * @returns {HTMLElement} - El contenidor creat.
      */
-    createContainer(contentElement, id = 'powertoy-div') {
+    createContainer(contentElement, id = 'powertoy-div', instruccions = null) {
         this.logger.log(`ContainerUIBuilder → creant contenidor: ${id}`);
         const container = document.createElement('div');
         container.id = id;
@@ -61,15 +62,19 @@ export class ContainerUIBuilder {
         contentWrapper.className = 'powertoy-content-wrapper';
         contentWrapper.appendChild(contentElement);
 
-        const instructionsDiv = document.createElement('div');
-        instructionsDiv.className = 'powertoy-instructions';
-        instructionsDiv.textContent = 'Valors acceptats: >=4.5 → Assolit, <4.5 o NA → No assolit, EP → En procés, P o PDT → Pendent, . o X → Blanc';
-        Object.assign(instructionsDiv.style, {
-            fontSize: '0.85em',
-            marginTop: '8px',
-            color: '#555'
-        });
-        contentWrapper.appendChild(instructionsDiv);
+        const textInstruccions = instruccions;
+        if(textInstruccions)
+        {
+            const instructionsDiv = document.createElement('div');
+            instructionsDiv.className = 'powertoy-instructions';
+            instructionsDiv.textContent = textInstruccions;
+            Object.assign(instructionsDiv.style, {
+                fontSize: '0.85em',
+                marginTop: '8px',
+                color: '#555'
+            });
+            contentWrapper.appendChild(instructionsDiv);
+        }
 
         const actualitzaEstatToggle = (expanded) => {
             toggleBtn.textContent = expanded ? '−' : '+';

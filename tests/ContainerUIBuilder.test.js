@@ -19,7 +19,7 @@ describe('ContainerUIBuilder', () => {
     const content = document.createElement('div');
     content.textContent = 'Contingut';
 
-    const container = builder.createContainer(content, 'powertoy-test');
+    const container = builder.createContainer(content, 'powertoy-test', 'Valors acceptats: >=4.5 → Assolit, <4.5 o NA → No assolit, EP → En procés, P o PDT → Pendent, . o X → Blanc');
     const toggle = container.querySelector('#powertoy-test-toggle-btn');
     const wrapper = container.querySelector('.powertoy-content-wrapper');
 
@@ -46,7 +46,7 @@ describe('ContainerUIBuilder', () => {
     const builder = new ContainerUIBuilder({ log: jest.fn() }, '1.0.0');
     const content = document.createElement('div');
 
-    const container = builder.createContainer(content, 'powertoy-test');
+    const container = builder.createContainer(content, 'powertoy-test', 'Valors acceptats: >=4.5 → Assolit, <4.5 o NA → No assolit, EP → En procés, P o PDT → Pendent, . o X → Blanc');
     const wrapper = container.querySelector('.powertoy-content-wrapper');
     const instructions = container.querySelector('.powertoy-instructions');
     const version = container.querySelector('.powertoy-version');
