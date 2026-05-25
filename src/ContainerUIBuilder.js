@@ -84,7 +84,7 @@ export class ContainerUIBuilder {
 
         const instructionsDiv = document.createElement('div');
         instructionsDiv.className = 'powertoy-instructions';
-        instructionsDiv.textContent = 'Valors acceptats: 5-10 → Assolit, NA → No assolit, EP → En procés, P/PDT → Pendent.';
+        instructionsDiv.textContent = 'Valors acceptats: >=4.5 → Assolit, <4.5 ó NA → No assolit, EP → En procés, P ó PDT → Pendent, . ó X → Blanc';
         Object.assign(instructionsDiv.style, {
             fontSize: '0.85em',
             marginTop: '8px',
