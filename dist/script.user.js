@@ -24692,7 +24692,7 @@
       container.appendChild(contentWrapper);
       const instructionsDiv = document.createElement("div");
       instructionsDiv.className = "powertoy-instructions";
-      instructionsDiv.textContent = "Valors acceptats: 5-10 \u2192 Assolit, NA \u2192 No assolit, EP \u2192 En proc\xE9s, P/PDT \u2192 Pendent.";
+      instructionsDiv.textContent = "Valors acceptats: >=4.5 \u2192 Assolit, <4.5 \xF3 NA \u2192 No assolit, EP \u2192 En proc\xE9s, P \xF3 PDT \u2192 Pendent, . \xF3 X \u2192 Blanc";
       Object.assign(instructionsDiv.style, {
         fontSize: "0.85em",
         marginTop: "8px",

@@ -50,7 +50,7 @@ describe('ContainerUIBuilder', () => {
     const version = container.querySelector('.powertoy-version');
 
     expect(instructions).not.toBeNull();
-    expect(instructions.textContent).toContain('P/PDT → Pendent');
+    expect(instructions.textContent).toContain('Valors acceptats:');
     expect(version.previousElementSibling).toBe(instructions);
   });
 });
