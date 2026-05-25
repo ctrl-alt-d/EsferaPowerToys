@@ -82,6 +82,16 @@ export class ContainerUIBuilder {
         container.appendChild(toggleBtn);
         container.appendChild(contentWrapper);
 
+        const instructionsDiv = document.createElement('div');
+        instructionsDiv.className = 'powertoy-instructions';
+        instructionsDiv.textContent = 'Valors acceptats: 5-10 → Assolit, NA → No assolit, EP → En procés, P/PDT → Pendent.';
+        Object.assign(instructionsDiv.style, {
+            fontSize: '0.85em',
+            marginTop: '8px',
+            color: '#555'
+        });
+        container.appendChild(instructionsDiv);
+
         const versionDiv = document.createElement('div');
         versionDiv.innerHTML = `<a href="https://github.com/ctrl-alt-d/EsferaPowerToys" target="_blank" style="text-decoration:none;">Esfer@ Power Toys</a> v. ${this.version}`;
         versionDiv.className = 'powertoy-version';

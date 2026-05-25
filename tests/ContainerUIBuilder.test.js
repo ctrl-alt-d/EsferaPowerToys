@@ -40,4 +40,17 @@ describe('ContainerUIBuilder', () => {
     expect(toggle.getAttribute('aria-label')).toBe('Minimitza PowerToys');
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
   });
+
+  test('hauria de mostrar les instruccions abans de la versió', () => {
+    const builder = new ContainerUIBuilder({ log: jest.fn() }, '1.0.0');
+    const content = document.createElement('div');
+
+    const container = builder.createContainer(content, 'powertoy-test');
+    const instructions = container.querySelector('.powertoy-instructions');
+    const version = container.querySelector('.powertoy-version');
+
+    expect(instructions).not.toBeNull();
+    expect(instructions.textContent).toContain('P/PDT → Pendent');
+    expect(version.previousElementSibling).toBe(instructions);
+  });
 });

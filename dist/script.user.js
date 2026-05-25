@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Esfer@ PowerToys
 // @namespace    https://github.com/ctrl-alt-d/EsferaPowerToys
-// @version      1.12.0
+// @version      1.12.1
 // @description  Millores per a la plataforma Esfer@
 // @author       ctrl-alt-d
 // @license      MIT
@@ -23943,6 +23943,7 @@
         const vNet = v.replace(",", ".").trim().toUpperCase();
         if (vNet === "" || vNet === "." || vNet === "X") return "";
         if (/^A(10|[5-9])$|^NA$|^EP$|^PDT$/.test(vNet)) return vNet;
+        if (vNet === "P") return "PDT";
         if (vNet.startsWith("PENDENT") || vNet === "NP") return "PDT";
         const num = parseFloat(vNet);
         if (isNaN(num)) return null;
@@ -24037,7 +24038,7 @@
   };
 
   // build/version.js
-  var version = "1.12.0";
+  var version = "1.12.1";
 
   // src/CSSApplier.js
   var CSSApplier = class {
@@ -24689,6 +24690,15 @@
       });
       container.appendChild(toggleBtn);
       container.appendChild(contentWrapper);
+      const instructionsDiv = document.createElement("div");
+      instructionsDiv.className = "powertoy-instructions";
+      instructionsDiv.textContent = "Valors acceptats: 5-10 \u2192 Assolit, NA \u2192 No assolit, EP \u2192 En proc\xE9s, P/PDT \u2192 Pendent.";
+      Object.assign(instructionsDiv.style, {
+        fontSize: "0.85em",
+        marginTop: "8px",
+        color: "#555"
+      });
+      container.appendChild(instructionsDiv);
       const versionDiv = document.createElement("div");
       versionDiv.innerHTML = `<a href="https://github.com/ctrl-alt-d/EsferaPowerToys" target="_blank" style="text-decoration:none;">Esfer@ Power Toys</a> v. ${this.version}`;
       versionDiv.className = "powertoy-version";
