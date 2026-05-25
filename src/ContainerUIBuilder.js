@@ -17,9 +17,10 @@ export class ContainerUIBuilder {
      * Crea un contenidor HTML estàndard i hi insereix l'element de contingut personalitzat.
      * @param {HTMLElement} contentElement - Element HTML a mostrar dins del contenidor.
      * @param {string} id - ID únic del contenidor (per defecte: 'powertoy-div').
+     * @param {string} instruccions - string per a inserir les instruccions.
      * @returns {HTMLElement} - El contenidor creat.
      */
-    createContainer(contentElement, id = 'powertoy-div') {
+    createContainer(contentElement, id = 'powertoy-div', instruccions = null) {
         this.logger.log(`ContainerUIBuilder → creant contenidor: ${id}`);
         const container = document.createElement('div');
         container.id = id;
@@ -61,6 +62,20 @@ export class ContainerUIBuilder {
         contentWrapper.className = 'powertoy-content-wrapper';
         contentWrapper.appendChild(contentElement);
 
+        const textInstruccions = instruccions;
+        if(textInstruccions)
+        {
+            const instructionsDiv = document.createElement('div');
+            instructionsDiv.className = 'powertoy-instructions';
+            instructionsDiv.textContent = textInstruccions;
+            Object.assign(instructionsDiv.style, {
+                fontSize: '0.85em',
+                marginTop: '8px',
+                color: '#555'
+            });
+            contentWrapper.appendChild(instructionsDiv);
+        }
+
         const actualitzaEstatToggle = (expanded) => {
             toggleBtn.textContent = expanded ? '−' : '+';
             toggleBtn.setAttribute('aria-expanded', String(expanded));
@@ -83,8 +98,15 @@ export class ContainerUIBuilder {
         container.appendChild(contentWrapper);
 
         const versionDiv = document.createElement('div');
-        versionDiv.innerHTML = `<a href="https://github.com/ctrl-alt-d/EsferaPowerToys" target="_blank" style="text-decoration:none;">Esfer@ Power Toys</a> v. ${this.version}`;
         versionDiv.className = 'powertoy-version';
+        const projectLink = document.createElement('a');
+        projectLink.href = 'https://github.com/ctrl-alt-d/EsferaPowerToys';
+        projectLink.target = '_blank';
+        projectLink.rel = 'noopener noreferrer';
+        projectLink.style.textDecoration = 'none';
+        projectLink.textContent = 'Esfer@ Power Toys';
+        versionDiv.appendChild(projectLink);
+        versionDiv.appendChild(document.createTextNode(` v. ${this.version}`));
         Object.assign(versionDiv.style, {
             textAlign: 'right',
             fontSize: '0.8em',

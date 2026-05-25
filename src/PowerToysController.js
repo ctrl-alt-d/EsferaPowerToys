@@ -122,7 +122,8 @@ export class PowerToysController {
 
             this.logger.log(`reinicialitza → processant alumne: ${studentName}`);
             const materies = this.parser.parse(Array.from(files));
-            const html = this.uiBuilder.createHTML(materies);
+            const instruccions = 'Valors acceptats: >=4.5 → Assolit, <4.5 o NA → No assolit, EP → En procés, P o PDT → Pendent, . o X → Blanc';
+            const html = this.uiBuilder.createHTML(materies, instruccions);
             this.containerBuilder.insertDiv(html, form);
         }, 100);
     }

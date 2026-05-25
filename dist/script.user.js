@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Esfer@ PowerToys
 // @namespace    https://github.com/ctrl-alt-d/EsferaPowerToys
-// @version      1.12.0
+// @version      1.12.1
 // @description  Millores per a la plataforma Esfer@
 // @author       ctrl-alt-d
 // @license      MIT
@@ -23855,7 +23855,7 @@
       this.onPosaPendents = onPosaPendents;
       this.containerBuilder = containerBuilder;
     }
-    createHTML(materies) {
+    createHTML(materies, instruccions = null) {
       this.logger.log("MateriaUIBuilder \u2192 inici");
       const tableWrapper = document.createElement("div");
       tableWrapper.className = "powertoy-table-wrapper";
@@ -23918,7 +23918,7 @@
       }
       tableWrapper.appendChild(table);
       this.logger.log("MateriaUIBuilder \u2192 component creat");
-      return this.containerBuilder.createContainer(tableWrapper, "powertoy-div");
+      return this.containerBuilder.createContainer(tableWrapper, "powertoy-div", instruccions);
     }
   };
 
@@ -23943,6 +23943,7 @@
         const vNet = v.replace(",", ".").trim().toUpperCase();
         if (vNet === "" || vNet === "." || vNet === "X") return "";
         if (/^A(10|[5-9])$|^NA$|^EP$|^PDT$/.test(vNet)) return vNet;
+        if (vNet === "P") return "PDT";
         if (vNet.startsWith("PENDENT") || vNet === "NP") return "PDT";
         const num = parseFloat(vNet);
         if (isNaN(num)) return null;
@@ -24037,7 +24038,7 @@
   };
 
   // build/version.js
-  var version = "1.12.0";
+  var version = "1.12.1";
 
   // src/CSSApplier.js
   var CSSApplier = class {
@@ -24631,9 +24632,10 @@
      * Crea un contenidor HTML estàndard i hi insereix l'element de contingut personalitzat.
      * @param {HTMLElement} contentElement - Element HTML a mostrar dins del contenidor.
      * @param {string} id - ID únic del contenidor (per defecte: 'powertoy-div').
+     * @param {string} instruccions - string per a inserir les instruccions.
      * @returns {HTMLElement} - El contenidor creat.
      */
-    createContainer(contentElement, id = "powertoy-div") {
+    createContainer(contentElement, id = "powertoy-div", instruccions = null) {
       this.logger.log(`ContainerUIBuilder \u2192 creant contenidor: ${id}`);
       const container = document.createElement("div");
       container.id = id;
@@ -24671,6 +24673,18 @@
       const contentWrapper = document.createElement("div");
       contentWrapper.className = "powertoy-content-wrapper";
       contentWrapper.appendChild(contentElement);
+      const textInstruccions = instruccions;
+      if (textInstruccions) {
+        const instructionsDiv = document.createElement("div");
+        instructionsDiv.className = "powertoy-instructions";
+        instructionsDiv.textContent = textInstruccions;
+        Object.assign(instructionsDiv.style, {
+          fontSize: "0.85em",
+          marginTop: "8px",
+          color: "#555"
+        });
+        contentWrapper.appendChild(instructionsDiv);
+      }
       const actualitzaEstatToggle = (expanded) => {
         toggleBtn.textContent = expanded ? "\u2212" : "+";
         toggleBtn.setAttribute("aria-expanded", String(expanded));
@@ -24690,8 +24704,15 @@
       container.appendChild(toggleBtn);
       container.appendChild(contentWrapper);
       const versionDiv = document.createElement("div");
-      versionDiv.innerHTML = `<a href="https://github.com/ctrl-alt-d/EsferaPowerToys" target="_blank" style="text-decoration:none;">Esfer@ Power Toys</a> v. ${this.version}`;
       versionDiv.className = "powertoy-version";
+      const projectLink = document.createElement("a");
+      projectLink.href = "https://github.com/ctrl-alt-d/EsferaPowerToys";
+      projectLink.target = "_blank";
+      projectLink.rel = "noopener noreferrer";
+      projectLink.style.textDecoration = "none";
+      projectLink.textContent = "Esfer@ Power Toys";
+      versionDiv.appendChild(projectLink);
+      versionDiv.appendChild(document.createTextNode(` v. ${this.version}`));
       Object.assign(versionDiv.style, {
         textAlign: "right",
         fontSize: "0.8em",
@@ -24798,7 +24819,8 @@
         this.lastStudent = studentName;
         this.logger.log(`reinicialitza \u2192 processant alumne: ${studentName}`);
         const materies = this.parser.parse(Array.from(files));
-        const html = this.uiBuilder.createHTML(materies);
+        const instruccions = "Valors acceptats: >=4.5 \u2192 Assolit, <4.5 o NA \u2192 No assolit, EP \u2192 En proc\xE9s, P o PDT \u2192 Pendent, . o X \u2192 Blanc";
+        const html = this.uiBuilder.createHTML(materies, instruccions);
         this.containerBuilder.insertDiv(html, form);
       }, 100);
     }
