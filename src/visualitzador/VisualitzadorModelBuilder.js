@@ -1,5 +1,5 @@
 /**
- * Construeix el model del visualitzador a partir de les dades directes d'Esfer@.
+ * Construeix el model del visualitzador a partir del model intern de notes.
  */
 export class VisualitzadorModelBuilder {
     /**
@@ -10,7 +10,7 @@ export class VisualitzadorModelBuilder {
      */
     construeixModel(dadesAlumnes, evaluation = 1) {
         const students = (dadesAlumnes || [])
-            .filter(alumne => alumne && alumne.notes && !alumne.skipped && !alumne.error)
+            .filter(alumne => alumne && alumne.continguts && !alumne.skipped && !alumne.error)
             .map(alumne => this.construeixAlumne(alumne, evaluation))
             .filter(Boolean)
             .sort((a, b) => a.nom.localeCompare(b.nom));
@@ -43,15 +43,15 @@ export class VisualitzadorModelBuilder {
         const targetCodi = `FINAL_${evaluation}`;
 
         if (Array.isArray(alumne.avaluacions)) {
-            const avaluacio = alumne.avaluacions.find(a => a.codiExternAva === targetCodi);
+            const avaluacio = alumne.avaluacions.find(a => a.codi === targetCodi);
             if (avaluacio) idAvaluacio = avaluacio.id;
         }
 
-        if (idAvaluacio && alumne.notes[idAvaluacio]) {
-            return alumne.notes[idAvaluacio];
+        if (idAvaluacio && alumne.continguts[idAvaluacio]) {
+            return alumne.continguts[idAvaluacio];
         }
 
-        const notesValues = Object.values(alumne.notes || {});
+        const notesValues = Object.values(alumne.continguts || {});
         return notesValues.at(-2) || notesValues.at(-1) || [];
     }
 
@@ -60,12 +60,12 @@ export class VisualitzadorModelBuilder {
      */
     construeixAssignatures(notes) {
         const ordenades = [...notes]
-            .filter(nota => nota && nota.codiExternContingut)
-            .sort((a, b) => String(a.codiExternContingut).localeCompare(String(b.codiExternContingut)));
+            .filter(nota => nota && nota.codi)
+            .sort((a, b) => String(a.codi).localeCompare(String(b.codi)));
         const subjectMap = new Map();
 
         ordenades.forEach(nota => {
-            const code = String(nota.codiExternContingut);
+            const code = String(nota.codi);
             if (String(nota.jerarquia) === '2' || !code.includes('_')) {
                 if (!subjectMap.has(code)) {
                     subjectMap.set(code, {
@@ -81,7 +81,7 @@ export class VisualitzadorModelBuilder {
         });
 
         ordenades.forEach(nota => {
-            const code = String(nota.codiExternContingut);
+            const code = String(nota.codi);
             if (String(nota.jerarquia) === '2' || !code.includes('_')) return;
 
             const subjectCode = this.obtéCodiAssignatura(code, subjectMap);

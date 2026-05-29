@@ -5,7 +5,7 @@ import { MateriaApplier } from './materia/MateriaApplier.js';
 import { ScrollHelper } from './ScrollHelper.js';
 import { version } from '../build/version.js';
 import { CSSApplier } from './CSSApplier.js';
-import { ExcelExportDataProvider } from './excel/ExcelExportDataProvider.js';
+import { NotesDataProvider } from './dataProviders/NotesDataProvider.js';
 import { ExcelExportManager } from './excel/ExcelExportManager.js';
 import { ExcelUIBuilder } from './excel/ExcelUIBuilder.js';
 import { ExcelNotesWorkbookBuilder } from './excel/ExcelNotesWorkbookBuilder.js';
@@ -50,12 +50,12 @@ export class PowerToysController {
         /** @type {CSSApplier} */
         this.cssApplier = new CSSApplier(this.logger);
 
-        const excelDataProvider = new ExcelExportDataProvider(this.logger);
+        const notesDataProvider = new NotesDataProvider(this.logger);
 
         /** @type {ExcelExportManager} */
         this.excelExportManager = new ExcelExportManager(
             this.logger,
-            excelDataProvider,
+            notesDataProvider,
             new ExcelNotesWorkbookBuilder(),
         );
 
@@ -64,7 +64,7 @@ export class PowerToysController {
         /** @type {VisualitzadorManager} */
         this.visualitzadorManager = new VisualitzadorManager(
             this.logger,
-            excelDataProvider,
+            notesDataProvider,
             visualitzadorModelBuilder,
             new VisualitzadorModal(
                 this.logger,

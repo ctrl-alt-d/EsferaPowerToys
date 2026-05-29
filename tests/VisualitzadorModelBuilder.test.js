@@ -8,17 +8,17 @@ describe('VisualitzadorModelBuilder', () => {
         builder = new VisualitzadorModelBuilder();
     });
 
-    test('hauria de construir alumnes, mòduls i RAs des de les dades directes d’Esfer@', () => {
+    test('hauria de construir alumnes, mòduls i RAs des del model intern de notes', () => {
         const model = builder.construeixModel([
             {
                 idAlumne: '1',
                 nom: 'Cognom, Nom',
-                avaluacions: [{ codiExternAva: 'FINAL_1', id: 'ava1' }],
-                notes: {
+                avaluacions: [{ codi: 'FINAL_1', id: 'ava1' }],
+                continguts: {
                     ava1: [
-                        { codiExternContingut: 'M01', nom: 'Mòdul 1', jerarquia: '2', qualitativa: 'A6' },
-                        { codiExternContingut: 'M01_01RA', nom: 'RA 1', jerarquia: '3', qualitativa: 'A4' },
-                        { codiExternContingut: 'M01_02RA', nom: 'RA 2', jerarquia: '3', qualitativa: 'PDT' },
+                        { codi: 'M01', nom: 'Mòdul 1', jerarquia: '2', qualitativa: 'A6' },
+                        { codi: 'M01_01RA', nom: 'RA 1', jerarquia: '3', qualitativa: 'A4' },
+                        { codi: 'M01_02RA', nom: 'RA 2', jerarquia: '3', qualitativa: 'PDT' },
                     ],
                 },
             },

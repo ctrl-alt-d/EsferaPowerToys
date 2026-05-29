@@ -9,19 +9,19 @@ describe('ExcelNotesWorkbookBuilder', () => {
             idAlumne: '1',
             nom: 'Alumna',
             avaluacions: [
-                { codiExternAva: 'FINAL_1', id: 'ava1' },
-                { codiExternAva: 'FINAL_2', id: 'ava2' },
+                { codi: 'FINAL_1', id: 'ava1' },
+                { codi: 'FINAL_2', id: 'ava2' },
             ],
-            notes: {
+            continguts: {
                 ava1: [
-                    { codiExternContingut: 'M03', nom: 'Mòdul 3', jerarquia: '2', qualitativa: 'A8' },
-                    { codiExternContingut: 'M01', nom: 'Mòdul 1', jerarquia: '2', qualitativa: 'A6' },
-                    { codiExternContingut: 'M02', nom: 'RA 2', jerarquia: '3', qualitativa: 'A4' },
-                    { codiExternContingut: 'M04', nom: 'Mòdul 4', jerarquia: '2', qualitativa: 'NA' },
+                    { codi: 'M03', nom: 'Mòdul 3', jerarquia: '2', qualitativa: 'A8' },
+                    { codi: 'M01', nom: 'Mòdul 1', jerarquia: '2', qualitativa: 'A6' },
+                    { codi: 'M02', nom: 'RA 2', jerarquia: '3', qualitativa: 'A4' },
+                    { codi: 'M04', nom: 'Mòdul 4', jerarquia: '2', qualitativa: 'NA' },
                 ],
                 ava2: [
-                    { codiExternContingut: 'M05', nom: 'Mòdul 5', jerarquia: '2', qualitativa: 'A9' },
-                    { codiExternContingut: 'M06', nom: 'Mòdul 6', jerarquia: '2', qualitativa: 'PDT' },
+                    { codi: 'M05', nom: 'Mòdul 5', jerarquia: '2', qualitativa: 'A9' },
+                    { codi: 'M06', nom: 'Mòdul 6', jerarquia: '2', qualitativa: 'PDT' },
                 ],
             },
         },
@@ -70,10 +70,10 @@ describe('ExcelNotesWorkbookBuilder', () => {
             {
                 idAlumne: '1',
                 nom: 'Alumna',
-                avaluacions: [{ codiExternAva: 'FINAL_1', id: 'ava1' }],
-                notes: {
+                avaluacions: [{ codi: 'FINAL_1', id: 'ava1' }],
+                continguts: {
                     ava1: [
-                        { codiExternContingut: 'M01', nom: 'Mòdul 1', jerarquia: '2', qualitativa: '5' },
+                        { codi: 'M01', nom: 'Mòdul 1', jerarquia: '2', qualitativa: '5' },
                     ],
                 },
             },
@@ -128,11 +128,11 @@ describe('ExcelNotesWorkbookBuilder', () => {
             {
                 idAlumne: '1',
                 nom: 'Alumna amb un nom una mica llarg',
-                avaluacions: [{ codiExternAva: 'FINAL_1', id: 'ava1' }],
-                notes: {
+                avaluacions: [{ codi: 'FINAL_1', id: 'ava1' }],
+                continguts: {
                     ava1: [
-                        { codiExternContingut: '0485_ICC0', nom: 'Programació amb un nom de mòdul molt llarg', jerarquia: '2', qualitativa: 'A7' },
-                        { codiExternContingut: '0485_ICC0_01RA', nom: 'RA 1', jerarquia: '3', qualitativa: 'A6' },
+                        { codi: '0485_ICC0', nom: 'Programació amb un nom de mòdul molt llarg', jerarquia: '2', qualitativa: 'A7' },
+                        { codi: '0485_ICC0_01RA', nom: 'RA 1', jerarquia: '3', qualitativa: 'A6' },
                     ],
                 },
             },

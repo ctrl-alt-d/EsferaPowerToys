@@ -138,22 +138,22 @@ export class ExcelNotesWorkbookBuilder {
             let idAvaluacio = null;
             const targetCodi = `FINAL_${evaluation}`;
             if (alumne.avaluacions && Array.isArray(alumne.avaluacions)) {
-                const ava = alumne.avaluacions.find(a => a.codiExternAva === targetCodi);
+                const ava = alumne.avaluacions.find(a => a.codi === targetCodi);
                 if (ava) {
                     idAvaluacio = ava.id;
                 }
             }
 
-            if (idAvaluacio && alumne.notes[idAvaluacio]) {
-                return alumne.notes[idAvaluacio];
+            if (idAvaluacio && alumne.continguts[idAvaluacio]) {
+                return alumne.continguts[idAvaluacio];
             }
 
-            const notesValues = Object.values(alumne.notes);
+            const notesValues = Object.values(alumne.continguts);
             return notesValues.at(-2) || notesValues.at(-1) || [];
         };
 
         // Filtra alumnes que no tinguin notes, per exemple si hi ha hagut error.
-        const alumnesValids = dadesAlumnes.filter(a => a && a.notes);
+        const alumnesValids = dadesAlumnes.filter(a => a && a.continguts);
 
         const moduls = new Map();
 
@@ -161,10 +161,10 @@ export class ExcelNotesWorkbookBuilder {
             const notes = getNotesAvaluacioSeleccionada(alumne);
             if (!notes || !Array.isArray(notes)) return;
             notes.forEach(mod => {
-                if (!mod || !mod.codiExternContingut) return;
-                if (!moduls.has(mod.codiExternContingut)) {
-                    moduls.set(mod.codiExternContingut, {
-                        nom: mod.nom || mod.codiExternContingut || 'Sense nom',
+                if (!mod || !mod.codi) return;
+                if (!moduls.has(mod.codi)) {
+                    moduls.set(mod.codi, {
+                        nom: mod.nom || mod.codi || 'Sense nom',
                         jerarquia: mod.jerarquia || '0',
                     });
                 }
@@ -206,7 +206,7 @@ export class ExcelNotesWorkbookBuilder {
             modulsArray.forEach(([codi]) => {
                 let modData = null;
                 if (Array.isArray(notes)) {
-                    modData = notes.find(m => m.codiExternContingut == codi);
+                    modData = notes.find(m => m.codi == codi);
                 }
 
                 try {

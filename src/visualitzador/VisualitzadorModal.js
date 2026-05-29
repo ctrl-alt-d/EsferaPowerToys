@@ -72,7 +72,7 @@ export class VisualitzadorModal {
                 <button type="button" class="ptv-close-btn" data-action="close" aria-label="Tanca el visualitzador">× Tanca</button>
             </div>
             <div class="ptv-preview-disclaimer" role="status" aria-live="polite">
-                [lab] Funcionalitat en versió preview i funcionalitat limitada.
+                [lab] Funcionalitat en previsualització i funcionalitat limitada: pot no reflectir encara l'estada en empresa ni els RA opcionals.
             </div>
             <div class="ptv-student-view"></div>
         `;

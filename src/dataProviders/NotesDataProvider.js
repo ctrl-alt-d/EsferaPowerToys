@@ -1,29 +1,33 @@
+import { NotesMapper } from './NotesMapper.js';
+
 /**
- * Obté i normalitza les dades de notes exposades pels serveis Angular d'Esfer@.
+ * Obté les dades de notes exposades pels serveis Angular d'Esfer@.
  */
-export class ExcelExportDataProvider {
+export class NotesDataProvider {
     /**
      * @param {import('../PowerToysLogger.js').PowerToysLogger} logger
+     * @param {NotesMapper} mapper
      */
-    constructor(logger) {
+    constructor(logger, mapper = new NotesMapper()) {
         this.logger = logger;
+        this.mapper = mapper;
     }
 
     /**
-     * Obté totes les dades necessàries per exportar les notes del grup actual.
+     * Obté totes les dades necessàries per exportar o visualitzar les notes del grup actual.
      * @returns {Promise<{notesAlumnes: Array<Object>, nomGrup: string}|null>}
      */
     async obtéDadesExportació() {
         const idGrup = this.extractIdGrup();
         if (idGrup === null) {
-            this.logger.error("ExcelExportDataProvider → No s'ha pogut extreure idGrup");
+            this.logger.error("NotesDataProvider → No s'ha pogut extreure idGrup");
             return null;
         }
 
         const injector = this.obtéInjectorAngular();
         if (!injector) {
             this.logger.error(
-                "ExcelExportDataProvider → No s'ha pogut obtenir l'injector. Potser Angular no està bootstrapat encara.",
+                "NotesDataProvider → No s'ha pogut obtenir l'injector. Potser Angular no està bootstrapat encara.",
             );
             return null;
         }
@@ -32,7 +36,7 @@ export class ExcelExportDataProvider {
         const matricules = await this.extractIdMatricula(factory, idGrup, injector);
 
         if (!matricules || matricules.length === 0) {
-            this.logger.error('ExcelExportDataProvider → No hi ha matricules per recuperar');
+            this.logger.error('NotesDataProvider → No hi ha matricules per recuperar');
             return null;
         }
 
@@ -58,36 +62,29 @@ export class ExcelExportDataProvider {
     }
 
     /**
-     * Obté les dades d'avaluació d'un alumne i les adapta al format del constructor Excel.
+     * Obté les dades d'avaluació d'un alumne i les normalitza al model intern.
      */
     async obtéDadesAlumne(factory, alumne, idx, total, idGrup) {
         const idMat = alumne.idMatricula;
 
         if (!idMat || !idGrup) {
-            this.logger.warn(`ExcelExportDataProvider → Alumne ${alumne.nomComplet} sense IDs → saltant`);
+            this.logger.warn(`NotesDataProvider → Alumne ${alumne.nomComplet} sense IDs → saltant`);
             return { skipped: true, nom: alumne.nomComplet };
         }
 
         try {
-            this.logger.log(`ExcelExportDataProvider → ⏳ [${idx + 1}/${total}] Carregant ${alumne.nomComplet}...`);
+            this.logger.log(`NotesDataProvider → ⏳ [${idx + 1}/${total}] Carregant ${alumne.nomComplet}...`);
 
             const dadesAlumne = await this.fetchAvaluacioData(factory, idMat, idGrup);
 
             if (!dadesAlumne || !dadesAlumne.lContinguts) {
-                this.logger.warn(`ExcelExportDataProvider → No s'han rebut dades per ${alumne.nomComplet}`);
+                this.logger.warn(`NotesDataProvider → No s'han rebut dades per ${alumne.nomComplet}`);
                 return { skipped: true, nom: alumne.nomComplet };
             }
 
-            return {
-                success: true,
-                idAlumne: alumne.identificadorAlumne,
-                idMatricula: idMat,
-                nom: alumne.nomComplet,
-                notes: dadesAlumne.lContinguts,
-                avaluacions: dadesAlumne.lAvaluacions,
-            };
+            return this.mapper.normalitzaAlumne(alumne, dadesAlumne);
         } catch (err) {
-            this.logger.error(`ExcelExportDataProvider → Error amb ${alumne.nomComplet}:`, err);
+            this.logger.error(`NotesDataProvider → Error amb ${alumne.nomComplet}:`, err);
             return { error: true, nom: alumne.nomComplet, err };
         }
     }
@@ -99,10 +96,10 @@ export class ExcelExportDataProvider {
      * @returns {Promise<Array|null>}
      */
     extractIdMatricula(factory, idGrup, injector = this.obtéInjectorAngular()) {
-        this.logger.log('ExcelExportDataProvider → inici idMatricula');
+        this.logger.log('NotesDataProvider → inici idMatricula');
 
         if (!injector) {
-            this.logger.error('ExcelExportDataProvider → Injector Angular no disponible');
+            this.logger.error('NotesDataProvider → Injector Angular no disponible');
             return Promise.resolve(null);
         }
 
@@ -115,7 +112,7 @@ export class ExcelExportDataProvider {
             })
             .then((resAlumnes) => resAlumnes.data.matriculesGrupDTOList)
             .catch((err) => {
-                this.logger.error('ExcelExportDataProvider → Error obtenint el grup:', err);
+                this.logger.error('NotesDataProvider → Error obtenint el grup:', err);
                 return null;
             });
     }
@@ -142,7 +139,7 @@ export class ExcelExportDataProvider {
                 return res.data.avaluacioGrupIAlumneWrapper;
             })
             .catch((err) => {
-                this.logger.error('ExcelExportDataProvider → ERROR EN LA PETICIÓ:', err);
+                this.logger.error('NotesDataProvider → ERROR EN LA PETICIÓ:', err);
             });
     }
 

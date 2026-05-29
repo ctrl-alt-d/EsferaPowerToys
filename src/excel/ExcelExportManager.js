@@ -4,7 +4,7 @@
 export class ExcelExportManager {
     /**
      * @param {import('../PowerToysLogger.js').PowerToysLogger} logger
-     * @param {import('./ExcelExportDataProvider.js').ExcelExportDataProvider} dataProvider
+     * @param {import('../dataProviders/NotesDataProvider.js').NotesDataProvider} dataProvider
      * @param {import('./ExcelNotesWorkbookBuilder.js').ExcelNotesWorkbookBuilder} workbookBuilder
      */
     constructor(logger, dataProvider, workbookBuilder) {
