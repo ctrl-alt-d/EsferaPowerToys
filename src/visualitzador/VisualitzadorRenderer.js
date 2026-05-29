@@ -22,7 +22,10 @@ export class VisualitzadorRenderer {
 
         const grid = document.createElement('div');
         grid.className = 'ptv-main-grid';
-        grid.appendChild(this.creaTaula(student));
+        const tableWrap = document.createElement('div');
+        tableWrap.className = 'ptv-table-scroll';
+        tableWrap.appendChild(this.creaTaula(student));
+        grid.appendChild(tableWrap);
         grid.appendChild(this.creaColumnaResum(student));
         target.appendChild(grid);
 

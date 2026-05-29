@@ -35,6 +35,7 @@ describe('VisualitzadorModal', () => {
         const next = document.querySelector('[data-action="next"]');
 
         expect(select.value).toBe('0');
+        expect(document.activeElement).toBe(select);
         expect(previous.disabled).toBe(true);
         expect(next.disabled).toBe(false);
         expect(previous.textContent).toBe('← Anterior (←)');
@@ -72,11 +73,59 @@ describe('VisualitzadorModal', () => {
         const styles = document.querySelector('#ptv-styles').textContent;
 
         expect(styles).toContain('.ptv-subj-name-text { font-size:1.4rem;');
-        expect(styles).toContain('.ptv-student-select {');
+        expect(styles).toContain('#ptv-student-select.ptv-student-select {');
+        expect(styles).toContain('height:45px !important;');
         expect(styles).toContain('min-height:45px;');
         expect(styles).not.toContain('height:25px');
         expect(styles).not.toContain('max-height');
         expect(styles).not.toContain('background:var(--ptv-red-dim); border:1px solid var(--ptv-red); color:var(--ptv-red); padding:4px 10px; border-radius:5px; font-size:1.36rem;');
+    });
+
+    test('hauria d’injectar estils responsius sense solapament i amb scroll intern', () => {
+        modal.open(students);
+
+        const styles = document.querySelector('#ptv-styles').textContent;
+
+        expect(styles).toContain('display:flex; flex-direction:column; width:100vw; height:100vh; height:100dvh; overflow:hidden;');
+        expect(styles).toContain('.ptv-student-view { flex:1 1 auto; min-height:0; overflow:auto;');
+        expect(styles).toContain('.ptv-main-grid { display:grid; grid-template-columns:minmax(0, 1fr) minmax(280px, 360px);');
+        expect(styles).toContain('.ptv-table-scroll { min-width:0; overflow-x:auto; }');
+        expect(styles).toContain('.ptv-right-col { display:flex; flex-direction:column; gap:12px; min-width:0; position:sticky; top:16px; }');
+        expect(styles).toContain('@media (max-width:1280px) { .ptv-main-grid { grid-template-columns:1fr; } .ptv-right-col { position:static; display:grid; grid-template-columns:repeat(2, minmax(0, 1fr));');
+        expect(styles).toContain('@media (max-width:700px)');
+        expect(styles).toContain('#ptv-student-select.ptv-student-select { min-width:0; max-width:none; width:100%; }');
+    });
+
+    test('hauria de declarar el modal com a diàleg accessible amb controls etiquetats', () => {
+        modal.open(students);
+
+        const overlay = document.querySelector('.ptv-overlay');
+
+        expect(overlay.getAttribute('role')).toBe('dialog');
+        expect(overlay.getAttribute('aria-modal')).toBe('true');
+        expect(overlay.getAttribute('aria-label')).toBe('Visualitzador de notes dels alumnes');
+        expect(document.querySelector('label[for="ptv-student-select"]').textContent).toBe('Alumne');
+        expect(document.querySelector('[data-action="previous"]').getAttribute('aria-label')).toBe('Alumne anterior');
+        expect(document.querySelector('[data-action="next"]').getAttribute('aria-label')).toBe('Alumne següent');
+        expect(document.querySelector('[data-action="close"]').getAttribute('aria-label')).toBe('Tanca el visualitzador');
+    });
+
+    test('hauria de contenir el focus dins del modal i restaurar-lo en tancar', () => {
+        const opener = document.createElement('button');
+        opener.textContent = 'Obre visualitzador';
+        document.body.appendChild(opener);
+        opener.focus();
+
+        modal.open(students);
+
+        const select = document.querySelector('#ptv-student-select');
+        const close = document.querySelector('[data-action="close"]');
+        close.focus();
+        document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+        expect(document.activeElement).toBe(select);
+
+        document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        expect(document.activeElement).toBe(opener);
     });
 
     test('hauria de mostrar l’avís de preview amb les limitacions conegudes', () => {
