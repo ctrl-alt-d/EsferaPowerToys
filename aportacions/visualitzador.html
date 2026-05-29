@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Esfera PowerToys · Visualitzador de Notes</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,600;0,900;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f13;
+    --surface: #18181f;
+    --surface2: #22222c;
+    --border: #2e2e3a;
+    --text: #e8e8f0;
+    --text-muted: #7a7a96;
+    --green: #22c97a;
+    --green-dim: #1a3d2e;
+    --red: #f05a5a;
+    --red-dim: #3d1a1a;
+    --yellow: #f5c842;
+    --yellow-dim: #3a3010;
+    --accent: #8b7cf8;
+    --accent2: #4fd1c5;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── UPLOAD SCREEN ── */
+  #upload-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+    padding: 40px;
+    text-align: center;
+    max-width: 560px;
+  }
+
+  .logo-mark {
+    width: 72px;
+    height: 72px;
+    border: 2px solid var(--accent);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+  }
+
+  .upload-title {
+    font-family: 'Fraunces', serif;
+    font-size: 2.2rem;
+    font-weight: 900;
+    line-height: 1.1;
+    color: var(--text);
+  }
+
+  .upload-title span {
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  .upload-subtitle {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.7;
+  }
+
+  .drop-zone {
+    width: 100%;
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    padding: 48px 32px;
+    cursor: pointer;
+    transition: all 0.25s;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--accent);
+    background: #1e1e2e;
+  }
+
+  .drop-zone .icon {
+    font-size: 2.5rem;
+    opacity: 0.6;
+  }
+
+  .drop-zone p {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+
+  .drop-zone strong {
+    color: var(--accent);
+    font-size: 0.9rem;
+  }
+
+  #file-input { display: none; }
+
+  /* ── DASHBOARD ── */
+  #dashboard {
+    display: none;
+    width: 100%;
+    min-height: 100vh;
+    flex-direction: column;
+    background: var(--bg);
+  }
+
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .top-bar .brand {
+    font-family: 'Fraunces', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+  }
+
+  .top-bar .brand span {
+    color: var(--text-muted);
+    font-weight: 300;
+    font-style: italic;
+  }
+
+  .select-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    max-width: 420px;
+    min-width: 240px;
+  }
+
+  .select-wrap label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .student-select {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    padding: 10px 14px;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b7cf8' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+
+  .student-select:focus {
+    border-color: var(--accent);
+  }
+
+  .new-file-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 9px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .new-file-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ── CONTENT ── */
+  #student-view {
+    padding: 16px 24px 24px;
+    width: 100%;
+  }
+
+  /* ── NAME HEADER ── */
+  .student-name {
+    font-family: 'Fraunces', serif;
+    font-size: 1.7rem;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+  .student-name .last { color: var(--accent); }
+
+  /* ── MAIN 8/4 GRID ── */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 8fr 4fr;
+    gap: 14px;
+    align-items: start;
+  }
+
+  /* ── TABLE ── */
+  .subjects-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .subjects-table thead tr {
+    background: var(--surface2);
+  }
+
+  .subjects-table thead th {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 500;
+    padding: 7px 10px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .subjects-table thead th.th-name {
+    text-align: left;
+    padding-left: 14px;
+  }
+
+  .subjects-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.12s;
+  }
+
+  .subjects-table tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .subjects-table tbody tr:hover {
+    background: var(--surface2);
+  }
+
+  /* Name cell */
+  .td-name {
+    padding: 0 10px 0 14px;
+    white-space: nowrap;
+  }
+
+  .subj-name-text {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  /* RA cells */
+  .td-ra {
+    padding: 5px 4px;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .ra-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    font-family: 'Fraunces', serif;
+    font-size: 0.95rem;
+    font-weight: 900;
+    cursor: default;
+    transition: transform 0.1s;
+  }
+
+  .ra-pill:hover { transform: scale(1.1); }
+
+  .ra-pill.pass { background: var(--green-dim); color: var(--green);  border: 1px solid var(--green); }
+  .ra-pill.fail { background: var(--red-dim);   color: var(--red);    border: 1px solid var(--red); }
+  .ra-pill.pdt  { background: var(--yellow-dim);color: var(--yellow); border: 1px solid var(--yellow); }
+  .ra-pill.empty{ background: transparent;      color: transparent;   border: none; }
+
+  /* Total cell */
+  .td-total {
+    padding: 5px 14px 5px 8px;
+    text-align: center;
+    vertical-align: middle;
+    border-left: 1px solid var(--border);
+  }
+
+  .total-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    font-family: 'Fraunces', serif;
+    font-size: 1.1rem;
+    font-weight: 900;
+    cursor: default;
+  }
+
+  .total-pill.pass { background: var(--green-dim); color: var(--green);  border: 1px solid var(--green); }
+  .total-pill.fail { background: var(--red-dim);   color: var(--red);    border: 1px solid var(--red); }
+  .total-pill.warn { background: var(--yellow-dim);color: var(--yellow); border: 1px solid var(--yellow); }
+  .total-pill.na   { background: var(--surface2);  color: var(--text-muted); border: 1px dashed var(--border); font-size: 0.65rem; }
+
+  /* ── RIGHT COLUMN ── */
+  .right-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: sticky;
+    top: 68px;
+  }
+
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .section-title {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .s-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+
+  .s-num {
+    font-family: 'Fraunces', serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .s-num.ok   { color: var(--green); }
+  .s-num.ko   { color: var(--red); }
+  .s-num.pdt  { color: var(--yellow); }
+  .s-num.info { color: var(--accent); }
+
+  /* ── RECOVER (inside right col) ── */
+  .recover-card {
+    background: var(--surface);
+    border: 1px solid var(--red);
+    border-radius: 10px;
+    padding: 14px;
+  }
+
+  .recover-card h3 {
+    font-size: 0.6rem;
+    font-weight: 500;
+    color: var(--red);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+
+  .recover-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .recover-chip {
+    background: var(--red-dim);
+    border: 1px solid var(--red);
+    color: var(--red);
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-size: 0.68rem;
+    line-height: 1.4;
+  }
+
+  /* ── EMPTY ── */
+  #empty-msg {
+    display: none;
+    padding: 80px 40px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+
+  #empty-msg .big {
+    font-family: 'Fraunces', serif;
+    font-size: 4rem;
+    font-weight: 900;
+    color: var(--border);
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .pdf-inline-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    background: var(--accent);
+    border: none;
+    color: var(--bg);
+    padding: 11px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    display: block;
+    margin: 14px 0 0 auto;
+  }
+
+  .pdf-inline-btn:hover {
+    background: #a89ff9;
+  }
+
+  .pdf-inline-btn:disabled {
+    opacity: 0.5;
+    cursor: wait;
+  }
+
+  /* ── PDF LAYOUT (applied to #pdf-target during export) ── */
+  #pdf-target.pdf-mode {
+    background: #0f0f13;
+    padding: 28px 32px 32px;
+    width: 900px;
+  }
+
+  #pdf-target.pdf-mode .student-name {
+    font-size: 1.6rem;
+    margin-bottom: 16px;
+  }
+
+  #pdf-target.pdf-mode .main-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  #pdf-target.pdf-mode .right-col {
+    position: static;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  #pdf-target.pdf-mode .subjects-table {
+    table-layout: auto;
+    width: 100%;
+    overflow: visible;
+  }
+
+  #pdf-target.pdf-mode .td-name {
+    white-space: normal;
+    max-width: 200px;
+  }
+
+  #pdf-target.pdf-mode .pdf-inline-btn {
+    visibility: hidden;
+  }
+
+  @media (max-width: 1300px) {
+    .main-grid {
+      grid-template-columns: 1fr;
+    }
+    .right-col {
+      position: static;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+  }
+
+  @media (max-width: 560px) {
+    #student-view { padding: 12px 14px 20px; }
+    .top-bar { padding: 14px 16px; }
+    .right-col {
+      grid-template-columns: 1fr;
+    }
+    .subjects-table thead th,
+    .subj-name-text { font-size: 0.65rem; }
+    .ra-pill { width: 30px; height: 30px; font-size: 0.8rem; }
+    .total-pill { width: 38px; height: 38px; }
+    .total-pill .t-score { font-size: 1rem; }
+  }
+
+  /* ── PRINT ── */
+  @media print {
+    body { background: white; }
+    .top-bar { position: static; }
+    .new-file-btn { display: none; }
+    .right-col { position: static; }
+  }
+</style>
+</head>
+<body>
+
+<!-- UPLOAD SCREEN -->
+<div id="upload-screen">
+  <div class="logo-mark">📊</div>
+  <h1 class="upload-title">Esfera<br><span>PowerToys</span></h1>
+  <p class="upload-subtitle">Visualitzador de notes · Carrega el fitxer exportat d'Esfera per veure el recorregut de cada alumne</p>
+  <div class="drop-zone" id="drop-zone">
+    <div class="icon">📁</div>
+    <strong>Arrossega el fitxer aquí</strong>
+    <p>o fes clic per seleccionar</p>
+    <p style="margin-top:8px;font-size:0.72rem;">format .xlsx o .csv exportat d'Esfera</p>
+  </div>
+  <input type="file" id="file-input" accept=".csv,.xlsx">
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="top-bar">
+    <div class="brand">Esfera <span>PowerToys</span></div>
+    <div class="select-wrap">
+      <label>Alumne</label>
+      <select class="student-select" id="student-select">
+        <option value="">— selecciona un alumne —</option>
+      </select>
+    </div>
+    <button class="new-file-btn" id="reset-btn">↩ Nou fitxer</button>
+  </div>
+
+  <div id="student-view" style="display:none"><div id="pdf-target"></div></div>
+  <div id="empty-msg">
+    <span class="big">👤</span>
+    Selecciona un alumne per veure el seu resum
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────
+// SUBJECT_NAMES es construeix dinàmicament des del fitxer
+let SUBJECT_NAMES = {};
+let students = [];
+
+// ─────────────────────────────────────────────
+// CSV PARSE
+// ─────────────────────────────────────────────
+function parseCSV(text) {
+  const lines = text.trim().split('\n').map(l => l.replace(/\r/g, ''));
+
+  // Row 0 = "Nom assignatura ¬(CODI)", merged across columns
+  // Row 1 = field codes (idAlumne, nom, CODI, CODI_01RA, ...)
+  // Row 2+ = data
+  const nameRow    = parseCSVRow(lines[0]);
+  const headerRow  = parseCSVRow(lines[1]);
+
+  // Build SUBJECT_NAMES from row 0: find cells with "Nom ¬(CODI)" pattern
+  // The code inside ¬() IS the subject code used in the header row
+  SUBJECT_NAMES = {};
+  nameRow.forEach(cell => {
+    const match = cell.match(/^(.+?)\s*¬\(([^)]+)\)\s*$/);
+    if (match) {
+      const fullName = match[1].trim();
+      const code     = match[2].trim();
+      if (!SUBJECT_NAMES[code]) {
+        SUBJECT_NAMES[code] = fullName;
+      }
+    }
+  });
+
+  // For subjects without ¬() (e.g. "Pensament computacional 2"),
+  // detect them as columns in headerRow that are not RA/EM sub-columns
+  // and don't already have a name
+  headerRow.forEach((h, idx) => {
+    if (idx < 2) return; // skip idAlumne, nom
+    const code = h.trim();
+    if (!code) return;
+    if (SUBJECT_NAMES[code]) return; // already known
+    // It's a subject code if it has no _ after the base (i.e. it IS the base)
+    // and there exist columns that start with code + '_'
+    const isBase = headerRow.some(k => k.startsWith(code + '_'));
+    if (isBase && !SUBJECT_NAMES[code]) {
+      // Use the name row cell at this position, or fallback to code
+      SUBJECT_NAMES[code] = nameRow[idx] ? nameRow[idx].trim() || code : code;
+    }
+  });
+
+  const data = [];
+  for (let i = 2; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const cols = parseCSVRow(lines[i]);
+    const obj = {};
+    headerRow.forEach((h, idx) => { obj[h] = cols[idx] ?? ''; });
+    data.push(obj);
+  }
+
+  return data;
+}
+
+function parseCSVRow(line) {
+  const result = [];
+  let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQ = !inQ; continue; }
+    if (c === ',' && !inQ) { result.push(cur.trim()); cur = ''; continue; }
+    cur += c;
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+function buildStudents(rows) {
+  // Derive subject codes from SUBJECT_NAMES keys
+  const subjectCodes = Object.keys(SUBJECT_NAMES);
+
+  return rows.map(row => {
+    const id  = row['idAlumne'];
+    const nom = row['nom'] || '';
+    const subjects = {};
+
+    subjectCodes.forEach(code => {
+      const raKeys = Object.keys(row).filter(k =>
+        k.startsWith(code + '_') && /\dRA$/i.test(k)
+      );
+      const finalVal = row[code] ?? '';
+
+      const ras = raKeys.map(k => {
+        // Extract RA number: e.g. "0221_IC10_01RA" → "01RA" → strip to number
+        const num = k.replace(code + '_', '').replace('_IC10', '');
+        return { key: num, raw: row[k] ?? '' };
+      });
+
+      if (finalVal === '' && ras.length === 0) return;
+
+      subjects[code] = {
+        code,
+        name: SUBJECT_NAMES[code] || code,
+        final: finalVal,
+        ras,
+      };
+    });
+
+    return { id, nom, subjects };
+  }).filter(s => s.id && s.nom);
+}
+
+// ─────────────────────────────────────────────
+// VALUE HELPERS
+// ─────────────────────────────────────────────
+function parseVal(v) {
+  if (v === 'NA' || v === '' || v === undefined) return null;
+  if (v === 'PDT') return 'PDT';
+  if (v === 'PQ') return 'PQ';
+  const n = parseFloat(v);
+  return isNaN(n) ? null : n;
+}
+
+function isNA(v) {
+  return v === 'NA' || v === '' || v === undefined;
+}
+
+function scoreClass(v) {
+  if (isNA(v)) return 'fail'; // NA = No Assolit = suspès
+  const p = parseVal(v);
+  if (p === null) return 'fail';
+  if (p === 'PDT') return 'pdt';
+  if (p === 'PQ') return 'pass';
+  if (p >= 5) return 'pass';
+  return 'fail';
+}
+
+function displayVal(v) {
+  if (isNA(v)) return 'NA';
+  const p = parseVal(v);
+  if (p === null) return 'NA';
+  if (p === 'PDT') return 'PDT';
+  if (p === 'PQ') return 'PQ';
+  return p.toString();
+}
+
+function finalClass(v) {
+  if (isNA(v)) return 'na'; // nota final buida = sense dades (no comptem com a suspès)
+  const p = parseVal(v);
+  if (p === null) return 'na';
+  if (p === 'PDT') return 'warn';
+  if (p === 'PQ') return 'pass';
+  if (typeof p === 'number' && p >= 5) return 'pass';
+  return 'fail';
+}
+
+function badgeInfo(v) {
+  if (isNA(v)) return { cls: 'badge-na', label: 'S/D' };
+  const p = parseVal(v);
+  if (p === null) return { cls: 'badge-na', label: 'S/D' };
+  if (p === 'PDT') return { cls: 'badge-pdt', label: 'Pendent' };
+  if (p === 'PQ') return { cls: 'badge-pdt', label: 'Pend. qualif.' };
+  if (typeof p === 'number' && p >= 5) return { cls: 'badge-pass', label: 'Aprovat' };
+  if (typeof p === 'number') return { cls: 'badge-fail', label: 'Suspès' };
+  return { cls: 'badge-na', label: '—' };
+}
+
+// ─────────────────────────────────────────────
+// RENDER STUDENT
+// ─────────────────────────────────────────────
+function renderStudent(student) {
+  const { nom, subjects } = student;
+
+  const [cognoms, prenom] = nom.split(',').map(s => s.trim());
+  const displayName = prenom
+    ? `<span class="last">${cognoms}</span>, ${prenom}`
+    : `<span class="last">${nom}</span>`;
+
+  let totalRA = 0, approvedRA = 0, failedRA = 0, pdtRA = 0;
+  let matApproved = 0, matFailed = 0, matPdt = 0, matRecover = [];
+
+  const subjectList = Object.values(subjects);
+
+  // Find max number of RAs across subjects for column alignment
+  const maxRAs = Math.max(...subjectList.map(s => s.ras.length), 0);
+
+  subjectList.forEach(sub => {
+    const fc = finalClass(sub.final);
+    if (fc === 'pass') matApproved++;
+    else if (fc === 'fail') { matFailed++; matRecover.push(sub.name); }
+    else if (fc === 'warn') matPdt++;
+
+    sub.ras.forEach(ra => {
+      totalRA++;
+      const sc = scoreClass(ra.raw);
+      if (sc === 'pass') approvedRA++;
+      else if (sc === 'fail') failedRA++;
+      else if (sc === 'pdt') pdtRA++;
+    });
+  });
+
+  // Header row: RA01, RA02...
+  const raHeaders = Array.from({length: maxRAs}, (_, i) =>
+    `<th>RA${String(i+1).padStart(2,'0')}</th>`
+  ).join('');
+
+  // Table rows
+  const rowsHTML = subjectList.map(sub => {
+    const fc = finalClass(sub.final);
+    const badge = badgeInfo(sub.final);
+
+    // Fill RAs up to maxRAs with empty cells
+    const raCells = Array.from({length: maxRAs}, (_, i) => {
+      const ra = sub.ras[i];
+      if (!ra) return `<td class="td-ra"><span class="ra-pill empty">·</span></td>`;
+      const sc = scoreClass(ra.raw);
+      return `<td class="td-ra"><span class="ra-pill ${sc}" title="${ra.key}: ${displayVal(ra.raw)}">${displayVal(ra.raw)}</span></td>`;
+    }).join('');
+
+    const badgeLabel = badge.cls === 'badge-pdt' ? 'PDT'
+      : badge.cls === 'badge-pass' && displayVal(sub.final) === 'PQ' ? 'PQ'
+      : fc === 'pass' ? 'AP' : fc === 'fail' ? 'SU' : '—';
+
+    return `<tr>
+      <td class="td-name"><span class="subj-name-text">${sub.name}</span></td>
+      ${raCells}
+      <td class="td-total">
+        <div class="total-pill ${fc}" title="${badgeLabel}">${displayVal(sub.final)}</div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Recover card (inside right col)
+  const recoverHTML = matRecover.length > 0 ? `
+    <div class="recover-card">
+      <h3>⚠ A recuperar</h3>
+      <div class="recover-list">
+        ${matRecover.map(m => `<span class="recover-chip">${m}</span>`).join('')}
+      </div>
+    </div>` : '';
+
+  return `
+    <div class="student-name">${displayName}</div>
+    <div class="main-grid">
+
+      <table class="subjects-table">
+        <thead>
+          <tr>
+            <th class="th-name">Mòdul</th>
+            ${raHeaders}
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHTML}</tbody>
+      </table>
+
+      <div class="right-col">
+        <div class="summary-card">
+          <div class="section-title">Resultats d'Aprenentatge</div>
+          <div class="stat-row"><span class="s-label">Aprovats</span><span class="s-num ok">${approvedRA}</span></div>
+          <div class="stat-row"><span class="s-label">Suspesos / NA</span><span class="s-num ko">${failedRA}</span></div>
+          <div class="stat-row"><span class="s-label">Pendents</span><span class="s-num pdt">${pdtRA}</span></div>
+          <div class="stat-row"><span class="s-label">Total avaluats</span><span class="s-num info">${totalRA}</span></div>
+          <div class="section-title" style="margin-top:4px">Mòduls</div>
+          <div class="stat-row"><span class="s-label">Aprovats</span><span class="s-num ok">${matApproved}</span></div>
+          <div class="stat-row"><span class="s-label">A recuperar</span><span class="s-num ko">${matFailed}</span></div>
+          ${matPdt > 0 ? `<div class="stat-row"><span class="s-label">Pendents</span><span class="s-num pdt">${matPdt}</span></div>` : ''}
+        </div>
+        ${recoverHTML}
+        <button class="pdf-inline-btn" id="pdf-inline-btn">⬇ Descarregar PDF</button>
+      </div>
+
+    </div>
+  `;
+}
+
+// ─────────────────────────────────────────────
+// UI EVENTS
+// ─────────────────────────────────────────────
+const uploadScreen  = document.getElementById('upload-screen');
+const dashboard     = document.getElementById('dashboard');
+const dropZone      = document.getElementById('drop-zone');
+const fileInput     = document.getElementById('file-input');
+const studentSelect = document.getElementById('student-select');
+const studentView   = document.getElementById('student-view');
+const emptyMsg      = document.getElementById('empty-msg');
+const resetBtn      = document.getElementById('reset-btn');
+
+let currentStudentNom = '';
+
+dropZone.addEventListener('click', () => fileInput.click());
+
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('dragover');
+});
+
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) loadFile(file);
+});
+
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) loadFile(fileInput.files[0]);
+});
+
+function loadFile(file) {
+  const isXLSX = file.name.endsWith('.xlsx') || file.name.endsWith('.xls');
+  const reader = new FileReader();
+
+  reader.onload = e => {
+    let rows;
+    if (isXLSX) {
+      const wb = XLSX.read(e.target.result, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      // Convert to CSV string and reuse existing parser
+      const csv = XLSX.utils.sheet_to_csv(ws);
+      rows = parseCSV(csv);
+    } else {
+      rows = parseCSV(e.target.result);
+    }
+    students = buildStudents(rows);
+    populateSelect();
+    uploadScreen.style.display = 'none';
+    dashboard.style.display = 'flex';
+    dashboard.style.flexDirection = 'column';
+    emptyMsg.style.display = 'block';
+  };
+
+  if (isXLSX) {
+    reader.readAsArrayBuffer(file);
+  } else {
+    reader.readAsText(file, 'UTF-8');
+  }
+}
+
+function populateSelect() {
+  studentSelect.innerHTML = '<option value="">— selecciona un alumne —</option>';
+  students
+    .sort((a, b) => a.nom.localeCompare(b.nom))
+    .forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.nom;
+      studentSelect.appendChild(opt);
+    });
+}
+
+studentSelect.addEventListener('change', () => {
+  const id = studentSelect.value;
+  if (!id) {
+    studentView.style.display = 'none';
+    emptyMsg.style.display = 'block';
+    currentStudentNom = '';
+    return;
+  }
+  const student = students.find(s => s.id === id);
+  if (!student) return;
+  currentStudentNom = student.nom;
+  emptyMsg.style.display = 'none';
+  studentView.style.display = 'block';
+  studentView.innerHTML = '<div id="pdf-target"></div>';
+  document.getElementById('pdf-target').innerHTML = renderStudent(student);
+  studentView.scrollTop = 0;
+  window.scrollTo(0, 0);
+});
+
+// PDF export — delegated from studentView
+studentView.addEventListener('click', async (e) => {
+  const btn = e.target.closest('#pdf-inline-btn');
+  if (!btn || btn.disabled) return;
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Generant...';
+
+  const target = document.getElementById('pdf-target');
+  target.classList.add('pdf-mode');
+  await document.fonts.ready;
+  await new Promise(r => setTimeout(r, 120));
+
+  try {
+    const canvas = await html2canvas(target, {
+      scale: 1.5,
+      useCORS: true,
+      backgroundColor: '#0f0f13',
+      logging: false,
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const margin = 10;
+    const usableW = pageW - margin * 2;
+    const imgH = (canvas.height * usableW) / canvas.width;
+
+    let yOffset = 0, page = 0;
+    while (yOffset < imgH) {
+      if (page > 0) pdf.addPage();
+      // fondo oscuro
+      pdf.setFillColor(15, 15, 19);
+      pdf.rect(0, 0, pageW, pageH, 'F');
+      pdf.addImage(imgData, 'JPEG', margin, margin - yOffset, usableW, imgH);
+      yOffset += pageH - margin * 2;
+      page++;
+    }
+
+    const nom = (currentStudentNom || 'alumne').replace(/[^a-zA-ZÀ-ÿ0-9 _-]/g, '').trim().replace(/\s+/g, '_');
+    pdf.save(`${nom}_notes.pdf`);
+  } catch(err) {
+    alert('Error generant el PDF: ' + err.message);
+  } finally {
+    target.classList.remove('pdf-mode');
+    btn.disabled = false;
+    btn.textContent = '⬇ Descarregar PDF';
+  }
+});
+
+resetBtn.addEventListener('click', () => {
+  students = [];
+  currentStudentNom = '';
+  studentSelect.innerHTML = '';
+  studentView.innerHTML = '<div id="pdf-target"></div>';
+  studentView.style.display = 'none';
+  emptyMsg.style.display = 'none';
+  dashboard.style.display = 'none';
+  uploadScreen.style.display = 'flex';
+  fileInput.value = '';
+});
+</script>
+</body>
+</html>
