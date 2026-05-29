@@ -56,7 +56,7 @@ describe('ExcelExportManager', () => {
     });
 
     test('hauria de descarregar un fitxer XLSX amb el tipus Blob correcte', async () => {
-        const dadesAlumnes = [{ idAlumne: '1', nom: 'Alumna', notes: {} }];
+        const dadesAlumnes = [{ idAlumne: '1', nom: 'Alumna', continguts: {} }];
 
         await manager.descarregaXLSX(dadesAlumnes, 1, 'Grup Test');
 
@@ -71,7 +71,7 @@ describe('ExcelExportManager', () => {
     });
 
     test('hauria de coordinar proveïdor, constructor i descàrrega per a l’avaluació seleccionada', async () => {
-        const notesAlumnes = [{ idAlumne: '1', nom: 'Alumna', notes: {} }];
+        const notesAlumnes = [{ idAlumne: '1', nom: 'Alumna', continguts: {} }];
         dataProvider.obtéDadesExportació.mockResolvedValue({ notesAlumnes, nomGrup: 'Grup Test' });
 
         await manager.procésDescàrregaExcel(2);

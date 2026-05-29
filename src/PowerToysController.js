@@ -5,11 +5,16 @@ import { MateriaApplier } from './materia/MateriaApplier.js';
 import { ScrollHelper } from './ScrollHelper.js';
 import { version } from '../build/version.js';
 import { CSSApplier } from './CSSApplier.js';
-import { ExcelExportDataProvider } from './excel/ExcelExportDataProvider.js';
+import { NotesDataProvider } from './dataProviders/NotesDataProvider.js';
 import { ExcelExportManager } from './excel/ExcelExportManager.js';
 import { ExcelUIBuilder } from './excel/ExcelUIBuilder.js';
 import { ExcelNotesWorkbookBuilder } from './excel/ExcelNotesWorkbookBuilder.js';
 import { ContainerUIBuilder } from './ContainerUIBuilder.js';
+import { VisualitzadorManager } from './visualitzador/VisualitzadorManager.js';
+import { VisualitzadorModelBuilder } from './visualitzador/VisualitzadorModelBuilder.js';
+import { VisualitzadorRenderer } from './visualitzador/VisualitzadorRenderer.js';
+import { VisualitzadorPdfExporter } from './visualitzador/VisualitzadorPdfExporter.js';
+import { VisualitzadorModal } from './visualitzador/VisualitzadorModal.js';
 /**
  * Classe principal que coordina les funcionalitats d'Esfer@ PowerToys.
  */
@@ -45,15 +50,36 @@ export class PowerToysController {
         /** @type {CSSApplier} */
         this.cssApplier = new CSSApplier(this.logger);
 
+        const notesDataProvider = new NotesDataProvider(this.logger);
+
         /** @type {ExcelExportManager} */
         this.excelExportManager = new ExcelExportManager(
             this.logger,
-            new ExcelExportDataProvider(this.logger),
+            notesDataProvider,
             new ExcelNotesWorkbookBuilder(),
         );
 
+        const visualitzadorModelBuilder = new VisualitzadorModelBuilder();
+
+        /** @type {VisualitzadorManager} */
+        this.visualitzadorManager = new VisualitzadorManager(
+            this.logger,
+            notesDataProvider,
+            visualitzadorModelBuilder,
+            new VisualitzadorModal(
+                this.logger,
+                new VisualitzadorRenderer(visualitzadorModelBuilder),
+                new VisualitzadorPdfExporter(),
+            ),
+        );
+
         /** @type {ExcelUIBuilder} */
-        this.excelUIBuilder = new ExcelUIBuilder(this.logger, (evaluation) => this.excelExportManager.procésDescàrregaExcel(evaluation), this.containerBuilder);
+        this.excelUIBuilder = new ExcelUIBuilder(
+            this.logger,
+            (evaluation) => this.excelExportManager.procésDescàrregaExcel(evaluation),
+            this.containerBuilder,
+            (evaluation) => this.visualitzadorManager.obreVisualitzador(evaluation),
+        );
 
         this.lastStudent = '';
         this._formTimeout = null;

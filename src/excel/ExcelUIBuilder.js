@@ -6,11 +6,13 @@ export class ExcelUIBuilder {
      * @param {import('../PowerToysLogger.js').PowerToysLogger} logger
      * @param {function} onDownload Callback activat a l'apretar el botó d'Excel
      * @param {import('../ContainerUIBuilder.js').ContainerUIBuilder} containerBuilder - Constructor base del contenidor.
+     * @param {function} onVisualize Callback activat a l'apretar el botó del visualitzador
      */
-    constructor(logger, onDownload, containerBuilder) {
+    constructor(logger, onDownload, containerBuilder, onVisualize = null) {
         this.logger = logger;
         this.onDownload = onDownload;
         this.containerBuilder = containerBuilder;
+        this.onVisualize = onVisualize;
         this.maxAvaluacions = 3;
     }
 
@@ -48,6 +50,7 @@ export class ExcelUIBuilder {
             ">
                 ${optionsHTML}
             </select>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px;">
             <button id="btn-descargar-xlsx" style="
                 background-color: #22c55e;
                 color: white;
@@ -58,9 +61,21 @@ export class ExcelUIBuilder {
                 font-weight: 500;
                 cursor: pointer;
                 align-self: flex-start;
-                margin-top: 10px;
                 transition: background 0.2s;
             ">Descarregar Excel</button>
+            <button id="btn-visualitzar-dades" style="
+                background-color: #2563eb;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                align-self: flex-start;
+                transition: background 0.2s;
+            ">Visualitzar dades (preview)</button>
+            </div>
             </div>
         `;
 
@@ -73,6 +88,14 @@ export class ExcelUIBuilder {
             btnExcel.addEventListener('click', () => {
                 const evaluation = selectAvaluacio ? parseInt(selectAvaluacio.value, 10) : 1;
                 this.onDownload(evaluation);
+            });
+        }
+
+        const btnVisualitzar = document.getElementById('btn-visualitzar-dades');
+        if (btnVisualitzar && this.onVisualize) {
+            btnVisualitzar.addEventListener('click', () => {
+                const evaluation = selectAvaluacio ? parseInt(selectAvaluacio.value, 10) : 1;
+                this.onVisualize(evaluation);
             });
         }
 

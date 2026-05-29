@@ -1,0 +1,42 @@
+import { JSDOM } from 'jsdom';
+import { describe, test, expect, beforeEach, afterEach } from '@jest/globals';
+import { VisualitzadorRenderer } from '../src/visualitzador/VisualitzadorRenderer.js';
+
+describe('VisualitzadorRenderer', () => {
+    beforeEach(() => {
+        const dom = new JSDOM('<!doctype html><html><body></body></html>');
+        global.window = dom.window;
+        global.document = dom.window.document;
+    });
+
+    afterEach(() => {
+        delete global.window;
+        delete global.document;
+    });
+
+    test('hauria de renderitzar taula, resum, colors i llista de recuperació', () => {
+        const renderer = new VisualitzadorRenderer();
+        const node = renderer.renderStudent({
+            id: '1',
+            nom: 'Cognom, Nom',
+            subjects: [
+                { code: 'M01', name: 'Mòdul aprovat ¬(M01)', final: 6, ras: [{ key: '01RA', raw: 6 }] },
+                { code: 'M02', name: 'Mòdul suspès', final: 4, ras: [{ key: '01RA', raw: 'NA' }] },
+            ],
+        });
+
+        expect(node.querySelector('.ptv-student-name').textContent).toBe('Cognom, Nom');
+        expect(node.querySelector('.ptv-main-grid > .ptv-table-scroll .ptv-subjects-table')).not.toBeNull();
+        expect(node.querySelectorAll('.ptv-subjects-table tbody tr')).toHaveLength(2);
+        expect(node.querySelector('.ptv-subj-code').textContent).toBe('M01');
+        expect(node.querySelector('.ptv-subj-label').textContent).toBe('Mòdul aprovat');
+        expect(node.querySelector('.ptv-ra-pill.pass').textContent).toBe('6');
+        expect(node.querySelector('.ptv-ra-pill.fail').textContent).toBe('NA');
+        expect(node.querySelector('.ptv-recover-chip').textContent).toBe('Mòdul suspès');
+        expect(node.textContent).toContain('A recuperar');
+        expect(node.querySelector('.ptv-summary-card').getAttribute('aria-labelledby')).toBe('ptv-summary-ra-title');
+        expect(node.querySelector('#ptv-summary-ra-title').tagName).toBe('H2');
+        expect(node.querySelector('#ptv-summary-modules-title').classList.contains('ptv-section-title--spaced')).toBe(true);
+        expect(node.querySelector('[data-action="download-pdf"]')).not.toBeNull();
+    });
+});
