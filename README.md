@@ -50,8 +50,8 @@ Per instal·lar aquest script necessites:
 
 ### Noves funcionalitats
 - ✅ Permet plegar el contenidor per a ficar notes
-- ✅ Descarregar un csv amb les notes del grup classe
-
+- ✅ Descarregar un excel amb les notes del grup classe
+- ✅ Visualitza les dades dels alumnes d'una forma més gràfica.
 
 ---
 
