@@ -20,7 +20,7 @@ describe('VisualitzadorRenderer', () => {
             id: '1',
             nom: 'Cognom, Nom',
             subjects: [
-                { code: 'M01', name: 'Mòdul aprovat', final: 6, ras: [{ key: '01RA', raw: 6 }] },
+                { code: 'M01', name: 'Mòdul aprovat ¬(M01)', final: 6, ras: [{ key: '01RA', raw: 6 }] },
                 { code: 'M02', name: 'Mòdul suspès', final: 4, ras: [{ key: '01RA', raw: 'NA' }] },
             ],
         });
@@ -28,6 +28,8 @@ describe('VisualitzadorRenderer', () => {
         expect(node.querySelector('.ptv-student-name').textContent).toBe('Cognom, Nom');
         expect(node.querySelector('.ptv-main-grid > .ptv-table-scroll .ptv-subjects-table')).not.toBeNull();
         expect(node.querySelectorAll('.ptv-subjects-table tbody tr')).toHaveLength(2);
+        expect(node.querySelector('.ptv-subj-code').textContent).toBe('M01');
+        expect(node.querySelector('.ptv-subj-label').textContent).toBe('Mòdul aprovat');
         expect(node.querySelector('.ptv-ra-pill.pass').textContent).toBe('6');
         expect(node.querySelector('.ptv-ra-pill.fail').textContent).toBe('NA');
         expect(node.querySelector('.ptv-recover-chip').textContent).toBe('Mòdul suspès');

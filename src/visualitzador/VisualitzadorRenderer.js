@@ -79,7 +79,13 @@ export class VisualitzadorRenderer {
         name.className = 'ptv-td-name';
         const nameText = document.createElement('span');
         nameText.className = 'ptv-subj-name-text';
-        nameText.textContent = subject.name;
+        const codeText = document.createElement('span');
+        codeText.className = 'ptv-subj-code';
+        codeText.textContent = subject.code;
+        const labelText = document.createElement('span');
+        labelText.className = 'ptv-subj-label';
+        labelText.textContent = this.normalitzaNomAssignatura(subject.name, subject.code);
+        nameText.append(codeText, labelText);
         name.appendChild(nameText);
         tr.appendChild(name);
 
@@ -109,6 +115,17 @@ export class VisualitzadorRenderer {
         tr.appendChild(total);
 
         return tr;
+    }
+
+    /**
+     * Elimina el codi final del nom perquè es pugui mostrar en una línia separada.
+     */
+    normalitzaNomAssignatura(name, code) {
+        return String(name || code || '').replace(new RegExp(`\\s*¬\\(${this.escapaRegex(code)}\\)\\s*$`), '').trim();
+    }
+
+    escapaRegex(value) {
+        return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
     creaColumnaResum(student) {

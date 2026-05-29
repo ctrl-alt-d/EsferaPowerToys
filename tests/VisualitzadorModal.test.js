@@ -72,7 +72,8 @@ describe('VisualitzadorModal', () => {
 
         const styles = document.querySelector('#ptv-styles').textContent;
 
-        expect(styles).toContain('.ptv-subj-name-text { font-size:1.4rem;');
+        expect(styles).toContain('.ptv-subj-label { font-size:1.4rem; }');
+        expect(styles).toContain('.ptv-subj-code { font-size:1.18rem;');
         expect(styles).toContain('#ptv-student-select.ptv-student-select {');
         expect(styles).toContain('height:45px !important;');
         expect(styles).toContain('min-height:45px;');
@@ -91,7 +92,8 @@ describe('VisualitzadorModal', () => {
         expect(styles).toContain('.ptv-main-grid { display:grid; grid-template-columns:minmax(0, 1fr) minmax(280px, 360px);');
         expect(styles).toContain('.ptv-table-scroll { min-width:0; overflow-x:auto; }');
         expect(styles).toContain('.ptv-right-col { display:flex; flex-direction:column; gap:12px; min-width:0; position:sticky; top:16px; }');
-        expect(styles).toContain('@media (max-width:1280px) { .ptv-main-grid { grid-template-columns:1fr; } .ptv-right-col { position:static; display:grid; grid-template-columns:repeat(2, minmax(0, 1fr));');
+        expect(styles).toContain('@media (max-width:1500px) { .ptv-main-grid { grid-template-columns:1fr; } .ptv-right-col { position:static; display:grid; grid-template-columns:repeat(2, minmax(0, 1fr));');
+        expect(styles).toContain('@media (max-width:900px) { .ptv-right-col { grid-template-columns:1fr; } .ptv-td-name { min-width:160px; max-width:220px; } }');
         expect(styles).toContain('@media (max-width:700px)');
         expect(styles).toContain('#ptv-student-select.ptv-student-select { min-width:0; max-width:none; width:100%; }');
     });
