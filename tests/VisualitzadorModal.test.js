@@ -66,15 +66,29 @@ describe('VisualitzadorModal', () => {
         expect(document.querySelector('#ptv-student-select').value).toBe('0');
     });
 
-    test('hauria d’injectar estils del visualitzador amb text gran i sense alçada màxima al selector', () => {
+    test('hauria d’injectar estils del visualitzador amb text gran i selector prou alt', () => {
         modal.open(students);
 
         const styles = document.querySelector('#ptv-styles').textContent;
 
         expect(styles).toContain('.ptv-subj-name-text { font-size:1.4rem;');
         expect(styles).toContain('.ptv-student-select {');
+        expect(styles).toContain('min-height:45px;');
+        expect(styles).not.toContain('height:25px');
         expect(styles).not.toContain('max-height');
         expect(styles).not.toContain('background:var(--ptv-red-dim); border:1px solid var(--ptv-red); color:var(--ptv-red); padding:4px 10px; border-radius:5px; font-size:1.36rem;');
+    });
+
+    test('hauria de mostrar l’avís de preview amb les limitacions conegudes', () => {
+        modal.open(students);
+
+        const disclaimer = document.querySelector('.ptv-preview-disclaimer');
+
+        expect(disclaimer).not.toBeNull();
+        expect(disclaimer.getAttribute('role')).toBe('status');
+        expect(disclaimer.textContent).toContain('previsualització');
+        expect(disclaimer.textContent).toContain('estada en empresa');
+        expect(disclaimer.textContent).toContain('RA opcionals');
     });
 
     test('hauria de delegar la descàrrega PDF de l’alumne actual', async () => {

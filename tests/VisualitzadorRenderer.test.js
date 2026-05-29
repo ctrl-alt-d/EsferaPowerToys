@@ -31,6 +31,9 @@ describe('VisualitzadorRenderer', () => {
         expect(node.querySelector('.ptv-ra-pill.fail').textContent).toBe('NA');
         expect(node.querySelector('.ptv-recover-chip').textContent).toBe('Mòdul suspès');
         expect(node.textContent).toContain('A recuperar');
+        expect(node.querySelector('.ptv-summary-card').getAttribute('aria-labelledby')).toBe('ptv-summary-ra-title');
+        expect(node.querySelector('#ptv-summary-ra-title').tagName).toBe('H2');
+        expect(node.querySelector('#ptv-summary-modules-title').classList.contains('ptv-section-title--spaced')).toBe(true);
         expect(node.querySelector('[data-action="download-pdf"]')).not.toBeNull();
     });
 });

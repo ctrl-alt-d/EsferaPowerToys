@@ -74,7 +74,7 @@ export class ExcelUIBuilder {
                 cursor: pointer;
                 align-self: flex-start;
                 transition: background 0.2s;
-            ">Visualitzar dades</button>
+            ">Visualitzar dades (preview)</button>
             </div>
             </div>
         `;

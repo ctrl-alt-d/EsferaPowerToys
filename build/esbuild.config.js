@@ -13,5 +13,6 @@ esbuild.build({
         js: header,
     },
     format: 'iife',
+    minify: true,
     target: ['es2022'],
 }).catch(() => process.exit(1));

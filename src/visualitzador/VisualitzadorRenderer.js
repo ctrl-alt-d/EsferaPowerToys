@@ -113,14 +113,15 @@ export class VisualitzadorRenderer {
         const rightCol = document.createElement('div');
         rightCol.className = 'ptv-right-col';
 
-        const summary = document.createElement('div');
+        const summary = document.createElement('section');
         summary.className = 'ptv-summary-card';
-        this.afegeixTitolSecció(summary, "Resultats d'Aprenentatge");
+        summary.setAttribute('aria-labelledby', 'ptv-summary-ra-title');
+        this.afegeixTitolSecció(summary, "Resultats d'Aprenentatge", 'ptv-summary-ra-title');
         this.afegeixStat(summary, 'Aprovats', stats.approvedRA, 'ok');
         this.afegeixStat(summary, 'Suspesos / NA', stats.failedRA, 'ko');
         this.afegeixStat(summary, 'Pendents', stats.pdtRA, 'pdt');
         this.afegeixStat(summary, 'Total avaluats', stats.totalRA, 'info');
-        this.afegeixTitolSecció(summary, 'Mòduls');
+        this.afegeixTitolSecció(summary, 'Mòduls', 'ptv-summary-modules-title', 'ptv-section-title--spaced');
         this.afegeixStat(summary, 'Aprovats', stats.matApproved, 'ok');
         this.afegeixStat(summary, 'A recuperar', stats.matFailed, 'ko');
         if (stats.matPdt > 0) this.afegeixStat(summary, 'Pendents', stats.matPdt, 'pdt');
@@ -163,9 +164,10 @@ export class VisualitzadorRenderer {
         return stats;
     }
 
-    afegeixTitolSecció(container, text) {
-        const title = document.createElement('div');
-        title.className = 'ptv-section-title';
+    afegeixTitolSecció(container, text, id = '', extraClass = '') {
+        const title = document.createElement('h2');
+        title.className = ['ptv-section-title', extraClass].filter(Boolean).join(' ');
+        if (id) title.id = id;
         title.textContent = text;
         container.appendChild(title);
     }

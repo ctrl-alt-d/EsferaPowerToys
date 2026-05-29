@@ -28,6 +28,7 @@ describe('ExcelUIBuilder', () => {
         document.querySelector('#btn-visualitzar-dades').click();
         document.querySelector('#btn-descargar-xlsx').click();
 
+        expect(document.querySelector('#btn-visualitzar-dades').textContent).toContain('preview');
         expect(onVisualize).toHaveBeenCalledWith(2);
         expect(onDownload).toHaveBeenCalledWith(2);
     });
