@@ -72,7 +72,7 @@ export class VisualitzadorModal {
                 <button type="button" class="ptv-close-btn" data-action="close" aria-label="Tanca el visualitzador">× Tanca</button>
             </div>
             <div class="ptv-preview-disclaimer" role="status" aria-live="polite">
-                [lab] Funcionalitat en previsualització i funcionalitat limitada: pot no reflectir encara l'estada en empresa ni els RA opcionals.
+                [lab] Funcionalitat en previsualització amb limitacions conegudes: pot no reflectir encara l'estada en empresa ni els RA opcionals.
             </div>
             <div class="ptv-student-view"></div>
         `;
@@ -88,14 +88,9 @@ export class VisualitzadorModal {
 
     trapFocus(event) {
         if (!this.overlay) return;
-        const focusables = [
-            '[data-action="previous"]',
-            '#ptv-student-select',
-            '[data-action="next"]',
-            '[data-action="close"]',
-        ]
-            .map(selector => this.overlay.querySelector(selector))
-            .filter(element => element && !element.disabled);
+        const focusables = Array.from(this.overlay.querySelectorAll(
+            'button, select, [href], input, textarea, [tabindex]:not([tabindex="-1"])',
+        )).filter(element => !element.disabled);
         if (focusables.length === 0) {
             event.preventDefault();
             return;

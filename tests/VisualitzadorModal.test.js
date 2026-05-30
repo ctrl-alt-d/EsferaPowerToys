@@ -120,11 +120,16 @@ describe('VisualitzadorModal', () => {
 
         modal.open(students);
 
-        const select = document.querySelector('#ptv-student-select');
-        const close = document.querySelector('[data-action="close"]');
-        close.focus();
+        const pdf = document.querySelector('[data-action="download-pdf"]');
+        expect(pdf).not.toBeNull();
+        pdf.focus();
         document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+        const select = document.querySelector('#ptv-student-select');
         expect(document.activeElement).toBe(select);
+
+        select.focus();
+        document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true }));
+        expect(document.activeElement).toBe(pdf);
 
         document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
         expect(document.activeElement).toBe(opener);
