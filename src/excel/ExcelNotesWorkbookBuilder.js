@@ -1,19 +1,21 @@
-import ExcelJS from 'exceljs';
-
 /**
  * Construeix el llibre Excel de notes a partir de dades normalitzades d'Esfer@.
  */
 export class ExcelNotesWorkbookBuilder {
+    constructor(excelJS = (typeof window !== 'undefined' ? window.ExcelJS : null)) {
+        this.excelJS = excelJS;
+    }
+
     /**
      * Construeix el llibre Excel amb capçaleres, dades i estils.
      * @param {Array<Object>} dadesAlumnes
      * @param {number} evaluation
-     * @returns {ExcelJS.Workbook}
+     * @returns {any}
      */
     construeixWorkbookNotes(dadesAlumnes, evaluation) {
         const { header1, header2, files, spansModuls } = this.construeixTaulaNotes(dadesAlumnes, evaluation);
 
-        const workbook = new ExcelJS.Workbook();
+        const workbook = new this.excelJS.Workbook();
         const worksheet = workbook.addWorksheet('Notes');
         worksheet.views = [{ state: 'frozen', xSplit: 2, ySplit: 2 }];
 

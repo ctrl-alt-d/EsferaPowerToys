@@ -1,6 +1,6 @@
 {
   "name": "esferapowertoys",
-  "version": "1.13.1",
+  "version": "1.13.2",
   "description": "Millores personalitzades per a la plataforma Esfer@ d'avaluació del Departament d'Educació de la Generalitat de Catalunya.",
   "main": "esbuild.config.js",
   "directories": {
@@ -31,17 +31,16 @@
   "homepage": "https://github.com/ctrl-alt-d/EsferaPowerToys#readme",
   "devDependencies": {
     "esbuild": "^0.27.3",
+    "exceljs": "^4.4.0",
+    "html2canvas": "^1.4.1",
     "jest": "^30.3.0",
-    "jsdom": "^26.1.0"
+    "jsdom": "^26.1.0",
+    "jspdf": "^4.2.1"
   },
   "engines": {
     "node": ">=22"
   },
   "type": "module",
   "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be",
-  "dependencies": {
-    "exceljs": "^4.4.0",
-    "html2canvas": "^1.4.1",
-    "jspdf": "^4.2.1"
-  }
+  "dependencies": {}
 }
