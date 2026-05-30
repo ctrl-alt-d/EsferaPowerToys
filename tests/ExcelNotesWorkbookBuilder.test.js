@@ -1,4 +1,5 @@
 import { describe, test, expect, beforeEach } from '@jest/globals';
+import ExcelJS from 'exceljs';
 import { ExcelNotesWorkbookBuilder } from '../src/excel/ExcelNotesWorkbookBuilder.js';
 
 describe('ExcelNotesWorkbookBuilder', () => {
@@ -33,7 +34,7 @@ describe('ExcelNotesWorkbookBuilder', () => {
     };
 
     beforeEach(() => {
-        builder = new ExcelNotesWorkbookBuilder();
+        builder = new ExcelNotesWorkbookBuilder(ExcelJS);
     });
 
     test('hauria de congelar les dues primeres files i columnes', () => {
