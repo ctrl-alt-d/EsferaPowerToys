@@ -17,27 +17,20 @@ export class MateriaUIBuilder {
         this.containerBuilder = containerBuilder;
     }
 
-    createHTML(materies) {
+    createHTML(materies, instruccions = null) {
         this.logger.log('MateriaUIBuilder → inici');
 
         // Contenidor responsive per la taula
         const tableWrapper = document.createElement('div');
-        tableWrapper.className = 'powertoy-table-wrapper';
-        tableWrapper.style.cssText = `
-            max-width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        `;
+        tableWrapper.className = 'powertoy-table-wrapper powertoy-materia-table-wrapper';
 
         const table = document.createElement('table');
-        table.classList.add('powertoy-table');
-        table.style.cssText = 'width: 98%; border-collapse: collapse; min-width: 320px;';
+        table.classList.add('powertoy-table', 'powertoy-materia-table');
 
         const fieldset = document.querySelector('div.main div.ng-scope fieldset.ng-scope');
         const isDisabled = fieldset && fieldset.disabled;
 
         if (!isDisabled) {
-            console.log("materies"+ materies);
             materies.forEach(m => {
 
                 this.logger.log(`MateriaUIBuilder → afegint fila per: ${m.codi}`);
@@ -45,29 +38,22 @@ export class MateriaUIBuilder {
 
                 const tdNom = document.createElement('td');
                 tdNom.textContent = `${m.codi} — ${m.nom}`;
-                Object.assign(tdNom.style, {
-                    borderBottom: '1px solid #ddd',
-                    whiteSpace: 'nowrap',
-                    padding: '8px 4px',
-                    textAlign: 'left'
-                });
+                tdNom.className = 'powertoy-materia-name-cell';
 
                 row.appendChild(tdNom);
 
                 const tdInput = document.createElement('td');
-                tdInput.style.minWidth = '180px';
+                tdInput.className = 'powertoy-materia-input-cell';
                 const input = document.createElement('input');
                 input.type = 'text';
-                input.style.width = '100%';
-                input.style.boxSizing = 'border-box';
+                input.className = 'powertoy-materia-input';
                 tdInput.appendChild(input);
 
                 const tdButton = document.createElement('td');
-                tdButton.style.minWidth = '140px';
+                tdButton.className = 'powertoy-materia-actions-cell';
                 const btn = document.createElement('button');
                 btn.textContent = 'Aplica';
-                btn.className = 'btn btn-primary';
-                btn.style.width = 'max-content';
+                btn.className = 'btn btn-primary powertoy-materia-action-button';
                 btn.addEventListener('click', () => {
                     const inputVal = input.value.trim();
                     this.logger.log(`MateriaUIBuilder → clic Aplica per ${m.codi}, valor: ${inputVal}`);
@@ -83,9 +69,7 @@ export class MateriaUIBuilder {
 
                 const btnPendent = document.createElement("button");
                 btnPendent.textContent = "Posar pendent";
-                btnPendent.className = "btn btn-warning btn-sm";
-                btnPendent.style.marginLeft = "4px";
-                btnPendent.style.width = "max-content;";
+                btnPendent.className = "btn btn-warning btn-sm powertoy-materia-action-button powertoy-materia-pendent-button";
 
                 btnPendent.addEventListener("click", () => {
                     this.onPosaPendents(m);
@@ -98,6 +82,6 @@ export class MateriaUIBuilder {
         tableWrapper.appendChild(table);
 
         this.logger.log('MateriaUIBuilder → component creat');
-        return this.containerBuilder.createContainer(tableWrapper, 'powertoy-div');
+        return this.containerBuilder.createContainer(tableWrapper, 'powertoy-div', instruccions);
     }
 }
