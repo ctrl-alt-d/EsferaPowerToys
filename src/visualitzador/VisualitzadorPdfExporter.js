@@ -1,11 +1,11 @@
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
-
 /**
  * Exporta la vista actual del visualitzador a PDF.
  */
 export class VisualitzadorPdfExporter {
-    constructor(canvasFactory = html2canvas, pdfFactory = jsPDF) {
+    constructor(
+        canvasFactory = (typeof window !== 'undefined' ? window.html2canvas : null),
+        pdfFactory = (typeof window !== 'undefined' ? (window.jspdf?.jsPDF || window.jsPDF) : null)
+    ) {
         this.canvasFactory = canvasFactory;
         this.pdfFactory = pdfFactory;
     }
