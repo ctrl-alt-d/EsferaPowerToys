@@ -39,4 +39,32 @@ describe('VisualitzadorRenderer', () => {
         expect(node.querySelector('#ptv-summary-modules-title').classList.contains('ptv-section-title--spaced')).toBe(true);
         expect(node.querySelector('[data-action="download-pdf"]')).not.toBeNull();
     });
+
+    test('hauria de renderitzar la columna EM abans de RA01 si hi ha algun RA 01EM', () => {
+        const renderer = new VisualitzadorRenderer();
+        const node = renderer.renderStudent({
+            id: '2',
+            nom: 'Nom EM',
+            subjects: [
+                { code: 'M01', name: 'Mòdul 1', final: 6, ras: [{ key: '01EM', raw: 'PDT' }, { key: '01RA', raw: 6 }] },
+                { code: 'M02', name: 'Mòdul 2', final: 5, ras: [{ key: '01RA', raw: 5 }] }
+            ],
+        });
+
+        const headers = Array.from(node.querySelectorAll('.ptv-subjects-table thead th')).map(th => th.textContent);
+        expect(headers).toEqual(['Mòdul', 'EM', 'RA01', 'Total']);
+
+        const rows = node.querySelectorAll('.ptv-subjects-table tbody tr');
+        expect(rows).toHaveLength(2);
+
+        // First row: M01
+        const cells1 = Array.from(rows[0].querySelectorAll('td'));
+        expect(cells1[1].querySelector('.ptv-ra-pill').textContent).toBe('PDT'); // EM column
+        expect(cells1[2].querySelector('.ptv-ra-pill').textContent).toBe('6'); // RA01 column
+
+        // Second row: M02
+        const cells2 = Array.from(rows[1].querySelectorAll('td'));
+        expect(cells2[1].querySelector('.ptv-ra-pill').textContent).toBe('·'); // EM column is empty
+        expect(cells2[2].querySelector('.ptv-ra-pill').textContent).toBe('5'); // RA01 column
+    });
 });
