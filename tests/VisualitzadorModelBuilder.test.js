@@ -42,7 +42,7 @@ describe('VisualitzadorModelBuilder', () => {
         expect(builder.scoreClass(4.9)).toBe('fail');
         expect(builder.scoreClass('PDT')).toBe('pdt');
         expect(builder.finalClass('')).toBe('na');
-        expect(builder.finalClass('PQ')).toBe('pass');
+        expect(builder.finalClass('PQ')).toBe('warn');
         expect(builder.displayVal(undefined)).toBe('NA');
     });
 });
