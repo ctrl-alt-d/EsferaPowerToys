@@ -45,7 +45,8 @@ export class VisualitzadorRenderer {
         const table = document.createElement('table');
         table.className = 'ptv-subjects-table';
         const subjects = student.subjects || [];
-        const maxRAs = Math.max(...subjects.map(subject => subject.ras.length), 0);
+        const hasEM = subjects.some(s => s.ras.some(ra => ra.key === '01EM'));
+        const maxRegularRAs = Math.max(...subjects.map(subject => subject.ras.filter(ra => ra.key !== '01EM').length), 0);
 
         const thead = document.createElement('thead');
         const headRow = document.createElement('tr');
@@ -54,7 +55,13 @@ export class VisualitzadorRenderer {
         nameHeader.textContent = 'Mòdul';
         headRow.appendChild(nameHeader);
 
-        for (let i = 0; i < maxRAs; i++) {
+        if (hasEM) {
+            const emHeader = document.createElement('th');
+            emHeader.textContent = 'EM';
+            headRow.appendChild(emHeader);
+        }
+
+        for (let i = 0; i < maxRegularRAs; i++) {
             const th = document.createElement('th');
             th.textContent = `RA${String(i + 1).padStart(2, '0')}`;
             headRow.appendChild(th);
@@ -67,13 +74,26 @@ export class VisualitzadorRenderer {
         table.appendChild(thead);
 
         const tbody = document.createElement('tbody');
-        subjects.forEach(subject => tbody.appendChild(this.creaFilaAssignatura(subject, maxRAs)));
+        subjects.forEach(subject => tbody.appendChild(this.creaFilaAssignatura(subject, maxRegularRAs, hasEM)));
         table.appendChild(tbody);
 
         return table;
     }
 
-    creaFilaAssignatura(subject, maxRAs) {
+    creaPill(ra) {
+        const pill = document.createElement('span');
+        if (ra) {
+            pill.className = `ptv-ra-pill ${this.valueHelper.scoreClass(ra.raw)}`;
+            pill.title = `${ra.key}: ${this.valueHelper.displayVal(ra.raw)}`;
+            pill.textContent = this.valueHelper.displayVal(ra.raw);
+        } else {
+            pill.className = 'ptv-ra-pill empty';
+            pill.textContent = '·';
+        }
+        return pill;
+    }
+
+    creaFilaAssignatura(subject, maxRegularRAs, hasEM) {
         const tr = document.createElement('tr');
         const name = document.createElement('td');
         name.className = 'ptv-td-name';
@@ -89,20 +109,20 @@ export class VisualitzadorRenderer {
         name.appendChild(nameText);
         tr.appendChild(name);
 
-        for (let i = 0; i < maxRAs; i++) {
+        const regularRAs = subject.ras.filter(ra => ra.key !== '01EM');
+
+        if (hasEM) {
             const td = document.createElement('td');
             td.className = 'ptv-td-ra';
-            const pill = document.createElement('span');
-            const ra = subject.ras[i];
-            if (ra) {
-                pill.className = `ptv-ra-pill ${this.valueHelper.scoreClass(ra.raw)}`;
-                pill.title = `${ra.key}: ${this.valueHelper.displayVal(ra.raw)}`;
-                pill.textContent = this.valueHelper.displayVal(ra.raw);
-            } else {
-                pill.className = 'ptv-ra-pill empty';
-                pill.textContent = '·';
-            }
-            td.appendChild(pill);
+            const emRA = subject.ras.find(ra => ra.key === '01EM');
+            td.appendChild(this.creaPill(emRA));
+            tr.appendChild(td);
+        }
+
+        for (let i = 0; i < maxRegularRAs; i++) {
+            const td = document.createElement('td');
+            td.className = 'ptv-td-ra';
+            td.appendChild(this.creaPill(regularRAs[i]));
             tr.appendChild(td);
         }
 
@@ -110,6 +130,7 @@ export class VisualitzadorRenderer {
         total.className = 'ptv-td-total';
         const totalPill = document.createElement('div');
         totalPill.className = `ptv-total-pill ${this.valueHelper.finalClass(subject.final)}`;
+        console.log(subject.final);
         totalPill.textContent = this.valueHelper.displayVal(subject.final);
         total.appendChild(totalPill);
         tr.appendChild(total);
