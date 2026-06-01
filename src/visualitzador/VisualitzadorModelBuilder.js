@@ -132,19 +132,23 @@ export class VisualitzadorModelBuilder {
     }
 
     parseVal(v) {
-        if (this.isNA(v)) return null;
+        if (v === 'NA') return 'NA';
+        if (this.isNull(v)) return null;
+        if (v === 'AS') return 'AS';
+        if (v === 'AN') return 'AN';
+        if (v === 'AE') return 'AE';
         if (v === 'PDT') return 'PDT';
         if (v === 'PQ') return 'PQ';
         const n = parseFloat(v);
         return Number.isNaN(n) ? null : n;
     }
 
-    isNA(v) {
-        return v === 'NA' || v === '' || v === undefined || v === null;
+    isNull(v) {
+        return v === '' || v === undefined || v === null;
     }
 
     scoreClass(v) {
-        if (this.isNA(v)) return 'fail';
+        if (this.isNull(v)) return 'fail';
         const parsed = this.parseVal(v);
         if (parsed === null) return 'fail';
         if (parsed === 'PDT') return 'pdt';
@@ -153,18 +157,22 @@ export class VisualitzadorModelBuilder {
     }
 
     displayVal(v) {
-        if (this.isNA(v)) return 'NA';
+        if (this.isNull(v)) return 'NA';
         const parsed = this.parseVal(v);
         if (parsed === null) return 'NA';
         return String(parsed);
     }
 
     finalClass(v) {
-        if (this.isNA(v)) return 'na';
+        if (this.isNull(v)) return 'na';
         const parsed = this.parseVal(v);
         if (parsed === null) return 'na';
+        if (parsed === 'NA') return 'fail';
         if (parsed === 'PDT') return 'warn';
-        if (parsed === 'PQ') return 'pass';
+        if (parsed === 'PQ') return 'warn';
+        if (parsed === 'AS') return 'pass';
+        if (parsed === 'AN') return 'pass';
+        if (parsed === 'AE') return 'pass';
         return parsed >= 5 ? 'pass' : 'fail';
     }
 }
