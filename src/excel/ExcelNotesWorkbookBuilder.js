@@ -138,9 +138,8 @@ export class ExcelNotesWorkbookBuilder {
     construeixTaulaNotes(dadesAlumnes, evaluation) {
         const getNotesAvaluacioSeleccionada = (alumne) => {
             let idAvaluacio = null;
-            const targetCodi = `FINAL_${evaluation}`;
             if (alumne.avaluacions && Array.isArray(alumne.avaluacions)) {
-                const ava = alumne.avaluacions.find(a => a.codi === targetCodi);
+                const ava = alumne.avaluacions[evaluation-1];
                 if (ava) {
                     idAvaluacio = ava.id;
                 }
@@ -212,14 +211,14 @@ export class ExcelNotesWorkbookBuilder {
                 }
 
                 try {
-                    if (modData && modData.qualitativa) {
+                    if (modData && modData.jerarquia == 2 && modData.quantitativa) {
+                        fila.push(this.normalitzaValorNota(modData.quantitativa));
+                    } else if (modData && modData.qualitativa) {
                         if (/^A\d{1,2}$/.test(modData.qualitativa)) {
                             fila.push(Number(modData.qualitativa.replace(/\D/g, '')));
                         } else {
                             fila.push(modData.qualitativa);
                         }
-                    } else if (modData && modData.jerarquia == 2 && modData.quantitativa) {
-                        fila.push(this.normalitzaValorNota(modData.quantitativa));
                     } else {
                         fila.push('');
                     }

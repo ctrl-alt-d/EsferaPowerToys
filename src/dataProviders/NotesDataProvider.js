@@ -32,8 +32,17 @@ export class NotesDataProvider {
             return null;
         }
 
-        const factory = injector.get('newFinalAvaluacioGrupAlumneFactory');
-        const matricules = await this.extractIdMatricula(factory, idGrup, injector);
+        let factory;
+        //per a que funcioni també amb avaluacions parcials
+        if (window.location.pathname.includes("parcialAvaluacioGrupAlumne")) {
+            factory = injector.get('newParcialAvaluacioGrupAlumneFactory');
+        } else {
+            factory = injector.get('newFinalAvaluacioGrupAlumneFactory');
+        }
+
+        var matricules = await this.extractIdMatricula(factory, idGrup, injector);
+
+        matricules = matricules.slice(0,2);
 
         if (!matricules || matricules.length === 0) {
             this.logger.error('NotesDataProvider → No hi ha matricules per recuperar');
@@ -103,7 +112,12 @@ export class NotesDataProvider {
             return Promise.resolve(null);
         }
 
-        const factoryGrup = injector.get('finalavaluaciogrupalumneFactory');
+        let factoryGrup;
+        if (window.location.pathname.includes("parcialAvaluacioGrupAlumne")) {
+            factoryGrup = injector.get('parcialavaluaciogrupalumneFactory'); 
+        } else {
+            factoryGrup = injector.get('finalavaluaciogrupalumneFactory');
+        }
 
         return factoryGrup.getGrupClasseById(idGrup)
             .then((resGrup) => {
@@ -133,14 +147,25 @@ export class NotesDataProvider {
      * @returns {Promise<object>}
      */
     async fetchAvaluacioData(factory, idMat, idGrup) {
-        return factory
-            .obtenirDadesGrupIAlumneFinal(idMat, idGrup)
-            .then(function (res) {
-                return res.data.avaluacioGrupIAlumneWrapper;
-            })
-            .catch((err) => {
-                this.logger.error('NotesDataProvider → ERROR EN LA PETICIÓ:', err);
-            });
+
+        const isParcial = window.location.href.includes('parcialAvaluacioGrupAlumne');
+        const methodName = isParcial 
+        ? 'obtenirDadesGrupIAlumneParcial' 
+        : 'obtenirDadesGrupIAlumneFinal';
+
+
+        return factory[methodName](idMat, idGrup)
+        .then(function (res) {
+
+            const wrapperKey = isParcial 
+            ? 'avaluacioGrupIAlumneParcialNormWrapper'
+            : 'avaluacioGrupIAlumneWrapper';
+            
+            return res.data[wrapperKey];
+        })
+        .catch((err) => {
+            this.logger.error(`NotesDataProvider → ERROR EN LA PETICIÓ (${isParcial ? 'PARCIAL' : 'FINAL'}):`, err);
+        });
     }
 
     /**
