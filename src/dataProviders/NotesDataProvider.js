@@ -42,8 +42,6 @@ export class NotesDataProvider {
 
         var matricules = await this.extractIdMatricula(factory, idGrup, injector);
 
-        matricules = matricules.slice(0,2);
-
         if (!matricules || matricules.length === 0) {
             this.logger.error('NotesDataProvider → No hi ha matricules per recuperar');
             return null;
