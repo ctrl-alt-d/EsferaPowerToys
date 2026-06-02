@@ -14,7 +14,7 @@ describe('ExcelUIBuilder', () => {
         delete global.document;
     });
 
-    test('hauria d’afegir el botó de visualització amb la mateixa avaluació seleccionada', () => {
+    test('hauria d’afegir el botó de visualització amb la mateixa avaluació seleccionada', async () => {
         const onDownload = jest.fn();
         const onVisualize = jest.fn();
         const containerBuilder = {
@@ -23,7 +23,7 @@ describe('ExcelUIBuilder', () => {
         };
         const builder = new ExcelUIBuilder({ log: jest.fn() }, onDownload, containerBuilder, onVisualize);
 
-        builder.injectHeaderButtonIfNeeded();
+        await builder.injectHeaderButtonIfNeeded();
         document.querySelector('#powertoys-evaluation-select').value = '2';
         document.querySelector('#btn-visualitzar-dades').click();
         document.querySelector('#btn-descargar-xlsx').click();

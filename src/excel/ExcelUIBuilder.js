@@ -4,28 +4,92 @@
 export class ExcelUIBuilder {
     /**
      * @param {import('../PowerToysLogger.js').PowerToysLogger} logger
-     * @param {function} onDownload Callback activat a l'apretar el botó d'Excel
+     * @param {functioddn} onDownload Callback activat a l'apretar el botó d'Excel
      * @param {import('../ContainerUIBuilder.js').ContainerUIBuilder} containerBuilder - Constructor base del contenidor.
      * @param {function} onVisualize Callback activat a l'apretar el botó del visualitzador
+     * @param {import('../dataProviders/NotesDataProvider.js').NotesDataProvider} dataProvider - Proveïdor de dades de notes.
      */
-    constructor(logger, onDownload, containerBuilder, onVisualize = null) {
+    constructor(logger, onDownload, containerBuilder, onVisualize = null, dataProvider = null) {
         this.logger = logger;
         this.onDownload = onDownload;
         this.containerBuilder = containerBuilder;
         this.onVisualize = onVisualize;
+        this.dataProvider = dataProvider;
         this.maxAvaluacions = 4;
+    }
+
+    async updateMaxAvaluacions() {
+        if (!this.dataProvider) return;
+        
+        const idGrup = this.dataProvider.extractIdGrup();
+        if (!idGrup) return;
+
+        const isParcial = window.location.pathname.includes("parcialAvaluacioGrupAlumne");
+        const type = isParcial ? 'parcial' : 'final';
+        const cacheKey = `powertoys_max_avaluacions_${type}_${idGrup}`;
+        
+        const cached = localStorage.getItem(cacheKey);
+        const now = Date.now();
+        const oneHour = 60 * 60 * 1000;
+
+        if (cached) {
+            try {
+                const parsed = JSON.parse(cached);
+
+                //s'actualitza cada hora
+                if (now - parsed.timestamp < oneHour) {
+                    this.maxAvaluacions = parsed.maxAvaluacions;
+                    return;
+                }
+            } catch (e) {
+                this.logger.warn('Error parsejant cache de maxAvaluacions', e);
+            }
+        }
+
+        try {
+            const injector = this.dataProvider.obtéInjectorAngular();
+            if (!injector) return;
+
+            let factory;
+            if (isParcial) {
+                factory = injector.get('newParcialAvaluacioGrupAlumneFactory');
+            } else {
+                factory = injector.get('newFinalAvaluacioGrupAlumneFactory');
+            }
+
+            const matricules = await this.dataProvider.extractIdMatricula(factory, idGrup, injector);
+            if (!matricules || matricules.length === 0) return;
+
+            const primerAlumne = matricules[0];
+            const data = await this.dataProvider.fetchAvaluacioData(factory, primerAlumne.idMatricula, idGrup);
+            
+            if (data && data.lAvaluacions && Array.isArray(data.lAvaluacions)) {
+                this.maxAvaluacions = data.lAvaluacions.length;
+                localStorage.setItem(cacheKey, JSON.stringify({ maxAvaluacions: this.maxAvaluacions, timestamp: now }));
+                this.logger.log(`ExcelUIBuilder → maxAvaluacions actualitzat a ${this.maxAvaluacions} per a ${type} (grup ${idGrup})`);
+            }
+        } catch (error) {
+            this.logger.error('ExcelUIBuilder → Error obtenint maxAvaluacions:', error);
+        }
     }
 
     /**
      * Insereix automàticament el panell informatiu o actualitza la vista si s'està carregant la taula admesa.
      */
-    injectHeaderButtonIfNeeded() {
+    async injectHeaderButtonIfNeeded() {
         const table = document.querySelector(
             'table[data-st-table="matriculaAlumneAva"]',
         );
 
         if (!table) return;
 
+        if (table.previousElementSibling?.id === 'powertoys-info-box') {
+            return;
+        }
+
+        await this.updateMaxAvaluacions();
+
+        // Comprovem de nou després de l'espera per evitar duplicitats si l'observador s'ha disparat varies vegades
         if (table.previousElementSibling?.id === 'powertoys-info-box') {
             return;
         }
