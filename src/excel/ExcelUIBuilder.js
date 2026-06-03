@@ -20,57 +20,7 @@ export class ExcelUIBuilder {
 
     async updateMaxAvaluacions() {
         if (!this.dataProvider) return;
-        
-        const idGrup = this.dataProvider.extractIdGrup();
-        if (!idGrup) return;
-
-        const isParcial = window.location.pathname.includes("parcialAvaluacioGrupAlumne");
-        const type = isParcial ? 'parcial' : 'final';
-        const cacheKey = `powertoys_max_avaluacions_${type}_${idGrup}`;
-        
-        const cached = localStorage.getItem(cacheKey);
-        const now = Date.now();
-        const oneHour = 60 * 60 * 1000;
-
-        if (cached) {
-            try {
-                const parsed = JSON.parse(cached);
-
-                //s'actualitza cada hora
-                if (now - parsed.timestamp < oneHour) {
-                    this.maxAvaluacions = parsed.maxAvaluacions;
-                    return;
-                }
-            } catch (e) {
-                this.logger.warn('Error parsejant cache de maxAvaluacions', e);
-            }
-        }
-
-        try {
-            const injector = this.dataProvider.obtéInjectorAngular();
-            if (!injector) return;
-
-            let factory;
-            if (isParcial) {
-                factory = injector.get('newParcialAvaluacioGrupAlumneFactory');
-            } else {
-                factory = injector.get('newFinalAvaluacioGrupAlumneFactory');
-            }
-
-            const matricules = await this.dataProvider.extractIdMatricula(factory, idGrup, injector);
-            if (!matricules || matricules.length === 0) return;
-
-            const primerAlumne = matricules[0];
-            const data = await this.dataProvider.fetchAvaluacioData(factory, primerAlumne.idMatricula, idGrup);
-            
-            if (data && data.lAvaluacions && Array.isArray(data.lAvaluacions)) {
-                this.maxAvaluacions = data.lAvaluacions.length;
-                localStorage.setItem(cacheKey, JSON.stringify({ maxAvaluacions: this.maxAvaluacions, timestamp: now }));
-                this.logger.log(`ExcelUIBuilder → maxAvaluacions actualitzat a ${this.maxAvaluacions} per a ${type} (grup ${idGrup})`);
-            }
-        } catch (error) {
-            this.logger.error('ExcelUIBuilder → Error obtenint maxAvaluacions:', error);
-        }
+        this.maxAvaluacions = await this.dataProvider.obtéMaxAvaluacions();
     }
 
     /**
