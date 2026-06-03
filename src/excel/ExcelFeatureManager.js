@@ -34,7 +34,7 @@ export class ExcelFeatureManager {
      * Insereix el panell si la taula existeix i encara no hi és.
      * @returns {void}
      */
-    tryActivate() {
+    async tryActivate() {
         const table = this.detectContext();
         if (!table) return;
 
@@ -42,7 +42,8 @@ export class ExcelFeatureManager {
             return;
         }
 
-        const panel = this.uiBuilder.createPanel(this.containerId);
+        const panel = await this.uiBuilder.createPanel(table, this.containerId);
+        if (!panel) return;
         this.containerBuilder.insertDiv(panel, table);
         this.logger.log('ExcelFeatureManager → panell inserit correctament');
     }

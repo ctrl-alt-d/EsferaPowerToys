@@ -24,7 +24,7 @@ describe('ExcelFeatureManager', () => {
         expect(manager.canActivate()).toBe(true);
     });
 
-    test('insereix el panell davant de la taula sense delegar detecció al builder', () => {
+    test('insereix el panell davant de la taula sense delegar detecció al builder', async () => {
         document.body.innerHTML = '<table data-st-table="matriculaAlumneAva"></table>';
         const panel = document.createElement('div');
         panel.id = 'powertoys-info-box';
@@ -32,20 +32,20 @@ describe('ExcelFeatureManager', () => {
         const containerBuilder = { insertDiv: jest.fn((div, table) => table.before(div)) };
         const manager = new ExcelFeatureManager({ log: jest.fn() }, uiBuilder, containerBuilder);
 
-        manager.tryActivate();
+        await manager.tryActivate();
 
-        expect(uiBuilder.createPanel).toHaveBeenCalledWith('powertoys-info-box');
+        expect(uiBuilder.createPanel).toHaveBeenCalledWith(document.querySelector('table'), 'powertoys-info-box');
         expect(containerBuilder.insertDiv).toHaveBeenCalledWith(panel, document.querySelector('table'));
         expect(document.body.firstElementChild.id).toBe('powertoys-info-box');
     });
 
-    test('no reinserta el panell si ja és davant de la taula', () => {
+    test('no reinserta el panell si ja és davant de la taula', async () => {
         document.body.innerHTML = '<div id="powertoys-info-box"></div><table data-st-table="matriculaAlumneAva"></table>';
         const uiBuilder = { createPanel: jest.fn() };
         const containerBuilder = { insertDiv: jest.fn() };
         const manager = new ExcelFeatureManager({ log: jest.fn() }, uiBuilder, containerBuilder);
 
-        manager.tryActivate();
+        await manager.tryActivate();
 
         expect(uiBuilder.createPanel).not.toHaveBeenCalled();
         expect(containerBuilder.insertDiv).not.toHaveBeenCalled();

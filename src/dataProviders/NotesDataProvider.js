@@ -32,13 +32,7 @@ export class NotesDataProvider {
             return null;
         }
 
-        let factory;
-        //per a que funcioni també amb avaluacions parcials
-        if (window.location.pathname.includes("parcialAvaluacioGrupAlumne")) {
-            factory = injector.get('newParcialAvaluacioGrupAlumneFactory');
-        } else {
-            factory = injector.get('newFinalAvaluacioGrupAlumneFactory');
-        }
+        const factory = this.obtéAvaluacioFactory(injector);
 
         var matricules = await this.extractIdMatricula(factory, idGrup, injector);
 
@@ -66,6 +60,71 @@ export class NotesDataProvider {
     obtéInjectorAngular() {
         const element = document.documentElement;
         return window.angular ? window.angular.element(element).injector() : null;
+    }
+
+    /**
+     * Obté la factoria d'avaluació corresponent (parcial o final).
+     * @param {Object} [injector]
+     * @returns {Object|null}
+     */
+    obtéAvaluacioFactory(injector = this.obtéInjectorAngular()) {
+        if (!injector) return null;
+        if (window.location.pathname.includes("parcialAvaluacioGrupAlumne")) {
+            return injector.get('newParcialAvaluacioGrupAlumneFactory');
+        }
+        return injector.get('newFinalAvaluacioGrupAlumneFactory');
+    }
+
+    /**
+     * Obté el número màxim d'avaluacions disponibles per a un grup i ho guarda en memòria cau.
+     * @returns {Promise<number>}
+     */
+    async obtéMaxAvaluacions() {
+        const idGrup = this.extractIdGrup();
+        if (!idGrup) return 4;
+
+        const isParcial = window.location.pathname.includes("parcialAvaluacioGrupAlumne");
+        const type = isParcial ? 'parcial' : 'final';
+        const cacheKey = `powertoys_max_avaluacions_${type}_${idGrup}`;
+        
+        const cached = localStorage.getItem(cacheKey);
+        const now = Date.now();
+        const oneHour = 60 * 60 * 1000;
+
+        if (cached) {
+            try {
+                const parsed = JSON.parse(cached);
+                if (now - parsed.timestamp < oneHour) {
+                    return parsed.maxAvaluacions;
+                }
+            } catch (e) {
+                this.logger.warn('Error parsejant cache de maxAvaluacions', e);
+            }
+        }
+
+        try {
+            const injector = this.obtéInjectorAngular();
+            if (!injector) return 4;
+
+            const factory = this.obtéAvaluacioFactory(injector);
+
+            const matricules = await this.extractIdMatricula(factory, idGrup, injector);
+            if (!matricules || matricules.length === 0) return 4;
+
+            const primerAlumne = matricules[0];
+            const data = await this.fetchAvaluacioData(factory, primerAlumne.idMatricula, idGrup);
+            
+            if (data && data.lAvaluacions && Array.isArray(data.lAvaluacions)) {
+                const maxAvaluacions = data.lAvaluacions.length;
+                localStorage.setItem(cacheKey, JSON.stringify({ maxAvaluacions, timestamp: now }));
+                this.logger.log(`NotesDataProvider → maxAvaluacions actualitzat a ${maxAvaluacions} per a ${type} (grup ${idGrup})`);
+                return maxAvaluacions;
+            }
+        } catch (error) {
+            this.logger.error('NotesDataProvider → Error obtenint maxAvaluacions:', error);
+        }
+        
+        return 4;
     }
 
     /**
