@@ -13,7 +13,7 @@ export class ExcelUIBuilder {
         this.onDownload = onDownload;
         this.containerBuilder = containerBuilder;
         this.onVisualize = onVisualize;
-        this.maxAvaluacions = 3;
+        this.maxAvaluacions = 4;
     }
 
     /**
