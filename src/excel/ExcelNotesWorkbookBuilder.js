@@ -189,6 +189,9 @@ export class ExcelNotesWorkbookBuilder {
                 spanActual = { start: columnIndex, end: columnIndex };
                 header1.push(info.nom);
                 header2.push(codi);
+
+                header1.push('');
+                header2.push("provisional");
             } else {
                 header1.push('');
                 header2.push(codi);
@@ -221,6 +224,11 @@ export class ExcelNotesWorkbookBuilder {
                         }
                     } else {
                         fila.push('');
+                    }
+
+                    //nota provisional just després de la final
+                    if(modData && modData.jerarquia == 2){
+                        fila.push(modData.provisional);
                     }
                 } catch {
                     fila.push('');
