@@ -2,14 +2,18 @@ import { PowerToysLogger } from './PowerToysLogger.js';
 import { MateriaParser } from './materia/MateriaParser.js';
 import { MateriaUIBuilder } from './materia/MateriaUIBuilder.js';
 import { MateriaApplier } from './materia/MateriaApplier.js';
-import { ScrollHelper } from './ScrollHelper.js';
+import { MateriaFeatureManager } from './materia/MateriaFeatureManager.js';
+import { ScrollHelper } from './materia/ScrollHelper.js';
 import { version } from '../build/version.js';
-import { CSSApplier } from './CSSApplier.js';
+import { MateriaStyleManager } from './materia/MateriaStyleManager.js';
 import { NotesDataProvider } from './dataProviders/NotesDataProvider.js';
 import { ExcelExportManager } from './excel/ExcelExportManager.js';
 import { ExcelUIBuilder } from './excel/ExcelUIBuilder.js';
+import { ExcelFeatureManager } from './excel/ExcelFeatureManager.js';
+import { ExcelStyleManager } from './excel/ExcelStyleManager.js';
 import { ExcelNotesWorkbookBuilder } from './excel/ExcelNotesWorkbookBuilder.js';
 import { ContainerUIBuilder } from './ContainerUIBuilder.js';
+import { ContainerStyleManager } from './ContainerStyleManager.js';
 import { VisualitzadorManager } from './visualitzador/VisualitzadorManager.js';
 import { VisualitzadorModelBuilder } from './visualitzador/VisualitzadorModelBuilder.js';
 import { VisualitzadorRenderer } from './visualitzador/VisualitzadorRenderer.js';
@@ -39,16 +43,22 @@ export class PowerToysController {
         /** @type {ContainerUIBuilder} */
         this.containerBuilder = new ContainerUIBuilder(this.logger, version);
 
+        /** @type {ContainerStyleManager} */
+        this.containerStyleManager = new ContainerStyleManager(this.logger);
+
         /** @type {MateriaUIBuilder} */
-        this.uiBuilder = new MateriaUIBuilder(
+        const materiaUIBuilder = new MateriaUIBuilder(
             this.logger,
-            (materia, inputVal) => this.onApply(materia, inputVal),
-            (materia) => this.posaPendentsRA(materia),
+            (materia, inputVal) => this.materiaFeatureManager.onApply(materia, inputVal),
+            (materia) => this.materiaFeatureManager.posaPendentsRA(materia),
             this.containerBuilder
         );
 
-        /** @type {CSSApplier} */
-        this.cssApplier = new CSSApplier(this.logger);
+        /** @type {MateriaStyleManager} */
+        this.materiaStyleManager = new MateriaStyleManager(this.logger);
+
+        /** @type {ExcelStyleManager} */
+        this.excelStyleManager = new ExcelStyleManager(this.logger);
 
         const notesDataProvider = new NotesDataProvider(this.logger);
 
@@ -74,15 +84,30 @@ export class PowerToysController {
         );
 
         /** @type {ExcelUIBuilder} */
-        this.excelUIBuilder = new ExcelUIBuilder(
+        const excelUIBuilder = new ExcelUIBuilder(
             this.logger,
             (evaluation) => this.excelExportManager.procésDescàrregaExcel(evaluation),
             this.containerBuilder,
             (evaluation) => this.visualitzadorManager.obreVisualitzador(evaluation),
         );
 
-        this.lastStudent = '';
-        this._formTimeout = null;
+        /** @type {MateriaFeatureManager} */
+        this.materiaFeatureManager = new MateriaFeatureManager(
+            this.logger,
+            this.parser,
+            this.applier,
+            materiaUIBuilder,
+            this.scrollHelper,
+            this.materiaStyleManager,
+            this.containerBuilder,
+        );
+
+        /** @type {ExcelFeatureManager} */
+        this.excelFeatureManager = new ExcelFeatureManager(
+            this.logger,
+            excelUIBuilder,
+            this.containerBuilder,
+        );
 
         const mainContainer = document.querySelector('#mainView') || document.body;
         this.observer = new MutationObserver(() => this.reinicialitza());
@@ -90,30 +115,12 @@ export class PowerToysController {
 
         document.body.addEventListener('change', (e) => {
             if (e.target.tagName === 'SELECT') {
-                this.cssApplier.aplicaEstils();
+                this.materiaStyleManager.aplicaEstils();
             }
         });
 
 
         this.logger.log('PowerToysController → Observer activat');
-    }
-
-    /**
-     * Callback quan es fa clic a "Aplica" a la interfície.
-     * @param {{ codi: string, nom: string, RAs: string[] }} materia - La matèria seleccionada.
-     * @param {string} inputVal - El valor introduït per l’usuari.
-     * @returns {void}
-     */
-    onApply(materia, inputVal) {
-        this.logger.log(`PowerToysController → onApply per ${materia.codi}: ${inputVal}`);
-
-        const notes = this.applier.tradueixNotes(inputVal);
-        if (notes && notes.length === materia.RAs.length) {
-            this.applier.aplicaNotesARAs(materia.RAs, notes);
-            this.scrollHelper.enfocaAssignatura(materia);
-        } else {
-            alert(`Error: les notes no són vàlides o no coincideixen amb el nombre de RAs (${materia.RAs.length}).`);
-        }
     }
 
     /**
@@ -123,76 +130,8 @@ export class PowerToysController {
     reinicialitza() {
         this.logger.log('reinicialitza → inici');
 
-        this.cssApplier.aplicaEstils();
-
-        // 1️⃣ Gestiona la taula (ara s'executa a cada mutació fins que trobi la taula)
-        this.excelUIBuilder.injectHeaderButtonIfNeeded();
-
-        // 2️⃣ Gestiona el formulari (el teu codi original)
-        clearTimeout(this._formTimeout);
-        this._formTimeout = setTimeout(() => {
-            const form = document.querySelector('form[name="grupAlumne"]');
-            const files = document.querySelectorAll("tr.alturallistat");
-            if (!form || files.length === 0) {
-                this.logger.log("reinicialitza → no hi ha form o files, esperant...");
-                return;
-            }
-
-            const breadcrumb = document.querySelector('.breadcrumb li:last-child a');
-            const studentName = breadcrumb ? breadcrumb.textContent.trim() : '';
-            if (studentName === this.lastStudent) {
-                this.logger.log('reinicialitza → mateix alumne, saltant');
-                return;
-            }
-            this.lastStudent = studentName;
-
-            this.logger.log(`reinicialitza → processant alumne: ${studentName}`);
-            const materies = this.parser.parse(Array.from(files));
-            const instruccions = 'Valors acceptats: >=4.5 → Assolit, <4.5 o NA → No assolit, EP → En procés, P o PDT → Pendent, . o X → Blanc';
-            const html = this.uiBuilder.createHTML(materies, instruccions);
-            this.containerBuilder.insertDiv(html, form);
-        }, 100);
-    }
-
-
-
-    /**
-     * Posa totes les RA buides a pendent.
-     * @param {{ codi: string, nom: string, RAs: string[] }} materia - La matèria seleccionada.
-     */
-    posaPendentsRA(materia) {
-
-        this.logger.log(`PDT al mòdul ${materia.codi}`);
-
-        const rows = document.querySelectorAll("tr.alturallistat");
-
-        rows.forEach(row => {
-
-            const tdCodi = row.querySelector("td:first-child");
-            if (!tdCodi) return;
-
-            const codi = tdCodi.textContent.trim();
-
-            // comprova si pertany al mòdul
-            if (!codi.startsWith(materia.codi)) return;
-
-            const select = row.querySelector("select");
-
-            if (!select || select.disabled || select.value) return;
-
-            const opcions = [...select.options].map(o => o.value);
-
-            if (opcions.includes("string:PDT")) {
-                select.value = "string:PDT";
-            }
-            else if (opcions.includes("string:PQ")) {
-                select.value = "string:PQ";
-            }
-
-            select.dispatchEvent(new Event("change", { bubbles: true }));
-
-        });
-
-        this.cssApplier.aplicaEstils();
+        this.materiaStyleManager.aplicaEstils();
+        this.excelFeatureManager.tryActivate();
+        this.materiaFeatureManager.tryActivate();
     }
 }

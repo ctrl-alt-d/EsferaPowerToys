@@ -55,17 +55,24 @@ describe('MateriaUIBuilder', () => {
         expect(firstCell.textContent).toBe('2024_MAT01 — Matemàtiques');
     });
 
-    test('hauria de tenir un wrapper per la taula amb overflow auto', () => {
+    test('hauria de tenir un wrapper semàntic per la taula', () => {
         const container = builder.createHTML(materies);
         const tableWrapper = container.querySelector('.powertoy-table-wrapper');
         expect(tableWrapper).not.toBeNull();
-        expect(tableWrapper.style.overflowX).toBe('auto');
+        expect(tableWrapper.classList.contains('powertoy-materia-table-wrapper')).toBe(true);
     });
 
     test('hauria de mostrar la versió', () => {
         const container = builder.createHTML(materies);
         const versionDiv = container.querySelector('.powertoy-version');
         expect(versionDiv.textContent).toContain('1.0.0');
+    });
+
+    test('hauria de mostrar les instruccions quan es proporcionen', () => {
+        const container = builder.createHTML(materies, 'Valors acceptats');
+        const instructionsDiv = container.querySelector('.powertoy-instructions');
+
+        expect(instructionsDiv.textContent).toBe('Valors acceptats');
     });
 
     test('el botó Aplica hauria de cridar onApply amb la matèria i el valor', () => {
@@ -105,16 +112,30 @@ describe('MateriaUIBuilder', () => {
         expect(toggleBtn.textContent).toBe('−');
     });
 
-    test('hauria de tenir un botó de toggle amb classe btn btn-secondary btn-sm', () => {
+    test('hauria de tenir un botó de toggle amb classes Bootstrap i semàntica pròpia', () => {
         const container = builder.createHTML(materies);
         const toggleBtn = container.querySelector('#powertoy-div-toggle-btn');
-        expect(toggleBtn.className).toBe('btn btn-secondary btn-sm');
+        expect(toggleBtn.classList.contains('btn')).toBe(true);
+        expect(toggleBtn.classList.contains('btn-secondary')).toBe(true);
+        expect(toggleBtn.classList.contains('btn-sm')).toBe(true);
+        expect(toggleBtn.classList.contains('powertoy-toggle-button')).toBe(true);
     });
 
     test('hauria de tenir una taula amb classe powertoy-table', () => {
         const container = builder.createHTML(materies);
         const table = container.querySelector('.powertoy-table');
         expect(table).not.toBeNull();
+        expect(table.classList.contains('powertoy-materia-table')).toBe(true);
+    });
+
+    test('hauria d’assignar classes semàntiques als controls de cada matèria', () => {
+        const container = builder.createHTML(materies);
+
+        expect(container.querySelector('.powertoy-materia-name-cell')).not.toBeNull();
+        expect(container.querySelector('.powertoy-materia-input-cell')).not.toBeNull();
+        expect(container.querySelector('.powertoy-materia-input')).not.toBeNull();
+        expect(container.querySelector('.powertoy-materia-actions-cell')).not.toBeNull();
+        expect(container.querySelector('.powertoy-materia-pendent-button')).not.toBeNull();
     });
 
     test('hauria de tenir un versionDiv amb classe powertoy-version', () => {
@@ -123,10 +144,9 @@ describe('MateriaUIBuilder', () => {
         expect(versionDiv).not.toBeNull();
     });
 
-    test('hauria de tenir el contenedor amb classes powertoy-container i estils relatius', () => {
+    test('hauria de tenir el contenidor amb classe powertoy-container', () => {
         const container = builder.createHTML(materies);
         expect(container.classList.contains('powertoy-container')).toBe(true);
-        expect(container.style.position).toBe('relative');
     });
 
     test('toggle button hauria d\'ocultar la taula i canviar el text a +', () => {
@@ -137,12 +157,12 @@ describe('MateriaUIBuilder', () => {
         const contentWrapper = container.querySelector('.powertoy-content-wrapper');
 
         // Estat inicial: visible
-        expect(contentWrapper.style.display).toBe('');
+        expect(contentWrapper.classList.contains('powertoy-content-wrapper--collapsed')).toBe(false);
         expect(toggleBtn.textContent).toBe('−');
 
         // Clic per comprimir
         toggleBtn.click();
-        expect(contentWrapper.style.display).toBe('none');
+        expect(contentWrapper.classList.contains('powertoy-content-wrapper--collapsed')).toBe(true);
         expect(toggleBtn.textContent).toBe('+');
     });
 
@@ -155,11 +175,11 @@ describe('MateriaUIBuilder', () => {
 
         // Primera vegada: comprimir
         toggleBtn.click();
-        expect(contentWrapper.style.display).toBe('none');
+        expect(contentWrapper.classList.contains('powertoy-content-wrapper--collapsed')).toBe(true);
 
         // Segona vegada: expandir
         toggleBtn.click();
-        expect(contentWrapper.style.display).toBe('');
+        expect(contentWrapper.classList.contains('powertoy-content-wrapper--collapsed')).toBe(false);
         expect(toggleBtn.textContent).toBe('−');
     });
 
@@ -173,10 +193,10 @@ describe('MateriaUIBuilder', () => {
 
         // Comprimir
         toggleBtn.click();
-        expect(contentWrapper.style.display).toBe('none');
+        expect(contentWrapper.classList.contains('powertoy-content-wrapper--collapsed')).toBe(true);
 
         // Expandir
         toggleBtn.click();
-        expect(contentWrapper.style.display).toBe('');
+        expect(contentWrapper.classList.contains('powertoy-content-wrapper--collapsed')).toBe(false);
     });
 });

@@ -29,10 +29,12 @@ export class ScrollHelper {
         if (targetTd) {
             this.logger.log(`ScrollHelper → trobada fila visual per ${materia.codi}, fent scroll`);
             targetTd.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            targetTd.style.transition = 'background-color 0.5s ease';
-            targetTd.style.backgroundColor = '#ffffcc';
+            targetTd.classList.add('powertoy-scroll-highlight', 'powertoy-scroll-highlight--active');
             setTimeout(() => {
-                targetTd.style.backgroundColor = '';
+                targetTd.classList.remove('powertoy-scroll-highlight--active');
+                setTimeout(() => {
+                    targetTd.classList.remove('powertoy-scroll-highlight');
+                }, 500);
             }, 1500);
         } else {
             this.logger.warn(`ScrollHelper → no s'ha trobat la fila visual per ${materia.codi}`);

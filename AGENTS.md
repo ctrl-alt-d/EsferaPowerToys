@@ -36,7 +36,11 @@ pnpm run build        # sincronitzar versió + generar dist/script.user.js
 
 ### Estructura de fitxers
 
-- `src/` — codi font, una classe per fitxer.
+- `src/` — codi font, una classe per fitxer, organitzat per funcionalitats.
+- `src/materia/` — funcionalitat de posar notes: detecció del formulari, UI, aplicació de notes, estils i scroll.
+- `src/excel/` — funcionalitat d'exportació Excel i panell compartit amb el visualitzador.
+- `src/visualitzador/` — visualitzador de l'estat de notes i exportació PDF.
+- `src/dataProviders/` — accés a dades d'Esfer@ i normalització cap al model intern.
 - `tests/` — tests Jest, un fitxer per classe amb el patró `NomClasse.test.js`.
 - `build/` — configuració esbuild, gestió de versió i header del userscript.
 - `dist/` — sortida del build (**no editar manualment**).
@@ -54,12 +58,19 @@ pnpm run build        # sincronitzar versió + generar dist/script.user.js
 
 | Classe | Responsabilitat |
 |---|---|
-| `PowerToysController` | Coordinador principal. Observa canvis al DOM i orquestra la resta. |
+| `PowerToysController` | Orquestrador principal. Observa canvis al DOM i delega als feature managers. |
+| `MateriaFeatureManager` | Detecta `form[name="grupAlumne"]`, activa la UI de matèries i orquestra aplicar notes/PDT. |
 | `MateriaParser` | Parseja files `<tr>` de la taula HTML per extreure matèries i RAs. |
 | `MateriaUIBuilder` | Genera la interfície HTML (inputs, botons) per a cada matèria. |
 | `MateriaApplier` | Tradueix notes numèriques a codis (`A10`, `NA`, `PDT`…) i les aplica als `<select>`. |
-| `CSSApplier` | Injecta estils CSS i aplica classes visuals segons el valor dels selects. |
-| `ScrollHelper` | Fa scroll i highlight visual cap a la matèria modificada. |
+| `MateriaStyleManager` | Injecta estils CSS de matèries i aplica classes visuals segons el valor dels selects. |
+| `ScrollHelper` | Fa scroll i highlight visual cap a la matèria modificada (`src/materia`). |
+| `ExcelFeatureManager` | Detecta `table[data-st-table="matriculaAlumneAva"]` i activa el panell Excel/visualitzador. |
+| `ExcelExportManager` | Coordina generació i descàrrega de l'Excel. |
+| `VisualitzadorManager` | Coordina dades i modal del visualitzador. |
+| `NotesDataProvider` | Obté dades d'Esfer@ via Angular. |
+| `NotesMapper` | Normalitza les dades crues d'Esfer@ cap al model intern. |
+| `ContainerStyleManager` | Injecta estils compartits de contenidors i highlight. |
 | `PowerToysLogger` | Logger configurable amb mode debug. |
 
 ---
