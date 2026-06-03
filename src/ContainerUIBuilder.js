@@ -25,38 +25,16 @@ export class ContainerUIBuilder {
         const container = document.createElement('div');
         container.id = id;
         container.classList.add('powertoy-container');
-        Object.assign(container.style, {
-            marginBottom: '20px',
-            padding: '30px 10px 10px 10px',
-            border: '1px solid #ccc',
-            backgroundColor: '#f9f9f9',
-            position: 'relative',
-            overflow: 'auto',
-            'max-height': '20em'
-        });
 
         // Botó per comprimir/expandir
         const toggleBtn = document.createElement('button');
         toggleBtn.id = `${id}-toggle-btn`;
         toggleBtn.textContent = '−';
         toggleBtn.type = 'button';
-        toggleBtn.className = 'btn btn-secondary btn-sm';
+        toggleBtn.className = 'btn btn-secondary btn-sm powertoy-toggle-button';
         toggleBtn.setAttribute('aria-label', 'Minimitza PowerToys');
         toggleBtn.setAttribute('aria-expanded', 'true');
         toggleBtn.title = 'Minimitza PowerToys';
-        Object.assign(toggleBtn.style, {
-            position: 'absolute',
-            top: '5px',
-            right: '5px',
-            width: '32px',
-            height: '32px',
-            borderRadius: '50%',
-            padding: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            lineHeight: '1'
-        });
         
         const contentWrapper = document.createElement('div');
         contentWrapper.className = 'powertoy-content-wrapper';
@@ -68,11 +46,6 @@ export class ContainerUIBuilder {
             const instructionsDiv = document.createElement('div');
             instructionsDiv.className = 'powertoy-instructions';
             instructionsDiv.textContent = textInstruccions;
-            Object.assign(instructionsDiv.style, {
-                fontSize: '0.85em',
-                marginTop: '8px',
-                color: '#555'
-            });
             contentWrapper.appendChild(instructionsDiv);
         }
 
@@ -84,14 +57,8 @@ export class ContainerUIBuilder {
         };
 
         toggleBtn.addEventListener('click', () => {
-            const isHidden = contentWrapper.style.display === 'none';
-            if (isHidden) {
-                contentWrapper.style.display = '';
-                actualitzaEstatToggle(true);
-            } else {
-                contentWrapper.style.display = 'none';
-                actualitzaEstatToggle(false);
-            }
+            const expanded = contentWrapper.classList.toggle('powertoy-content-wrapper--collapsed') === false;
+            actualitzaEstatToggle(expanded);
         });
         
         container.appendChild(toggleBtn);
@@ -103,16 +70,10 @@ export class ContainerUIBuilder {
         projectLink.href = 'https://github.com/ctrl-alt-d/EsferaPowerToys';
         projectLink.target = '_blank';
         projectLink.rel = 'noopener noreferrer';
-        projectLink.style.textDecoration = 'none';
+        projectLink.className = 'powertoy-version-link';
         projectLink.textContent = 'Esfer@ Power Toys';
         versionDiv.appendChild(projectLink);
         versionDiv.appendChild(document.createTextNode(` v. ${this.version}`));
-        Object.assign(versionDiv.style, {
-            textAlign: 'right',
-            fontSize: '0.8em',
-            marginTop: '8px',
-            color: '#666'
-        });
         container.appendChild(versionDiv);
 
         return container;

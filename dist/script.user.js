@@ -32,7 +32,7 @@
                 background-color: inherit !important;
             }
 
-            /* 1. For\xE7a l'al\xE7ada del fieldset relativa a l'al\xE7ada real de la finestra */
+            /* For\xE7a l'al\xE7ada del fieldset relativa a l'al\xE7ada real de la finestra. */
             fieldset.col-md-12.bordure {
                 padding: 0 !important;
                 height: calc(100vh - 250px) !important;
@@ -42,7 +42,7 @@
                 box-sizing: border-box !important;
             }
 
-            /* 2. Elimina l'al\xE7ada fixa injectada per JS i deixa que ocupi tot l'espai disponible */
+            /* Elimina l'al\xE7ada fixa injectada per JS i deixa que ocupi tot l'espai disponible. */
             fieldset.col-md-12.bordure .container-auto-resize {
                 height: auto !important;
                 max-height: none !important;
@@ -51,7 +51,7 @@
                 overflow: visible !important;
             }
 
-            /* 3. Assegura que la taula no generi desbordaments horitzontals que trenquin el layout */
+            /* Assegura que la taula no generi desbordaments horitzontals que trenquin el layout. */
             fieldset.col-md-12.bordure table.grades-table {
                 min-width: 0 !important;
                 table-layout: fixed !important;
@@ -82,8 +82,13 @@
                 cursor: pointer;
                 align-self: flex-start;
                 transition: background 0.2s;
-            ">Descarregar Excel</button>
-            <button id="btn-visualitzar-dades" style="
+            }
+
+            .powertoy-excel-download-button {
+                background-color: #22c55e;
+            }
+
+            .powertoy-excel-visualize-button {
                 background-color: #2563eb;
                 color: white;
                 border: none;

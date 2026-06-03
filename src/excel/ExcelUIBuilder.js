@@ -24,18 +24,20 @@ export class ExcelUIBuilder {
     }
 
     /**
-     * Insereix automàticament el panell informatiu o actualitza la vista si s'està carregant la taula admesa.
+     * Crea el panell informatiu amb els controls d'Excel i visualització.
+     * @param {string} id - Identificador del contenidor del panell.
+     * @returns {HTMLElement} Panell preparat per inserir al DOM.
      */
-    async injectHeaderButtonIfNeeded() {
-        const table = document.querySelector(
-            'table[data-st-table="matriculaAlumneAva"]',
-        );
+    async createPanel(id = 'powertoys-info-box') {
+        const contentDiv = document.createElement('div');
+        const panelContent = document.createElement('div');
 
-        if (!table) return;
+        const title = document.createElement('strong');
+        title.textContent = 'PowerToys - Exportació Excel';
 
-        if (table.previousElementSibling?.id === 'powertoys-info-box') {
-            return;
-        }
+        const helpText = document.createElement('span');
+        helpText.className = 'powertoy-excel-help-text';
+        helpText.textContent = "Selecciona l'avaluació per descarregar les notes:";
 
         await this.updateMaxAvaluacions();
 
@@ -46,58 +48,44 @@ export class ExcelUIBuilder {
 
         const contentDiv = document.createElement('div');
         let optionsHTML = '';
+        const select = document.createElement('select');
+        select.id = 'powertoys-evaluation-select';
+        select.className = 'powertoy-excel-evaluation-select';
         for (let i = 1; i <= this.maxAvaluacions; i++) {
-            optionsHTML += `<option value="${i}">Avaluació ${i}</option>`;
+            const option = document.createElement('option');
+            option.value = `${i}`;
+            option.textContent = `Avaluació ${i}`;
+            select.appendChild(option);
         }
 
-        contentDiv.innerHTML = `
-            <div>
-                <strong>PowerToys - Exportació Excel</strong><br>
-                <span style="font-size:0.9em">Selecciona l'avaluació per descarregar les notes:</span>
-            <br>
-            <select id="powertoys-evaluation-select" style="
-                margin-top: 10px;
-                padding: 5px;
-                border-radius: 4px;
-                border: 1px solid #ccc;
-                font-family: sans-serif;
-            ">
-                ${optionsHTML}
-            </select>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px;">
-            <button id="btn-descargar-xlsx" style="
-                background-color: #22c55e;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 8px 16px;
-                font-size: 14px;
-                font-weight: 500;
-                cursor: pointer;
-                align-self: flex-start;
-                transition: background 0.2s;
-            ">Descarregar Excel</button>
-            <button id="btn-visualitzar-dades" style="
-                background-color: #2563eb;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 8px 16px;
-                font-size: 14px;
-                font-weight: 500;
-                cursor: pointer;
-                align-self: flex-start;
-                transition: background 0.2s;
-            ">Visualitzar dades (preview)</button>
-            </div>
-            </div>
-        `;
+        const actions = document.createElement('div');
+        actions.className = 'powertoy-excel-actions';
 
-        const container = this.containerBuilder.createContainer(contentDiv, 'powertoys-info-box');
-        this.containerBuilder.insertDiv(container, table);
+        const downloadButton = document.createElement('button');
+        downloadButton.id = 'btn-descargar-xlsx';
+        downloadButton.className = 'powertoy-excel-button powertoy-excel-download-button';
+        downloadButton.textContent = 'Descarregar Excel';
 
-        const btnExcel = document.getElementById('btn-descargar-xlsx');
-        const selectAvaluacio = document.getElementById('powertoys-evaluation-select');
+        const visualizeButton = document.createElement('button');
+        visualizeButton.id = 'btn-visualitzar-dades';
+        visualizeButton.className = 'powertoy-excel-button powertoy-excel-visualize-button';
+        visualizeButton.textContent = 'Visualitzar dades (preview)';
+
+        actions.appendChild(downloadButton);
+        actions.appendChild(visualizeButton);
+        panelContent.appendChild(title);
+        panelContent.appendChild(document.createElement('br'));
+        panelContent.appendChild(helpText);
+        panelContent.appendChild(document.createElement('br'));
+        panelContent.appendChild(select);
+        panelContent.appendChild(actions);
+        
+      .appendChild(panelContent);
+
+        const container = this.containerBuilder.createContainer(contentDiv, id);
+
+        const btnExcel = container.querySelector('#btn-descargar-xlsx');
+        const selectAvaluacio = container.querySelector('#powertoys-evaluation-select');
         if (btnExcel) {
             btnExcel.addEventListener('click', () => {
                 const evaluation = selectAvaluacio ? parseInt(selectAvaluacio.value, 10) : 1;
@@ -105,7 +93,7 @@ export class ExcelUIBuilder {
             });
         }
 
-        const btnVisualitzar = document.getElementById('btn-visualitzar-dades');
+        const btnVisualitzar = container.querySelector('#btn-visualitzar-dades');
         if (btnVisualitzar && this.onVisualize) {
             btnVisualitzar.addEventListener('click', () => {
                 const evaluation = selectAvaluacio ? parseInt(selectAvaluacio.value, 10) : 1;
@@ -113,6 +101,7 @@ export class ExcelUIBuilder {
             });
         }
 
-        this.logger.log('ExcelUIBuilder → div inserit correctament');
+        this.logger.log('ExcelUIBuilder → panell creat');
+        return container;
     }
 }

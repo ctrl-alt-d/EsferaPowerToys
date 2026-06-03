@@ -29,7 +29,7 @@ describe('ContainerUIBuilder', () => {
 
     toggle.click();
 
-    expect(wrapper.style.display).toBe('none');
+    expect(wrapper.classList.contains('powertoy-content-wrapper--collapsed')).toBe(true);
     expect(wrapper.querySelector('.powertoy-instructions')).not.toBeNull();
     expect(toggle.getAttribute('aria-label')).toBe('Expandeix PowerToys');
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
@@ -37,7 +37,7 @@ describe('ContainerUIBuilder', () => {
 
     toggle.click();
 
-    expect(wrapper.style.display).toBe('');
+    expect(wrapper.classList.contains('powertoy-content-wrapper--collapsed')).toBe(false);
     expect(toggle.getAttribute('aria-label')).toBe('Minimitza PowerToys');
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
   });
@@ -70,5 +70,6 @@ describe('ContainerUIBuilder', () => {
     expect(link.textContent).toBe('Esfer@ Power Toys');
     expect(link.target).toBe('_blank');
     expect(link.rel).toBe('noopener noreferrer');
+    expect(link.classList.contains('powertoy-version-link')).toBe(true);
   });
 });
