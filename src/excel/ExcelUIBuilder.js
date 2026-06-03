@@ -7,13 +7,20 @@ export class ExcelUIBuilder {
      * @param {function} onDownload Callback activat a l'apretar el botó d'Excel
      * @param {import('../ContainerUIBuilder.js').ContainerUIBuilder} containerBuilder - Constructor base del contenidor.
      * @param {function} onVisualize Callback activat a l'apretar el botó del visualitzador
+     * @param {import('../dataProviders/NotesDataProvider.js').NotesDataProvider} dataProvider - Proveïdor de dades de notes.
      */
-    constructor(logger, onDownload, containerBuilder, onVisualize = null) {
+    constructor(logger, onDownload, containerBuilder, onVisualize = null, dataProvider = null) {
         this.logger = logger;
         this.onDownload = onDownload;
         this.containerBuilder = containerBuilder;
         this.onVisualize = onVisualize;
+        this.dataProvider = dataProvider;
         this.maxAvaluacions = 4;
+    }
+
+    async updateMaxAvaluacions() {
+        if (!this.dataProvider) return;
+        this.maxAvaluacions = await this.dataProvider.obtéMaxAvaluacions();
     }
 
     /**
@@ -21,7 +28,7 @@ export class ExcelUIBuilder {
      * @param {string} id - Identificador del contenidor del panell.
      * @returns {HTMLElement} Panell preparat per inserir al DOM.
      */
-    createPanel(id = 'powertoys-info-box') {
+    async createPanel(id = 'powertoys-info-box') {
         const contentDiv = document.createElement('div');
         const panelContent = document.createElement('div');
 
@@ -32,6 +39,15 @@ export class ExcelUIBuilder {
         helpText.className = 'powertoy-excel-help-text';
         helpText.textContent = "Selecciona l'avaluació per descarregar les notes:";
 
+        await this.updateMaxAvaluacions();
+
+        // Comprovem de nou després de l'espera per evitar duplicitats si l'observador s'ha disparat varies vegades
+        if (table.previousElementSibling?.id === 'powertoys-info-box') {
+            return;
+        }
+
+        const contentDiv = document.createElement('div');
+        let optionsHTML = '';
         const select = document.createElement('select');
         select.id = 'powertoys-evaluation-select';
         select.className = 'powertoy-excel-evaluation-select';
@@ -63,7 +79,8 @@ export class ExcelUIBuilder {
         panelContent.appendChild(document.createElement('br'));
         panelContent.appendChild(select);
         panelContent.appendChild(actions);
-        contentDiv.appendChild(panelContent);
+        
+      .appendChild(panelContent);
 
         const container = this.containerBuilder.createContainer(contentDiv, id);
 
