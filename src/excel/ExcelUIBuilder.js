@@ -4,7 +4,7 @@
 export class ExcelUIBuilder {
     /**
      * @param {import('../PowerToysLogger.js').PowerToysLogger} logger
-     * @param {functioddn} onDownload Callback activat a l'apretar el botó d'Excel
+     * @param {function} onDownload Callback activat a l'apretar el botó d'Excel
      * @param {import('../ContainerUIBuilder.js').ContainerUIBuilder} containerBuilder - Constructor base del contenidor.
      * @param {function} onVisualize Callback activat a l'apretar el botó del visualitzador
      * @param {import('../dataProviders/NotesDataProvider.js').NotesDataProvider} dataProvider - Proveïdor de dades de notes.
