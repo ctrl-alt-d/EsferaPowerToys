@@ -22,7 +22,7 @@ describe('ExcelUIBuilder', () => {
         };
         const builder = new ExcelUIBuilder({ log: jest.fn() }, onDownload, containerBuilder, onVisualize);
 
-        await panel = builder.createPanel();
+        const panel = await builder.createPanel(document.createElement('table'));
         panel.querySelector('#powertoys-evaluation-select').value = '2';
         panel.querySelector('#btn-visualitzar-dades').click();
         panel.querySelector('#btn-descargar-xlsx').click();

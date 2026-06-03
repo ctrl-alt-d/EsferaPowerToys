@@ -28,7 +28,7 @@ export class ExcelUIBuilder {
      * @param {string} id - Identificador del contenidor del panell.
      * @returns {HTMLElement} Panell preparat per inserir al DOM.
      */
-    async createPanel(id = 'powertoys-info-box') {
+    async createPanel(table = null, id = 'powertoys-info-box') {
         const contentDiv = document.createElement('div');
         const panelContent = document.createElement('div');
 
@@ -42,12 +42,10 @@ export class ExcelUIBuilder {
         await this.updateMaxAvaluacions();
 
         // Comprovem de nou després de l'espera per evitar duplicitats si l'observador s'ha disparat varies vegades
-        if (table.previousElementSibling?.id === 'powertoys-info-box') {
-            return;
+        if (table && table.previousElementSibling?.id === id) {
+            return null;
         }
 
-        const contentDiv = document.createElement('div');
-        let optionsHTML = '';
         const select = document.createElement('select');
         select.id = 'powertoys-evaluation-select';
         select.className = 'powertoy-excel-evaluation-select';
@@ -79,8 +77,7 @@ export class ExcelUIBuilder {
         panelContent.appendChild(document.createElement('br'));
         panelContent.appendChild(select);
         panelContent.appendChild(actions);
-        
-      .appendChild(panelContent);
+        contentDiv.appendChild(panelContent);
 
         const container = this.containerBuilder.createContainer(contentDiv, id);
 
