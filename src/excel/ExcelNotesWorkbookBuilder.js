@@ -73,9 +73,10 @@ export class ExcelNotesWorkbookBuilder {
                 cell.border = this.obtéBorderNota(colNumber, columnesIniciModul, columnesFinalModul, borderFi, borderIniciModul, borderFinalModul);
 
                 const isConvocatoria = headers2[colNumber] === 'n. convocatoria';
+                const isProvisional = headers2[colNumber] === 'provisional';
                 const isCodiModul = headers2[colNumber - 1] === 'n. convocatoria';
 
-                if (isConvocatoria || isCodiModul) {
+                if (isConvocatoria || isCodiModul || isProvisional) {
                     cell.fill = {
                         type: 'pattern',
                         pattern: 'solid',
