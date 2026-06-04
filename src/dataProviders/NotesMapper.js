@@ -80,6 +80,7 @@ export class NotesMapper {
 
         if (contingut.jerarquia == 2) {
             resultat.provisional = contingut.qualificacioProv ?? contingut.qualificacioProvisional ?? '';
+            resultat.convocatoria = contingut.convocatoria;
         }
 
         return resultat

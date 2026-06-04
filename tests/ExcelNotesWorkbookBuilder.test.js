@@ -15,13 +15,13 @@ describe('ExcelNotesWorkbookBuilder', () => {
             ],
             continguts: {
                 ava1: [
-                    { codi: 'M03', nom: 'Mòdul 3', jerarquia: '2', qualitativa: 'A8' },
+                    { codi: 'M03', nom: 'Mòdul 3', jerarquia: '2', qualitativa: 'A8', convocatoria: '1' },
                     { codi: 'M01', nom: 'Mòdul 1', jerarquia: '2', qualitativa: 'A6' },
                     { codi: 'M02', nom: 'RA 2', jerarquia: '3', qualitativa: 'A4' },
-                    { codi: 'M04', nom: 'Mòdul 4', jerarquia: '2', qualitativa: 'NA' },
+                    { codi: 'M04', nom: 'Mòdul 4', jerarquia: '2', qualitativa: 'NA', convocatoria: '2' },
                 ],
                 ava2: [
-                    { codi: 'M05', nom: 'Mòdul 5', jerarquia: '2', qualitativa: 'A9' },
+                    { codi: 'M05', nom: 'Mòdul 5', jerarquia: '2', qualitativa: 'A9', convocatoria: '1' },
                     { codi: 'M06', nom: 'Mòdul 6', jerarquia: '2', qualitativa: 'PDT' },
                     { codi: 'M07', nom: 'Mòdul 7', jerarquia: '2', qualitativa: 'PDT', provisional: 8 },
                 ],
@@ -47,24 +47,24 @@ describe('ExcelNotesWorkbookBuilder', () => {
     test('hauria d’usar les notes de l’avaluació seleccionada', () => {
         const worksheet = creaWorksheet(creaDadesAlumnes(), 2);
 
-        expect(worksheet.getRow(2).values.slice(1)).toEqual(['idAlumne', 'nom', 'M05', 'provisional', 'M06', 'provisional', 'M07', 'provisional']);
-        expect(worksheet.getRow(3).values.slice(1)).toEqual(['1', 'Alumna', 9, undefined, 'PDT', undefined, 'PDT', 8]);
+        expect(worksheet.getRow(2).values.slice(1)).toEqual(['idAlumne', 'nom', 'n. convocatoria', 'M05', 'provisional', 'n. convocatoria', 'M06', 'provisional', 'n. convocatoria', 'M07', 'provisional']);
+        expect(worksheet.getRow(3).values.slice(1)).toEqual(['1', 'Alumna', '1', 9, undefined, undefined, 'PDT', undefined, undefined, 'PDT', 8]);
     });
 
     test('hauria de generar les columnes en ordre determinista per codi de contingut', () => {
         const worksheet = creaWorksheet();
 
-        expect(worksheet.getRow(2).values.slice(1)).toEqual(['idAlumne', 'nom', 'M01', 'provisional', 'M02', 'M03', 'provisional', 'M04', 'provisional']);
-        expect(worksheet.getRow(3).values.slice(1)).toEqual(['1', 'Alumna', 6, undefined, 4, 8, undefined, 'NA', undefined]);
+        expect(worksheet.getRow(2).values.slice(1)).toEqual(['idAlumne', 'nom', 'n. convocatoria', 'M01', 'provisional', 'M02', 'n. convocatoria', 'M03', 'provisional', 'n. convocatoria', 'M04', 'provisional']);
+        expect(worksheet.getRow(3).values.slice(1)).toEqual(['1', 'Alumna', undefined, 6, undefined, 4, '1', 8, undefined, '2', 'NA', undefined]);
     });
 
     test('hauria de pintar de verd només les notes numèriques iguals o superiors a cinc', () => {
         const worksheet = creaWorksheet();
 
-        expect(worksheet.getCell('C3').fill.fgColor.argb).toBe('FFC6EFCE');
-        expect(worksheet.getCell('E3').fill).toBeUndefined();
-        expect(worksheet.getCell('F3').fill.fgColor.argb).toBe('FFC6EFCE');
-        expect(worksheet.getCell('H3').fill).toBeUndefined();
+        expect(worksheet.getCell('D3').fill.fgColor.argb).toBe('FFC6EFCE'); // M01=6
+        expect(worksheet.getCell('F3').fill).toBeUndefined(); // M02=4
+        expect(worksheet.getCell('H3').fill.fgColor.argb).toBe('FFC6EFCE'); // M03=8
+        expect(worksheet.getCell('K3').fill.fgColor.argb).toBe('FFF1F5F9'); // M04=NA (default background)
     });
 
     test('hauria de considerar les cadenes numèriques com a notes per aplicar estils', () => {
@@ -81,8 +81,8 @@ describe('ExcelNotesWorkbookBuilder', () => {
             },
         ]);
 
-        expect(worksheet.getCell('C3').value).toBe('5');
-        expect(worksheet.getCell('C3').fill.fgColor.argb).toBe('FFC6EFCE');
+        expect(worksheet.getCell('D3').value).toBe('5');
+        expect(worksheet.getCell('D3').fill.fgColor.argb).toBe('FFC6EFCE');
     });
 
     test('hauria de fusionar capçaleres de mòdul només en trams contigus', () => {
@@ -91,12 +91,15 @@ describe('ExcelNotesWorkbookBuilder', () => {
         expect(worksheet.getCell('C1').value).toBe('Mòdul 1');
         expect(worksheet.getCell('D1').value).toBe('Mòdul 1');
         expect(worksheet.getCell('E1').value).toBe('Mòdul 1');
+        expect(worksheet.getCell('F1').value).toBe('Mòdul 1');
         
-        expect(worksheet.getCell('F1').value).toBe('Mòdul 3');
         expect(worksheet.getCell('G1').value).toBe('Mòdul 3');
+        expect(worksheet.getCell('H1').value).toBe('Mòdul 3');
+        expect(worksheet.getCell('I1').value).toBe('Mòdul 3');
         
-        expect(worksheet.getCell('H1').value).toBe('Mòdul 4');
-        expect(worksheet.getCell('I1').value).toBe('Mòdul 4');
+        expect(worksheet.getCell('J1').value).toBe('Mòdul 4');
+        expect(worksheet.getCell('K1').value).toBe('Mòdul 4');
+        expect(worksheet.getCell('L1').value).toBe('Mòdul 4');
     });
 
     test('hauria de posar en negreta la primera columna de cada mòdul', () => {
@@ -111,14 +114,16 @@ describe('ExcelNotesWorkbookBuilder', () => {
     test('hauria de posar border a les notes i marcar els límits dels mòduls', () => {
         const worksheet = creaWorksheet();
 
+        // M01 span: C a F
         expect(worksheet.getCell('C3').border.left.style).toBe('medium');
         expect(worksheet.getCell('C3').border.right.style).toBe('thin');
         expect(worksheet.getCell('D3').border.right.style).toBe('thin');
-        expect(worksheet.getCell('E3').border.right.style).toBe('medium');
+        expect(worksheet.getCell('F3').border.right.style).toBe('medium');
 
-        expect(worksheet.getCell('F3').border.left.style).toBe('medium');
-        expect(worksheet.getCell('F3').border.right.style).toBe('thin');
-        expect(worksheet.getCell('G3').border.right.style).toBe('medium');
+        // M03 span: G a I
+        expect(worksheet.getCell('G3').border.left.style).toBe('medium');
+        expect(worksheet.getCell('G3').border.right.style).toBe('thin');
+        expect(worksheet.getCell('I3').border.right.style).toBe('medium');
     });
 
     test('hauria d’alinear a la dreta les notes i les capçaleres de RA', () => {
