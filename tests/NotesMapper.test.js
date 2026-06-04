@@ -22,8 +22,8 @@ describe('NotesMapper', () => {
             ],
             lContinguts: {
                 ava1: [
-                    { codiExternContingut: 'M01', nom: 'Mòdul 1', jerarquia: '2', qualitativa: 'A7', quantitativa: '7.1' },
-                    { codiExternContingut: 'M01_01RA', nom: 'RA 1', jerarquia: '3', qualitativa: 'PDT', quantitativa: null },
+                    { codiExternContingut: 'M01', nom: 'Mòdul 1', jerarquia: '2', qualitativa: 'A7', quantitativa: '7.1', qualificacioProv: '7'  },
+                    { codiExternContingut: 'M01_01RA', nom: 'RA 1', jerarquia: '3', qualitativa: 'PDT', quantitativa: null},
                 ],
             },
         };
@@ -40,7 +40,7 @@ describe('NotesMapper', () => {
             ],
             continguts: {
                 ava1: [
-                    { codi: 'M01', nom: 'Mòdul 1', jerarquia: '2', qualitativa: 'A7', quantitativa: '7.1' },
+                    { codi: 'M01', nom: 'Mòdul 1', provisional:"7", jerarquia: '2', qualitativa: 'A7', quantitativa: '7.1' },
                     { codi: 'M01_01RA', nom: 'RA 1', jerarquia: '3', qualitativa: 'PDT', quantitativa: '' },
                 ],
             },

@@ -63,12 +63,27 @@ export class ExcelNotesWorkbookBuilder {
             worksheet.getRow(2).getCell(colNumber).alignment = { vertical: 'middle', horizontal: 'right' };
         }
 
+        const headers2 = worksheet.getRow(2).values;
+
         for (let rowNumber = 3; rowNumber <= worksheet.rowCount; rowNumber++) {
             const row = worksheet.getRow(rowNumber);
             for (let colNumber = 3; colNumber <= worksheet.columnCount; colNumber++) {
                 const cell = row.getCell(colNumber);
                 cell.alignment = { vertical: 'middle', horizontal: 'right' };
                 cell.border = this.obtéBorderNota(colNumber, columnesIniciModul, columnesFinalModul, borderFi, borderIniciModul, borderFinalModul);
+
+                const isConvocatoria = headers2[colNumber] === 'n. convocatoria';
+                const isProvisional = headers2[colNumber] === 'provisional';
+                const isCodiModul = headers2[colNumber - 1] === 'n. convocatoria';
+
+                if (isConvocatoria || isCodiModul || isProvisional) {
+                    cell.fill = {
+                        type: 'pattern',
+                        pattern: 'solid',
+                        fgColor: { argb: 'FFF1F5F9' }, // slate-100 lleuger
+                    };
+                }
+
                 if (this.ésNotaAprovada(cell.value)) {
                     cell.fill = {
                         type: 'pattern',
@@ -188,7 +203,13 @@ export class ExcelNotesWorkbookBuilder {
                 }
                 spanActual = { start: columnIndex, end: columnIndex };
                 header1.push(info.nom);
+                header2.push("n. convocatoria");
+
+                header1.push("");
                 header2.push(codi);
+
+                header1.push('');
+                header2.push("provisional");
             } else {
                 header1.push('');
                 header2.push(codi);
@@ -204,13 +225,17 @@ export class ExcelNotesWorkbookBuilder {
             const notes = getNotesAvaluacioSeleccionada(alumne);
 
             const fila = [alumne.idAlumne ?? '', alumne.nom ?? ''];
-            modulsArray.forEach(([codi]) => {
+            modulsArray.forEach(([codi, info]) => {
                 let modData = null;
                 if (Array.isArray(notes)) {
                     modData = notes.find(m => m.codi == codi);
                 }
 
                 try {
+                    if (info.jerarquia == '2'){
+                        fila.push(modData?.convocatoria ?? undefined);
+                    }
+                    
                     if (modData && modData.jerarquia == 2 && modData.quantitativa) {
                         fila.push(this.normalitzaValorNota(modData.quantitativa));
                     } else if (modData && modData.qualitativa) {
@@ -222,8 +247,17 @@ export class ExcelNotesWorkbookBuilder {
                     } else {
                         fila.push('');
                     }
+
+                    //nota provisional just després de la final
+                    if(info.jerarquia == '2'){
+                        fila.push(modData?.provisional ?? undefined);
+                    }
                 } catch {
-                    fila.push('');
+                    if (info.jerarquia == '2') {
+                        fila.push('', '', '');
+                    } else {
+                        fila.push('');
+                    }
                 }
             });
             return fila;

@@ -70,12 +70,21 @@ export class NotesMapper {
      * @returns {{codi: string, nom: string, jerarquia: string, qualitativa: string, quantitativa: string}}
      */
     normalitzaContingut(contingut = {}) {
-        return {
+        const resultat = {
             codi: contingut.codiExternContingut ?? contingut.codi ?? '',
             nom: contingut.nom ?? '',
             jerarquia: contingut.jerarquia ?? '',
             qualitativa: contingut.qualitativa ?? '',
             quantitativa: contingut.quantitativa ?? '',
         };
+
+        if (contingut.jerarquia == 2) {
+            resultat.provisional = contingut.qualificacioProv ?? contingut.qualificacioProvisional ?? '';
+            resultat.convocatoria = contingut.convocatoria;
+        }
+
+        return resultat
+
+return resultat;
     }
 }
