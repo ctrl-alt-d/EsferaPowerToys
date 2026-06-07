@@ -1,12 +1,12 @@
-import { NoteValueHelper } from '../dataProviders/NoteValueHelper.js';
+import { NotaValueHelper } from '../dataProviders/NotaValueHelper.js';
 
 /**
  * Construeix el llibre Excel de notes a partir de dades normalitzades d'Esfer@.
  */
 export class ExcelNotesWorkbookBuilder {
-    constructor(excelJS = (typeof window !== 'undefined' ? window.ExcelJS : null), noteValueHelper = new NoteValueHelper()) {
+    constructor(excelJS = (typeof window !== 'undefined' ? window.ExcelJS : null), notaValueHelper = new NotaValueHelper()) {
         this.excelJS = excelJS;
-        this.noteValueHelper = noteValueHelper;
+        this.notaValueHelper = notaValueHelper;
     }
 
     /**
@@ -393,20 +393,20 @@ export class ExcelNotesWorkbookBuilder {
      * Normalitza una nota de contingut exactament igual que el full Notes.
      */
     obtéValorNota(contingut) {
-        return this.noteValueHelper.obtéValorContingut(contingut);
+        return this.notaValueHelper.obtéValorContingut(contingut);
     }
 
     /**
      * Converteix les notes numèriques a número i preserva els codis textuals.
      */
     normalitzaValorNota(valor) {
-        return this.noteValueHelper.normalitzaValorNota(valor);
+        return this.notaValueHelper.normalitzaValorNota(valor);
     }
 
     /**
      * Determina si una cel·la conté una nota aprovada.
      */
     ésNotaAprovada(valor) {
-        return this.noteValueHelper.ésNotaNumericaAprovada(valor);
+        return this.notaValueHelper.ésNotaNumericaAprovada(valor);
     }
 }

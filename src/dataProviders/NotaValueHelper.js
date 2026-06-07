@@ -1,7 +1,7 @@
 /**
  * Centralitza la semàntica de notes compartida entre Excel i visualitzador.
  */
-export class NoteValueHelper {
+export class NotaValueHelper {
     /**
      * Normalitza valors genèrics: A8 -> 8, decimals amb coma -> número i codis textuals preservats.
      */

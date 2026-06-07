@@ -1,11 +1,11 @@
 import { describe, test, expect, beforeEach } from '@jest/globals';
-import { NoteValueHelper } from '../src/dataProviders/NoteValueHelper.js';
+import { NotaValueHelper } from '../src/dataProviders/NotaValueHelper.js';
 
-describe('NoteValueHelper', () => {
+describe('NotaValueHelper', () => {
     let helper;
 
     beforeEach(() => {
-        helper = new NoteValueHelper();
+        helper = new NotaValueHelper();
     });
 
     test('hauria de normalitzar codis A i quantitatives amb coma o punt', () => {

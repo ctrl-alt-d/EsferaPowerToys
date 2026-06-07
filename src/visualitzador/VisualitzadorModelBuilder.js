@@ -1,11 +1,11 @@
-import { NoteValueHelper } from '../dataProviders/NoteValueHelper.js';
+import { NotaValueHelper } from '../dataProviders/NotaValueHelper.js';
 
 /**
  * Construeix el model del visualitzador a partir del model intern de notes.
  */
 export class VisualitzadorModelBuilder {
-    constructor(noteValueHelper = new NoteValueHelper()) {
-        this.noteValueHelper = noteValueHelper;
+    constructor(notaValueHelper = new NotaValueHelper()) {
+        this.notaValueHelper = notaValueHelper;
     }
 
     /**
@@ -123,17 +123,17 @@ export class VisualitzadorModelBuilder {
      * Normalitza qualitatives A10 i quantitatives textuals.
      */
     normalitzaNota(nota) {
-        return this.noteValueHelper.obtéValorContingut(nota);
+        return this.notaValueHelper.obtéValorContingut(nota);
     }
 
     parseVal(v) {
-        const interpretada = this.noteValueHelper.interpretaNota(v);
+        const interpretada = this.notaValueHelper.interpretaNota(v);
         if (interpretada.tipus === 'empty' || interpretada.tipus === 'unknown') return null;
         return interpretada.valor;
     }
 
     isNull(v) {
-        return this.noteValueHelper.ésBuit(v);
+        return this.notaValueHelper.ésBuit(v);
     }
 
     scoreClass(v) {
@@ -142,7 +142,7 @@ export class VisualitzadorModelBuilder {
         if (parsed === null) return 'fail';
         if (parsed === 'PDT') return 'pdt';
         if (parsed === 'PQ') return 'pass';
-        return this.noteValueHelper.ésResultatSuperat(parsed) ? 'pass' : 'fail';
+        return this.notaValueHelper.ésResultatSuperat(parsed) ? 'pass' : 'fail';
     }
 
     displayVal(v) {
@@ -159,6 +159,6 @@ export class VisualitzadorModelBuilder {
         if (parsed === 'NA') return 'fail';
         if (parsed === 'PDT') return 'warn';
         if (parsed === 'PQ') return 'warn';
-        return this.noteValueHelper.ésResultatSuperat(parsed) ? 'pass' : 'fail';
+        return this.notaValueHelper.ésResultatSuperat(parsed) ? 'pass' : 'fail';
     }
 }
