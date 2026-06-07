@@ -2,6 +2,8 @@
  * Centralitza la semàntica de notes compartida entre Excel i visualitzador.
  */
 export class NotaValueHelper {
+    static CODIS_CONEGUTS = new Set(['NA', 'PDT', 'PQ', 'AS', 'AN', 'AE', 'CV', 'XM']);
+
     /**
      * Normalitza valors genèrics: A8 -> 8, decimals amb coma -> número i codis textuals preservats.
      */
@@ -61,6 +63,7 @@ export class NotaValueHelper {
         if (this.ésBuit(valor)) return { tipus: 'empty', valor: null };
 
         const normalitzat = this.normalitzaValorNota(valor);
+        if (this.ésBuit(normalitzat)) return { tipus: 'empty', valor: null };
         if (typeof normalitzat === 'number') return { tipus: 'number', valor: normalitzat };
 
         const codi = String(normalitzat).trim().toUpperCase();
@@ -98,10 +101,10 @@ export class NotaValueHelper {
      * Codis textuals de nota que el domini reconeix i preserva.
      */
     codisConeguts() {
-        return new Set(['NA', 'PDT', 'PQ', 'AS', 'AN', 'AE', 'CV', 'XM']);
+        return NotaValueHelper.CODIS_CONEGUTS;
     }
 
     ésBuit(valor) {
-        return valor === '' || valor === undefined || valor === null;
+        return valor === undefined || valor === null || (typeof valor === 'string' && valor.trim() === '');
     }
 }

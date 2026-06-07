@@ -22,6 +22,16 @@ describe('NotaValueHelper', () => {
         });
     });
 
+    test('hauria de tractar cadenes amb només espais com a valor buit', () => {
+        expect(helper.normalitzaValorNota('  ')).toBe('');
+        expect(helper.interpretaNota('  ')).toEqual({ tipus: 'empty', valor: null });
+        expect(helper.ésBuit('  ')).toBe(true);
+    });
+
+    test('hauria de reutilitzar el conjunt de codis coneguts', () => {
+        expect(helper.codisConeguts()).toBe(helper.codisConeguts());
+    });
+
     test('hauria de distingir aprovat numèric i resultat superat de domini', () => {
         expect(helper.ésNotaNumericaAprovada(5)).toBe(true);
         expect(helper.ésNotaNumericaAprovada('7,5')).toBe(true);
