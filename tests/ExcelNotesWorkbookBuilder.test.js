@@ -34,6 +34,16 @@ describe('ExcelNotesWorkbookBuilder', () => {
         return workbook.getWorksheet('Notes');
     };
 
+    const creaWorkbook = (dadesAlumnes = creaDadesAlumnes(), evaluation = 1) => (
+        builder.construeixWorkbookNotes(dadesAlumnes, evaluation)
+    );
+
+    const obtéFiles = worksheet => {
+        const files = [];
+        worksheet.eachRow(row => files.push(row.values.slice(1)));
+        return files;
+    };
+
     beforeEach(() => {
         builder = new ExcelNotesWorkbookBuilder(ExcelJS);
     });
@@ -42,6 +52,114 @@ describe('ExcelNotesWorkbookBuilder', () => {
         const worksheet = creaWorksheet();
 
         expect(worksheet.views).toEqual([{ state: 'frozen', xSplit: 2, ySplit: 2 }]);
+    });
+
+    test('hauria de crear les pestanyes Notes i Notes Flat', () => {
+        const workbook = creaWorkbook();
+
+        expect(workbook.worksheets.map(worksheet => worksheet.name)).toEqual(['Notes', 'Notes Flat']);
+    });
+
+    test('hauria de generar la capçalera exacta de Notes Flat', () => {
+        const worksheet = creaWorkbook().getWorksheet('Notes Flat');
+
+        expect(worksheet.getRow(1).values.slice(1)).toEqual([
+            'idAlumne',
+            'nom Alumne',
+            'Codi Mòdul',
+            'Nom Mòdul',
+            'Codi',
+            'Nom',
+            'Tipus',
+            'Subtipus',
+            'Nota',
+        ]);
+    });
+
+    test('hauria de generar files planes per MP, RA i EM amb el mòdul pare', () => {
+        const worksheet = creaWorkbook([
+            {
+                idAlumne: '1',
+                nom: 'Alumna',
+                avaluacions: [{ codi: 'FINAL_1', id: 'ava1' }],
+                continguts: {
+                    ava1: [
+                        { codi: '0484_ICC0', nom: 'Bases de dades', jerarquia: '2', qualitativa: 'A8' },
+                        { codi: '0484_ICC0_01RA', nom: 'RA 1', jerarquia: '3', qualitativa: 'A6' },
+                        { codi: '0484_ICC0_01EM', nom: 'EM 1', jerarquia: '4', qualitativa: 'A5' },
+                    ],
+                },
+            },
+        ]).getWorksheet('Notes Flat');
+
+        expect(obtéFiles(worksheet).slice(1)).toEqual([
+            ['1', 'Alumna', '0484_ICC0', 'Bases de dades', '0484_ICC0', 'Bases de dades', 'MP', 'MP', 8],
+            ['1', 'Alumna', '0484_ICC0', 'Bases de dades', '0484_ICC0_01RA', 'RA 1', '01RA', 'RA', 6],
+            ['1', 'Alumna', '0484_ICC0', 'Bases de dades', '0484_ICC0_01EM', 'EM 1', '01EM', 'EM', 5],
+        ]);
+    });
+
+    test('hauria de posar Subtipus MP per les files de mòdul professional', () => {
+        const worksheet = creaWorkbook().getWorksheet('Notes Flat');
+
+        const filaModul = worksheet.getRow(2).values.slice(1);
+
+        expect(filaModul[6]).toBe('MP');
+        expect(filaModul[7]).toBe('MP');
+    });
+
+    test('hauria d’activar autofilter a totes les columnes de Notes Flat', () => {
+        const worksheet = creaWorkbook().getWorksheet('Notes Flat');
+
+        expect(worksheet.autoFilter).toEqual({
+            from: { row: 1, column: 1 },
+            to: { row: 1, column: 9 },
+        });
+    });
+
+    test('hauria de congelar les dues primeres columnes i la capçalera de Notes Flat', () => {
+        const worksheet = creaWorkbook().getWorksheet('Notes Flat');
+
+        expect(worksheet.views).toEqual([{ state: 'frozen', xSplit: 2, ySplit: 1 }]);
+    });
+
+    test('hauria de deixar buit el nom del mòdul pare si el contingut RA no té el mòdul disponible', () => {
+        const worksheet = creaWorkbook([
+            {
+                idAlumne: '1',
+                nom: 'Alumna',
+                avaluacions: [{ codi: 'FINAL_1', id: 'ava1' }],
+                continguts: {
+                    ava1: [
+                        { codi: '0484_ICC0_01RA', nom: 'RA 1', jerarquia: '3', qualitativa: 'A7' },
+                    ],
+                },
+            },
+        ]).getWorksheet('Notes Flat');
+
+        expect(worksheet.getRow(2).values.slice(1)).toEqual([
+            '1', 'Alumna', '0484_ICC0', '', '0484_ICC0_01RA', 'RA 1', '01RA', 'RA', 7,
+        ]);
+    });
+
+    test('hauria de normalitzar les notes de Notes Flat igual que Notes', () => {
+        const workbook = creaWorkbook([
+            {
+                idAlumne: '1',
+                nom: 'Alumna',
+                avaluacions: [{ codi: 'FINAL_1', id: 'ava1' }],
+                continguts: {
+                    ava1: [
+                        { codi: '0484_ICC0', nom: 'Bases de dades', jerarquia: '2', quantitativa: '7,5', qualitativa: 'A8' },
+                        { codi: '0484_ICC0_01RA', nom: 'RA 1', jerarquia: '3', qualitativa: 'A8' },
+                    ],
+                },
+            },
+        ]);
+
+        expect(workbook.getWorksheet('Notes').getCell('D3').value).toBe(7.5);
+        expect(workbook.getWorksheet('Notes Flat').getRow(2).getCell(9).value).toBe(7.5);
+        expect(workbook.getWorksheet('Notes Flat').getRow(3).getCell(9).value).toBe(8);
     });
 
     test('hauria d’usar les notes de l’avaluació seleccionada', () => {
@@ -65,6 +183,39 @@ describe('ExcelNotesWorkbookBuilder', () => {
         expect(worksheet.getCell('F3').fill).toBeUndefined(); // M02=4
         expect(worksheet.getCell('H3').fill.fgColor.argb).toBe('FFC6EFCE'); // M03=8
         expect(worksheet.getCell('K3').fill.fgColor.argb).toBe('FFF1F5F9'); // M04=NA (default background)
+    });
+
+    test('hauria d’aplicar a Notes Flat els mateixos colors de nota aprovada que a Notes', () => {
+        const workbook = creaWorkbook();
+        const notes = workbook.getWorksheet('Notes');
+        const notesFlat = workbook.getWorksheet('Notes Flat');
+
+        expect(notesFlat.getRow(2).getCell(9).fill.fgColor.argb).toBe(notes.getCell('H3').fill.fgColor.argb); // A8 aprovada
+        expect(notesFlat.getRow(2).getCell(9).font.color.argb).toBe(notes.getCell('H3').font.color.argb);
+        expect(notesFlat.getRow(3).getCell(9).fill.fgColor.argb).toBe(notes.getCell('D3').fill.fgColor.argb); // A6 aprovada
+        expect(notesFlat.getRow(4).getCell(9).fill).toBeUndefined(); // A4 suspesa
+        expect(notesFlat.getRow(5).getCell(9).fill).toBeUndefined(); // NA no numèrica
+    });
+
+    test('hauria d’aplicar el color de nota aprovada a tota la fila de Notes Flat', () => {
+        const worksheet = creaWorkbook().getWorksheet('Notes Flat');
+        const filaAprovada = worksheet.getRow(2);
+
+        for (let colNumber = 1; colNumber <= 9; colNumber++) {
+            expect(filaAprovada.getCell(colNumber).fill.fgColor.argb).toBe('FFC6EFCE');
+            expect(filaAprovada.getCell(colNumber).font.color.argb).toBe('FF006100');
+        }
+    });
+
+    test('hauria de mantenir sense estil les files suspeses o textuals de Notes Flat', () => {
+        const worksheet = creaWorkbook().getWorksheet('Notes Flat');
+
+        for (const rowNumber of [4, 5]) {
+            for (let colNumber = 1; colNumber <= 9; colNumber++) {
+                expect(worksheet.getRow(rowNumber).getCell(colNumber).fill).toBeUndefined();
+                expect(worksheet.getRow(rowNumber).getCell(colNumber).font).toBeUndefined();
+            }
+        }
     });
 
     test('hauria de considerar les cadenes numèriques com a notes per aplicar estils', () => {
