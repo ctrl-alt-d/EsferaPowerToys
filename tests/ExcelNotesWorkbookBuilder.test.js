@@ -94,8 +94,8 @@ describe('ExcelNotesWorkbookBuilder', () => {
 
         expect(obtéFiles(worksheet).slice(1)).toEqual([
             ['1', 'Alumna', '0484_ICC0', 'Bases de dades', '0484_ICC0', 'Bases de dades', 'MP', 'MP', 8],
-            ['1', 'Alumna', '0484_ICC0', 'Bases de dades', '0484_ICC0_01RA', 'RA 1', '01RA', 'RA', 6],
-            ['1', 'Alumna', '0484_ICC0', 'Bases de dades', '0484_ICC0_01EM', 'EM 1', '01EM', 'EM', 5],
+            ['1', 'Alumna', '0484_ICC0', 'Bases de dades', '0484_ICC0_01RA', 'RA 1', 'RA', '01', 6],
+            ['1', 'Alumna', '0484_ICC0', 'Bases de dades', '0484_ICC0_01EM', 'EM 1', 'EM', '01', 5],
         ]);
     });
 
@@ -138,7 +138,7 @@ describe('ExcelNotesWorkbookBuilder', () => {
         ]).getWorksheet('Notes Flat');
 
         expect(worksheet.getRow(2).values.slice(1)).toEqual([
-            '1', 'Alumna', '0484_ICC0', '', '0484_ICC0_01RA', 'RA 1', '01RA', 'RA', 7,
+            '1', 'Alumna', '0484_ICC0', '', '0484_ICC0_01RA', 'RA 1', 'RA', '01', 7,
         ]);
     });
 

@@ -193,10 +193,10 @@ export class ExcelNotesWorkbookBuilder {
             return { tipus: 'MP', subtipus: 'MP' };
         }
 
-        const match = String(codi).match(/_(\d{2}(RA|EM))$/);
+        const match = String(codi).match(/_(\d{2})(RA|EM)$/);
         return {
-            tipus: match?.[1] ?? '',
-            subtipus: match?.[2] ?? '',
+            tipus: match?.[2] ?? '',
+            subtipus: match?.[1] ?? '',
         };
     }
 
