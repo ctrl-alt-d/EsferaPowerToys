@@ -84,14 +84,7 @@ export class ExcelNotesWorkbookBuilder {
                     };
                 }
 
-                if (this.ésNotaAprovada(cell.value)) {
-                    cell.fill = {
-                        type: 'pattern',
-                        pattern: 'solid',
-                        fgColor: { argb: 'FFC6EFCE' },
-                    };
-                    cell.font = { color: { argb: 'FF006100' } };
-                }
+                this.aplicaEstilNota(cell);
             }
         }
 
@@ -103,8 +96,121 @@ export class ExcelNotesWorkbookBuilder {
         });
 
         this.ajustaAmpladesColumnes(worksheet);
+        this.afegeixFullNotesFlat(workbook, dadesAlumnes, evaluation);
 
         return workbook;
+    }
+
+    /**
+     * Afegeix una pestanya normalitzada amb una fila per nota.
+     */
+    afegeixFullNotesFlat(workbook, dadesAlumnes, evaluation) {
+        const worksheet = workbook.addWorksheet('Notes Flat');
+        worksheet.views = [{ state: 'frozen', xSplit: 2, ySplit: 1 }];
+
+        const header = ['idAlumne', 'nom Alumne', 'Codi Mòdul', 'Nom Mòdul', 'Codi', 'Nom', 'Tipus', 'Subtipus', 'Nota'];
+        worksheet.addRow(header);
+
+        this.obtéAlumnesValids(dadesAlumnes).forEach(alumne => {
+            const notes = this.obtéNotesAvaluacioSeleccionada(alumne, evaluation);
+            if (!Array.isArray(notes)) return;
+
+            const modulsPerCodi = new Map(
+                notes
+                    .filter(contingut => contingut?.codi && String(contingut.jerarquia) === '2')
+                    .map(contingut => [contingut.codi, contingut]),
+            );
+
+            notes.forEach(contingut => {
+                if (!contingut?.codi) return;
+
+                const codiModul = this.obtéCodiModul(contingut.codi);
+                const tipusNota = this.obtéTipusNotaFlat(contingut.codi, codiModul);
+                const modul = contingut.codi === codiModul ? contingut : modulsPerCodi.get(codiModul);
+
+                worksheet.addRow([
+                    alumne.idAlumne ?? '',
+                    alumne.nom ?? '',
+                    codiModul,
+                    modul?.nom ?? '',
+                    contingut.codi,
+                    contingut.nom ?? '',
+                    tipusNota.tipus,
+                    tipusNota.subtipus,
+                    this.obtéValorNota(contingut),
+                ]);
+            });
+        });
+
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.autoFilter = {
+            from: { row: 1, column: 1 },
+            to: { row: 1, column: header.length },
+        };
+
+        const notaColumn = header.indexOf('Nota') + 1;
+        for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
+            this.aplicaEstilNotaAFila(worksheet.getRow(rowNumber), notaColumn, header.length);
+        }
+
+        this.ajustaAmpladesColumnesFlat(worksheet);
+    }
+
+    /**
+     * Aplica l'estil de nota aprovada a tota la fila plana, clonant els objectes d'estil per cel·la.
+     */
+    aplicaEstilNotaAFila(row, notaColumn, columnCount) {
+        const notaCell = row.getCell(notaColumn);
+        if (!this.aplicaEstilNota(notaCell)) return;
+
+        for (let colNumber = 1; colNumber <= columnCount; colNumber++) {
+            const cell = row.getCell(colNumber);
+            cell.fill = this.clonaEstil(notaCell.fill);
+            cell.font = this.clonaEstil(notaCell.font);
+        }
+    }
+
+    /**
+     * Clona estructures simples d'estil d'ExcelJS per evitar compartir referències mutables.
+     */
+    clonaEstil(style) {
+        if (!style) return style;
+        return JSON.parse(JSON.stringify(style));
+    }
+
+    /**
+     * Deriva el codi del mòdul eliminant només sufixos RA/EM coneguts.
+     */
+    obtéCodiModul(codi) {
+        return String(codi).replace(/_\d{2}(?:RA|EM)$/, '');
+    }
+
+    /**
+     * Deriva el tipus i subtipus per a la pestanya plana.
+     */
+    obtéTipusNotaFlat(codi, codiModul) {
+        if (codi === codiModul) {
+            return { tipus: 'MP', subtipus: 'MP' };
+        }
+
+        const match = String(codi).match(/_(\d{2})(RA|EM)$/);
+        return {
+            tipus: match?.[2] ?? '',
+            subtipus: match?.[1] ?? '',
+        };
+    }
+
+    /**
+     * Ajusta amplades de la pestanya plana segons el contingut.
+     */
+    ajustaAmpladesColumnesFlat(worksheet) {
+        worksheet.columns.forEach(column => {
+            const maxLength = Math.max(
+                10,
+                ...column.values.slice(1).map(value => String(value ?? '').length),
+            );
+            column.width = Math.min(maxLength + 2, 45);
+        });
     }
 
     /**
@@ -122,6 +228,21 @@ export class ExcelNotesWorkbookBuilder {
         if (columnesIniciModul.has(colNumber)) return borderIniciModul;
         if (columnesFinalModul.has(colNumber)) return borderFinalModul;
         return borderFi;
+    }
+
+    /**
+     * Aplica l'estil compartit per a notes aprovades.
+     */
+    aplicaEstilNota(cell) {
+        if (!this.ésNotaAprovada(cell.value)) return false;
+
+        cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFC6EFCE' },
+        };
+        cell.font = { ...(cell.font || {}), color: { argb: 'FF006100' } };
+        return true;
     }
 
     /**
@@ -151,30 +272,13 @@ export class ExcelNotesWorkbookBuilder {
      * @param {Array<Object>} dadesAlumnes
      */
     construeixTaulaNotes(dadesAlumnes, evaluation) {
-        const getNotesAvaluacioSeleccionada = (alumne) => {
-            let idAvaluacio = null;
-            if (alumne.avaluacions && Array.isArray(alumne.avaluacions)) {
-                const ava = alumne.avaluacions[evaluation-1];
-                if (ava) {
-                    idAvaluacio = ava.id;
-                }
-            }
-
-            if (idAvaluacio && alumne.continguts[idAvaluacio]) {
-                return alumne.continguts[idAvaluacio];
-            }
-
-            const notesValues = Object.values(alumne.continguts);
-            return notesValues.at(-2) || notesValues.at(-1) || [];
-        };
-
         // Filtra alumnes que no tinguin notes, per exemple si hi ha hagut error.
-        const alumnesValids = dadesAlumnes.filter(a => a && a.continguts);
+        const alumnesValids = this.obtéAlumnesValids(dadesAlumnes);
 
         const moduls = new Map();
 
         alumnesValids.forEach(alumne => {
-            const notes = getNotesAvaluacioSeleccionada(alumne);
+            const notes = this.obtéNotesAvaluacioSeleccionada(alumne, evaluation);
             if (!notes || !Array.isArray(notes)) return;
             notes.forEach(mod => {
                 if (!mod || !mod.codi) return;
@@ -222,7 +326,7 @@ export class ExcelNotesWorkbookBuilder {
         }
 
         const files = alumnesValids.map(alumne => {
-            const notes = getNotesAvaluacioSeleccionada(alumne);
+            const notes = this.obtéNotesAvaluacioSeleccionada(alumne, evaluation);
 
             const fila = [alumne.idAlumne ?? '', alumne.nom ?? ''];
             modulsArray.forEach(([codi, info]) => {
@@ -235,18 +339,7 @@ export class ExcelNotesWorkbookBuilder {
                     if (info.jerarquia == '2'){
                         fila.push(modData?.convocatoria ?? undefined);
                     }
-                    
-                    if (modData && modData.jerarquia == 2 && modData.quantitativa) {
-                        fila.push(this.normalitzaValorNota(modData.quantitativa));
-                    } else if (modData && modData.qualitativa) {
-                        if (/^A\d{1,2}$/.test(modData.qualitativa)) {
-                            fila.push(Number(modData.qualitativa.replace(/\D/g, '')));
-                        } else {
-                            fila.push(modData.qualitativa);
-                        }
-                    } else {
-                        fila.push('');
-                    }
+                    fila.push(this.obtéValorNota(modData));
 
                     //nota provisional just després de la final
                     if(info.jerarquia == '2'){
@@ -264,6 +357,53 @@ export class ExcelNotesWorkbookBuilder {
         });
 
         return { header1, header2, files, spansModuls };
+    }
+
+    /**
+     * Filtra alumnes que tenen continguts de notes.
+     */
+    obtéAlumnesValids(dadesAlumnes) {
+        return dadesAlumnes.filter(a => a && a.continguts);
+    }
+
+    /**
+     * Obté les notes de l'avaluació seleccionada amb el mateix fallback històric.
+     */
+    obtéNotesAvaluacioSeleccionada(alumne, evaluation) {
+        let idAvaluacio = null;
+        if (alumne.avaluacions && Array.isArray(alumne.avaluacions)) {
+            const ava = alumne.avaluacions[evaluation-1];
+            if (ava) {
+                idAvaluacio = ava.id;
+            }
+        }
+
+        if (idAvaluacio && alumne.continguts[idAvaluacio]) {
+            return alumne.continguts[idAvaluacio];
+        }
+
+        const notesValues = Object.values(alumne.continguts);
+        return notesValues.at(-2) || notesValues.at(-1) || [];
+    }
+
+    /**
+     * Normalitza una nota de contingut exactament igual que el full Notes.
+     */
+    obtéValorNota(contingut) {
+        if (!contingut) return '';
+
+        if (contingut.jerarquia == 2 && contingut.quantitativa) {
+            return this.normalitzaValorNota(contingut.quantitativa);
+        }
+
+        if (contingut.qualitativa) {
+            if (/^A\d{1,2}$/.test(contingut.qualitativa)) {
+                return Number(contingut.qualitativa.replace(/\D/g, ''));
+            }
+            return contingut.qualitativa;
+        }
+
+        return '';
     }
 
     /**
