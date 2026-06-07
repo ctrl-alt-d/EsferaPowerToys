@@ -67,4 +67,21 @@ describe('VisualitzadorRenderer', () => {
         expect(cells2[1].querySelector('.ptv-ra-pill').textContent).toBe('·'); // EM column is empty
         expect(cells2[2].querySelector('.ptv-ra-pill').textContent).toBe('5'); // RA01 column
     });
+
+    test('hauria de mostrar CV i XM sense convertir-los a NA ni recuperació', () => {
+        const renderer = new VisualitzadorRenderer();
+        const node = renderer.renderStudent({
+            id: '3',
+            nom: 'Alumna especial',
+            subjects: [
+                { code: 'M01', name: 'Mòdul convalidat', final: 'CV', ras: [{ key: '01RA', raw: 'CV' }] },
+                { code: 'M02', name: 'Mòdul exempt', final: 'XM', ras: [{ key: '01RA', raw: 'XM' }] },
+            ],
+        });
+
+        expect(Array.from(node.querySelectorAll('.ptv-total-pill')).map(pill => pill.textContent)).toEqual(['CV', 'XM']);
+        expect(Array.from(node.querySelectorAll('.ptv-ra-pill.pass')).map(pill => pill.textContent)).toEqual(['CV', 'XM']);
+        expect(node.querySelector('.ptv-recover-card')).toBeNull();
+        expect(Array.from(node.querySelectorAll('.ptv-total-pill, .ptv-ra-pill')).map(pill => pill.textContent)).not.toContain('NA');
+    });
 });

@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach } from '@jest/globals';
+import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 import ExcelJS from 'exceljs';
 import { ExcelNotesWorkbookBuilder } from '../src/excel/ExcelNotesWorkbookBuilder.js';
 
@@ -160,6 +160,27 @@ describe('ExcelNotesWorkbookBuilder', () => {
         expect(workbook.getWorksheet('Notes').getCell('D3').value).toBe(7.5);
         expect(workbook.getWorksheet('Notes Flat').getRow(2).getCell(9).value).toBe(7.5);
         expect(workbook.getWorksheet('Notes Flat').getRow(3).getCell(9).value).toBe(8);
+    });
+
+    test('hauria d’usar el helper compartit per obtenir i classificar notes', () => {
+        const helper = {
+            obtéValorContingut: jest.fn(() => 6),
+            ésNotaNumericaAprovada: jest.fn(() => true),
+        };
+        builder = new ExcelNotesWorkbookBuilder(ExcelJS, helper);
+
+        const worksheet = creaWorksheet([
+            {
+                idAlumne: '1',
+                nom: 'Alumna',
+                avaluacions: [{ codi: 'FINAL_1', id: 'ava1' }],
+                continguts: { ava1: [{ codi: 'M01', nom: 'Mòdul 1', jerarquia: '2', qualitativa: 'A6' }] },
+            },
+        ]);
+
+        expect(worksheet.getCell('D3').value).toBe(6);
+        expect(helper.obtéValorContingut).toHaveBeenCalled();
+        expect(helper.ésNotaNumericaAprovada).toHaveBeenCalledWith(6);
     });
 
     test('hauria d’usar les notes de l’avaluació seleccionada', () => {

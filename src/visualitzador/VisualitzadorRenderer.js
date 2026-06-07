@@ -130,7 +130,6 @@ export class VisualitzadorRenderer {
         total.className = 'ptv-td-total';
         const totalPill = document.createElement('div');
         totalPill.className = `ptv-total-pill ${this.valueHelper.finalClass(subject.final)}`;
-        console.log(subject.final);
         totalPill.textContent = this.valueHelper.displayVal(subject.final);
         total.appendChild(totalPill);
         tr.appendChild(total);
