@@ -45,4 +45,30 @@ describe('VisualitzadorModelBuilder', () => {
         expect(builder.finalClass('PQ')).toBe('warn');
         expect(builder.displayVal(undefined)).toBe('NA');
     });
+
+    test('hauria de preservar CV i XM al model i classificar-los com a superats', () => {
+        const model = builder.construeixModel([
+            {
+                idAlumne: '1',
+                nom: 'Cognom, Nom',
+                avaluacions: [{ codi: 'FINAL_1', id: 'ava1' }],
+                continguts: {
+                    ava1: [
+                        { codi: 'M01', nom: 'Mòdul CV', jerarquia: '2', qualitativa: 'CV' },
+                        { codi: 'M01_01RA', nom: 'RA CV', jerarquia: '3', qualitativa: 'CV' },
+                        { codi: 'M02', nom: 'Mòdul XM', jerarquia: '2', qualitativa: 'XM' },
+                    ],
+                },
+            },
+        ], 1);
+
+        expect(model.students[0].subjects[0].final).toBe('CV');
+        expect(model.students[0].subjects[0].ras[0].raw).toBe('CV');
+        expect(model.students[0].subjects[1].final).toBe('XM');
+        expect(builder.displayVal('CV')).toBe('CV');
+        expect(builder.displayVal('XM')).toBe('XM');
+        expect(builder.scoreClass('CV')).toBe('pass');
+        expect(builder.finalClass('CV')).toBe('pass');
+        expect(builder.finalClass('XM')).toBe('pass');
+    });
 });

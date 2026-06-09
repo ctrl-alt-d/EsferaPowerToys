@@ -1,7 +1,13 @@
+import { NotaValueHelper } from '../dataProviders/NotaValueHelper.js';
+
 /**
  * Construeix el model del visualitzador a partir del model intern de notes.
  */
 export class VisualitzadorModelBuilder {
+    constructor(notaValueHelper = new NotaValueHelper()) {
+        this.notaValueHelper = notaValueHelper;
+    }
+
     /**
      * Converteix les dades d'alumnes en un model orientat a renderitzar el resum visual.
      * @param {Array<Object>} dadesAlumnes
@@ -117,34 +123,17 @@ export class VisualitzadorModelBuilder {
      * Normalitza qualitatives A10 i quantitatives textuals.
      */
     normalitzaNota(nota) {
-        if (nota.qualitativa !== undefined && nota.qualitativa !== null && nota.qualitativa !== '') {
-            const qualitativa = String(nota.qualitativa).trim();
-            if (/^A\d{1,2}$/.test(qualitativa)) return Number(qualitativa.replace(/\D/g, ''));
-            return qualitativa;
-        }
-
-        if (nota.quantitativa !== undefined && nota.quantitativa !== null && nota.quantitativa !== '') {
-            const quantitativa = String(nota.quantitativa).trim().replace(',', '.');
-            return /^\d+(?:\.\d+)?$/.test(quantitativa) ? Number(quantitativa) : quantitativa;
-        }
-
-        return '';
+        return this.notaValueHelper.obtéValorContingut(nota);
     }
 
     parseVal(v) {
-        if (v === 'NA') return 'NA';
-        if (this.isNull(v)) return null;
-        if (v === 'AS') return 'AS';
-        if (v === 'AN') return 'AN';
-        if (v === 'AE') return 'AE';
-        if (v === 'PDT') return 'PDT';
-        if (v === 'PQ') return 'PQ';
-        const n = parseFloat(v);
-        return Number.isNaN(n) ? null : n;
+        const interpretada = this.notaValueHelper.interpretaNota(v);
+        if (interpretada.tipus === 'empty' || interpretada.tipus === 'unknown') return null;
+        return interpretada.valor;
     }
 
     isNull(v) {
-        return v === '' || v === undefined || v === null;
+        return this.notaValueHelper.ésBuit(v);
     }
 
     scoreClass(v) {
@@ -153,7 +142,7 @@ export class VisualitzadorModelBuilder {
         if (parsed === null) return 'fail';
         if (parsed === 'PDT') return 'pdt';
         if (parsed === 'PQ') return 'pass';
-        return parsed >= 5 ? 'pass' : 'fail';
+        return this.notaValueHelper.ésResultatSuperat(parsed) ? 'pass' : 'fail';
     }
 
     displayVal(v) {
@@ -170,9 +159,6 @@ export class VisualitzadorModelBuilder {
         if (parsed === 'NA') return 'fail';
         if (parsed === 'PDT') return 'warn';
         if (parsed === 'PQ') return 'warn';
-        if (parsed === 'AS') return 'pass';
-        if (parsed === 'AN') return 'pass';
-        if (parsed === 'AE') return 'pass';
-        return parsed >= 5 ? 'pass' : 'fail';
+        return this.notaValueHelper.ésResultatSuperat(parsed) ? 'pass' : 'fail';
     }
 }

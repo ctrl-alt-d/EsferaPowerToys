@@ -1,9 +1,12 @@
+import { NotaValueHelper } from '../dataProviders/NotaValueHelper.js';
+
 /**
  * Construeix el llibre Excel de notes a partir de dades normalitzades d'Esfer@.
  */
 export class ExcelNotesWorkbookBuilder {
-    constructor(excelJS = (typeof window !== 'undefined' ? window.ExcelJS : null)) {
+    constructor(excelJS = (typeof window !== 'undefined' ? window.ExcelJS : null), notaValueHelper = new NotaValueHelper()) {
         this.excelJS = excelJS;
+        this.notaValueHelper = notaValueHelper;
     }
 
     /**
@@ -390,40 +393,20 @@ export class ExcelNotesWorkbookBuilder {
      * Normalitza una nota de contingut exactament igual que el full Notes.
      */
     obtéValorNota(contingut) {
-        if (!contingut) return '';
-
-        if (contingut.jerarquia == 2 && contingut.quantitativa) {
-            return this.normalitzaValorNota(contingut.quantitativa);
-        }
-
-        if (contingut.qualitativa) {
-            if (/^A\d{1,2}$/.test(contingut.qualitativa)) {
-                return Number(contingut.qualitativa.replace(/\D/g, ''));
-            }
-            return contingut.qualitativa;
-        }
-
-        return '';
+        return this.notaValueHelper.obtéValorContingut(contingut);
     }
 
     /**
      * Converteix les notes numèriques a número i preserva els codis textuals.
      */
     normalitzaValorNota(valor) {
-        if (typeof valor === 'string' && /^\d+(?:[.,]\d+)?$/.test(valor.trim())) {
-            return Number(valor.trim().replace(',', '.'));
-        }
-        return valor ?? '';
+        return this.notaValueHelper.normalitzaValorNota(valor);
     }
 
     /**
      * Determina si una cel·la conté una nota aprovada.
      */
     ésNotaAprovada(valor) {
-        if (typeof valor === 'number') return valor >= 5;
-        if (typeof valor === 'string' && /^\d+(?:[.,]\d+)?$/.test(valor.trim())) {
-            return Number(valor.trim().replace(',', '.')) >= 5;
-        }
-        return false;
+        return this.notaValueHelper.ésNotaNumericaAprovada(valor);
     }
 }
