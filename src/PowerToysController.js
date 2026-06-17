@@ -51,7 +51,9 @@ export class PowerToysController {
             this.logger,
             (materia, inputVal) => this.materiaFeatureManager.onApply(materia, inputVal),
             (materia) => this.materiaFeatureManager.posaPendentsRA(materia),
-            this.containerBuilder
+            this.containerBuilder,
+            (materia, inputVal) => this.materiaFeatureManager.onPreview(materia, inputVal),
+            () => this.materiaFeatureManager.onUndo(),
         );
 
         /** @type {MateriaStyleManager} */

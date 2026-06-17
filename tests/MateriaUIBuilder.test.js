@@ -136,6 +136,57 @@ describe('MateriaUIBuilder', () => {
         expect(container.querySelector('.powertoy-materia-input')).not.toBeNull();
         expect(container.querySelector('.powertoy-materia-actions-cell')).not.toBeNull();
         expect(container.querySelector('.powertoy-materia-pendent-button')).not.toBeNull();
+        expect(container.querySelector('.powertoy-materia-preview-cell')).not.toBeNull();
+    });
+
+    test('hauria de mostrar una regió aria-live per informar de l’estat', () => {
+        const container = builder.createHTML(materies);
+        const liveRegion = container.querySelector('.powertoy-materia-live-region');
+
+        expect(liveRegion).not.toBeNull();
+        expect(liveRegion.getAttribute('role')).toBe('status');
+        expect(liveRegion.getAttribute('aria-live')).toBe('polite');
+    });
+
+    test('hauria de previsualitzar els canvis quan es prem el botó', () => {
+        const onPreview = jest.fn(() => ({
+            ok: true,
+            message: '1 canvi(s), 1 sense canvis.',
+            plan: {
+                items: [
+                    {
+                        raCodi: '2024_MAT01_01RA',
+                        currentValue: '',
+                        newValue: 'string:A10',
+                        status: 'change',
+                        message: 'Es modificarà',
+                    },
+                ],
+            },
+        }));
+        builder = new MateriaUIBuilder(logger, onApply, onPosaPendents, containerBuilder, onPreview, null);
+        const container = builder.createHTML(materies);
+        const input = container.querySelector('input');
+        const btnPreview = container.querySelector('.powertoy-materia-preview-button');
+
+        input.value = '10 9';
+        btnPreview.click();
+
+        expect(onPreview).toHaveBeenCalledWith(materies[0], '10 9');
+        expect(container.querySelector('.powertoy-materia-preview').textContent).toContain('2024_MAT01_01RA');
+        expect(container.querySelector('.powertoy-materia-live-region').textContent).toBe('1 canvi(s), 1 sense canvis.');
+    });
+
+    test('hauria de cridar el callback de desfer i anunciar el resultat', () => {
+        const onUndo = jest.fn(() => ({ ok: true, message: 'S\'han restaurat 2 nota(es).', restored: 2 }));
+        builder = new MateriaUIBuilder(logger, onApply, onPosaPendents, containerBuilder, null, onUndo);
+        const container = builder.createHTML(materies);
+        const undoBtn = container.querySelector('.powertoy-materia-undo-button');
+
+        undoBtn.click();
+
+        expect(onUndo).toHaveBeenCalled();
+        expect(container.querySelector('.powertoy-materia-live-region').textContent).toBe('S\'han restaurat 2 nota(es).');
     });
 
     test('hauria de tenir un versionDiv amb classe powertoy-version', () => {

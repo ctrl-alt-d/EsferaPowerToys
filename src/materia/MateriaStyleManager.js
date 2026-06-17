@@ -63,6 +63,22 @@ export class MateriaStyleManager {
                 min-width: 320px;
             }
 
+            .powertoy-materia-content {
+                width: 100%;
+            }
+
+            .powertoy-materia-live-region {
+                margin: 4px 0 8px;
+                font-weight: 600;
+            }
+
+            .powertoy-materia-toolbar {
+                display: flex;
+                justify-content: flex-end;
+                gap: 6px;
+                margin-bottom: 8px;
+            }
+
             .powertoy-materia-name-cell {
                 border-bottom: 1px solid #ddd;
                 white-space: nowrap;
@@ -80,15 +96,60 @@ export class MateriaStyleManager {
             }
 
             .powertoy-materia-actions-cell {
-                min-width: 140px;
+                min-width: 260px;
             }
 
             .powertoy-materia-action-button {
                 width: max-content;
+                margin-right: 4px;
             }
 
             .powertoy-materia-pendent-button {
                 margin-left: 4px;
+            }
+
+            .powertoy-materia-preview-cell {
+                min-width: 260px;
+                max-width: 420px;
+                padding: 6px 4px;
+                vertical-align: top;
+            }
+
+            .powertoy-materia-preview-summary {
+                font-weight: 600;
+                margin-bottom: 4px;
+            }
+
+            .powertoy-materia-preview-summary--ok {
+                color: #155724;
+            }
+
+            .powertoy-materia-preview-summary--error {
+                color: #721c24;
+            }
+
+            .powertoy-materia-preview-list {
+                margin: 0;
+                padding-left: 18px;
+                max-height: 120px;
+                overflow: auto;
+            }
+
+            .powertoy-materia-preview-item {
+                line-height: 1.35;
+            }
+
+            .powertoy-materia-preview-item--change::marker {
+                color: #155724;
+            }
+
+            .powertoy-materia-preview-item--unchanged::marker,
+            .powertoy-materia-preview-item--skipped::marker {
+                color: #856404;
+            }
+
+            .powertoy-materia-preview-item--error::marker {
+                color: #721c24;
             }
         `;
 

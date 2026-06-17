@@ -20,6 +20,7 @@ export class MateriaFeatureManager {
         this.materiaStyleManager = materiaStyleManager;
         this.containerBuilder = containerBuilder;
         this.lastStudent = null;
+        this.lastUndo = [];
         this.formTimeout = null;
         this.instruccions = 'Valors acceptats: >=4.5 → Assolit, <4.5 o NA → No assolit, EP → En procés, P o PDT → Pendent, . o X → Blanc';
     }
@@ -99,12 +100,85 @@ export class MateriaFeatureManager {
         this.logger.log(`MateriaFeatureManager → onApply per ${materia.codi}: ${inputVal}`);
 
         const notes = this.applier.tradueixNotes(inputVal);
-        if (notes && notes.length === materia.RAs.length) {
-            this.applier.aplicaNotesARAs(materia.RAs, notes);
-            this.scrollHelper.enfocaAssignatura(materia);
-        } else {
-            alert(`Error: les notes no són vàlides o no coincideixen amb el nombre de RAs (${materia.RAs.length}).`);
+        if (!notes || notes.length !== materia.RAs.length) {
+            const message = `Error: les notes no són vàlides o no coincideixen amb el nombre de RAs (${materia.RAs.length}).`;
+            alert(message);
+            return { ok: false, message };
         }
+
+        const plan = this.applier.creaPlaAplicacio(materia.RAs, notes);
+        if (!plan.valid) {
+            const message = `Error: hi ha ${plan.summary.errors} valor(s) que no es poden aplicar. Revisa la previsualització.`;
+            alert(message);
+            return { ok: false, message, plan };
+        }
+
+        const result = this.applier.aplicaNotesARAs(materia.RAs, notes);
+        this.lastUndo = result.previousValues;
+        this.materiaStyleManager.aplicaEstils();
+        this.scrollHelper.enfocaAssignatura(materia);
+
+        return {
+            ok: true,
+            message: `Aplicades ${result.applied} notes. Sense canvis: ${result.unchanged}.`,
+            result,
+            plan,
+        };
+    }
+
+    /**
+     * Genera la previsualització de les notes introduïdes.
+     * @param {{ codi: string, nom: string, RAs: string[] }} materia
+     * @param {string} inputVal
+     * @returns {{ok: boolean, message: string, plan?: object}}
+     */
+    onPreview(materia, inputVal) {
+        const notes = this.applier.tradueixNotes(inputVal);
+        if (!notes) {
+            return { ok: false, message: 'Hi ha valors no reconeguts.' };
+        }
+
+        if (notes.length !== materia.RAs.length) {
+            return {
+                ok: false,
+                message: `Has introduït ${notes.length} notes i aquesta matèria té ${materia.RAs.length} RA.`,
+            };
+        }
+
+        const plan = this.applier.creaPlaAplicacio(materia.RAs, notes);
+        if (!plan.valid) {
+            return {
+                ok: false,
+                message: `Hi ha ${plan.summary.errors} incidència(es) abans d'aplicar.`,
+                plan,
+            };
+        }
+
+        return {
+            ok: true,
+            message: `${plan.summary.changes} canvi(s), ${plan.summary.unchanged} sense canvis.`,
+            plan,
+        };
+    }
+
+    /**
+     * Desfà l'última aplicació de notes feta amb PowerToys.
+     * @returns {{ok: boolean, message: string, restored: number}}
+     */
+    onUndo() {
+        if (!this.lastUndo.length) {
+            return { ok: false, message: 'No hi ha cap aplicació per desfer.', restored: 0 };
+        }
+
+        const restored = this.applier.desfesCanvis(this.lastUndo);
+        this.lastUndo = [];
+        this.materiaStyleManager.aplicaEstils();
+
+        return {
+            ok: restored > 0,
+            message: restored > 0 ? `S'han restaurat ${restored} nota(es).` : 'No s\'ha pogut restaurar cap nota.',
+            restored,
+        };
     }
 
     /**
@@ -116,6 +190,7 @@ export class MateriaFeatureManager {
         this.logger.log(`PDT al mòdul ${materia.codi}`);
 
         const rows = document.querySelectorAll('tr.alturallistat');
+        const previousValues = [];
 
         rows.forEach(row => {
             const tdCodi = row.querySelector('td:first-child');
@@ -128,6 +203,7 @@ export class MateriaFeatureManager {
             if (!select || select.disabled || select.value) return;
 
             const opcions = [...select.options].map(o => o.value);
+            const previousValue = select.value;
 
             if (opcions.includes('string:PDT')) {
                 select.value = 'string:PDT';
@@ -135,9 +211,14 @@ export class MateriaFeatureManager {
                 select.value = 'string:PQ';
             }
 
+            if (select.value !== previousValue) {
+                previousValues.push({ raCodi: codi.replace(/\s/g, ''), value: previousValue });
+            }
+
             select.dispatchEvent(new Event('change', { bubbles: true }));
         });
 
+        this.lastUndo = previousValues;
         this.materiaStyleManager.aplicaEstils();
     }
 }

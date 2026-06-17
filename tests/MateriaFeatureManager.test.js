@@ -23,7 +23,25 @@ describe('MateriaFeatureManager', () => {
         parser = { parse: jest.fn(() => [{ codi: 'MAT', nom: 'Matemàtiques', RAs: ['MAT_RA1'] }]) };
         applier = {
             tradueixNotes: jest.fn(() => ['A10']),
-            aplicaNotesARAs: jest.fn(),
+            creaPlaAplicacio: jest.fn(() => ({
+                valid: true,
+                items: [{
+                    raCodi: 'MAT_RA1',
+                    currentValue: '',
+                    newValue: 'string:A10',
+                    status: 'change',
+                    message: 'Es modificarà',
+                }],
+                summary: { total: 1, changes: 1, unchanged: 0, skipped: 0, errors: 0 },
+            })),
+            aplicaNotesARAs: jest.fn(() => ({
+                applied: 1,
+                unchanged: 0,
+                skipped: 0,
+                errors: 0,
+                previousValues: [{ raCodi: 'MAT_RA1', value: '' }],
+            })),
+            desfesCanvis: jest.fn(() => 1),
         };
         uiBuilder = { createHTML: jest.fn(() => Object.assign(document.createElement('div'), { id: 'powertoy-div' })) };
         scrollHelper = { enfocaAssignatura: jest.fn() };
@@ -92,8 +110,31 @@ describe('MateriaFeatureManager', () => {
         manager.onApply(materia, '10');
 
         expect(applier.tradueixNotes).toHaveBeenCalledWith('10');
+        expect(applier.creaPlaAplicacio).toHaveBeenCalledWith(['MAT_RA1'], ['A10']);
         expect(applier.aplicaNotesARAs).toHaveBeenCalledWith(['MAT_RA1'], ['A10']);
+        expect(materiaStyleManager.aplicaEstils).toHaveBeenCalled();
         expect(scrollHelper.enfocaAssignatura).toHaveBeenCalledWith(materia);
+    });
+
+    test('onPreview retorna un resum quan les notes són vàlides', () => {
+        const materia = { codi: 'MAT', nom: 'Matemàtiques', RAs: ['MAT_RA1'] };
+
+        const result = manager.onPreview(materia, '10');
+
+        expect(result.ok).toBe(true);
+        expect(result.message).toContain('1 canvi');
+        expect(applier.creaPlaAplicacio).toHaveBeenCalledWith(['MAT_RA1'], ['A10']);
+    });
+
+    test('onUndo restaura l’última aplicació', () => {
+        const materia = { codi: 'MAT', nom: 'Matemàtiques', RAs: ['MAT_RA1'] };
+        manager.onApply(materia, '10');
+
+        const result = manager.onUndo();
+
+        expect(result.ok).toBe(true);
+        expect(applier.desfesCanvis).toHaveBeenCalledWith([{ raCodi: 'MAT_RA1', value: '' }]);
+        expect(materiaStyleManager.aplicaEstils).toHaveBeenCalled();
     });
 
     test('posa pendents només a les RA buides i actives de la matèria', () => {
