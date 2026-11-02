@@ -130,6 +130,35 @@ describe('MateriaFeatureManager', () => {
         expect(applier.aplicaNotaModul).toHaveBeenCalledWith('MAT', '4', false);
     });
 
+    test('onApply desa com a provisional la nota del mòdul quan hi ha un RA pendent', () => {
+        const materia = { codi: 'MAT', nom: 'Matemàtiques', RAs: ['RA1', 'RA2'] };
+        applier.tradueixNotes.mockReturnValue(['PDT', 'A10', 'NA']);
+
+        manager.onApply(materia, 'P 10 4');
+
+        expect(applier.aplicaNotesARAs).toHaveBeenCalledWith(['RA1', 'RA2'], ['PDT', 'A10']);
+        expect(applier.aplicaNotaModul).toHaveBeenCalledWith('MAT', '4', true);
+    });
+
+    test('permet nota de mòdul aprovada si un RA està pendent i la desa com a provisional', () => {
+        const materia = { codi: 'MAT', nom: 'Matemàtiques', RAs: ['RA1'] };
+        applier.tradueixNotes.mockReturnValue(['PDT', 'A6']);
+
+        manager.onApply(materia, 'P 6');
+
+        expect(applier.aplicaNotaModul).toHaveBeenCalledWith('MAT', '6', true);
+        expect(global.alert).not.toHaveBeenCalled();
+    });
+
+    test('si hi ha RA suspès i pendent, la nota inferior a 5 es desa com a provisional', () => {
+        const materia = { codi: 'MAT', nom: 'Matemàtiques', RAs: ['RA1', 'RA2'] };
+        applier.tradueixNotes.mockReturnValue(['PDT', 'NA', 'NA']);
+
+        manager.onApply(materia, 'P 4 4');
+
+        expect(applier.aplicaNotaModul).toHaveBeenCalledWith('MAT', '4', true);
+    });
+
     test('onApply manté NP per al mòdul i exigeix els RAs aprovats per una nota de mòdul aprovada', () => {
         const materia = { codi: 'MAT', nom: 'Matemàtiques', RAs: ['RA1'] };
         applier.tradueixNotes.mockReturnValue(['A10', 'PDT']);
@@ -142,7 +171,7 @@ describe('MateriaFeatureManager', () => {
         applier.tradueixNotes.mockReturnValue(['NA', 'A5']);
         manager.onApply(materia, '4 5');
 
-        expect(global.alert).toHaveBeenCalledWith(expect.stringContaining('tots els RAs'));
+        expect(global.alert).toHaveBeenCalledWith(expect.stringContaining('algun RA'));
         expect(applier.aplicaNotesARAs).not.toHaveBeenCalled();
     });
 

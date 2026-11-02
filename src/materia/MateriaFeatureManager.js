@@ -132,9 +132,10 @@ export class MateriaFeatureManager {
             alert('La nota numèrica del mòdul ha d’estar entre 1 i 10.');
             return;
         }
+        const raPendent = notesRAs.some(nota => nota === 'PDT');
         if (téNotaModul && !ésNPModul && notaModulNumero >= 5
-            && !notesRAs.every(nota => /^A(5|6|7|8|9|10)$/.test(nota))) {
-            alert('No es pot posar una nota de mòdul igual o superior a 5 si tots els RAs no estan aprovats.');
+            && notesRAs.some(nota => !/^A(5|6|7|8|9|10)$/.test(nota) && nota !== 'PDT')) {
+            alert('No es pot posar una nota de mòdul igual o superior a 5 si algun RA està suspès o sense nota.');
             return;
         }
 
@@ -143,7 +144,8 @@ export class MateriaFeatureManager {
             if (ésNPModul) {
                 this.applier.aplicaNoPresentatModul(materia.codi);
             } else {
-                const provisional = notaModulNumero >= 5 && this.applier.estadaPendent(materia.estada);
+                const provisional = raPendent
+                    || (notaModulNumero >= 5 && this.applier.estadaPendent(materia.estada));
                 this.applier.aplicaNotaModul(materia.codi, notaModulOriginal, provisional);
             }
         }
