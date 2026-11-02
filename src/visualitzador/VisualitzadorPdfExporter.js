@@ -26,7 +26,14 @@ export class VisualitzadorPdfExporter {
                 scrollX: 0,
                 scrollY: 0,
                 y: 0,
+                onclone: clonedDocument => {
+                    clonedDocument.querySelectorAll('.ptv-ra-pill, .ptv-total-pill, .ptv-provisional-pill').forEach(pill => {
+                        pill.style.setProperty('color', 'transparent', 'important');
+                        pill.style.setProperty('-webkit-text-fill-color', 'transparent', 'important');
+                    });
+                },
             });
+            this.dibuixaNotesAlCanvas(canvas, target);
             const imgData = canvas.toDataURL('image/jpeg', 0.92);
             const pdf = new this.pdfFactory({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
@@ -54,6 +61,36 @@ export class VisualitzadorPdfExporter {
         } finally {
             target.classList.remove('ptv-pdf-mode');
         }
+    }
+
+    /**
+     * Dibuixa les notes al centre de cada distintiu després de capturar-ne el fons.
+     */
+    dibuixaNotesAlCanvas(canvas, target) {
+        const context = canvas.getContext('2d');
+        const targetRect = target.getBoundingClientRect();
+        if (!context || !targetRect.width || !targetRect.height) return;
+
+        const scaleX = canvas.width / targetRect.width;
+        const scaleY = canvas.height / targetRect.height;
+        const selectors = '.ptv-ra-pill, .ptv-total-pill, .ptv-provisional-pill';
+
+        target.querySelectorAll(selectors).forEach(pill => {
+            const text = pill.textContent.trim();
+            if (!text) return;
+
+            const rect = pill.getBoundingClientRect();
+            const style = window.getComputedStyle(pill);
+            const fontSize = Number.parseFloat(style.fontSize) || 16;
+            const centerX = (rect.left - targetRect.left + rect.width / 2) * scaleX;
+            const centerY = (rect.top - targetRect.top + rect.height / 2) * scaleY;
+
+            context.fillStyle = style.color;
+            context.font = `${style.fontStyle} ${style.fontWeight} ${fontSize * scaleY}px ${style.fontFamily}`;
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(text, centerX, centerY, Math.max(1, (rect.width - 8) * scaleX));
+        });
     }
 
     async esperaFonts() {

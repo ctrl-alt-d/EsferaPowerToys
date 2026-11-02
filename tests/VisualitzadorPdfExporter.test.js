@@ -7,6 +7,7 @@ describe('VisualitzadorPdfExporter', () => {
     let exporter;
     let addImage;
     let canvasFactory;
+    let canvasContext;
 
     beforeEach(() => {
         const dom = new JSDOM('<!doctype html><html><body><div id="target"></div></body></html>');
@@ -15,9 +16,11 @@ describe('VisualitzadorPdfExporter', () => {
         Object.defineProperty(global.document, 'fonts', { value: { ready: Promise.resolve() }, configurable: true });
 
         save = jest.fn();
+        canvasContext = { fillText: jest.fn() };
         canvasFactory = jest.fn().mockResolvedValue({
             width: 600,
             height: 900,
+            getContext: jest.fn().mockReturnValue(canvasContext),
             toDataURL: jest.fn().mockReturnValue('data:image/jpeg;base64,test'),
         });
         addImage = jest.fn();
@@ -65,5 +68,41 @@ describe('VisualitzadorPdfExporter', () => {
             190,
             285,
         );
+    });
+
+    test('hauria de dibuixar les notes al centre de cada distintiu del canvas', async () => {
+        const target = document.querySelector('#target');
+        const pill = document.createElement('span');
+        pill.className = 'ptv-ra-pill pass';
+        pill.textContent = '8';
+        pill.style.color = 'rgb(20, 200, 120)';
+        pill.style.fontSize = '20px';
+        pill.style.fontWeight = '900';
+        pill.style.fontFamily = 'monospace';
+        target.appendChild(pill);
+        target.getBoundingClientRect = () => ({ left: 100, top: 50, width: 400, height: 600 });
+        pill.getBoundingClientRect = () => ({ left: 110, top: 70, width: 60, height: 40 });
+
+        await exporter.exporta(target, 'Alumne');
+
+        expect(canvasContext.fillText).toHaveBeenCalledWith('8', 60, 60, 78);
+        expect(canvasContext.textAlign).toBe('center');
+        expect(canvasContext.textBaseline).toBe('middle');
+    });
+
+    test('hauria d’amagar el text a la còpia d’html2canvas abans de dibuixar-lo al canvas', async () => {
+        const target = document.querySelector('#target');
+        const pill = document.createElement('span');
+        pill.className = 'ptv-total-pill';
+        pill.textContent = '7';
+        target.appendChild(pill);
+
+        await exporter.exporta(target, 'Alumne');
+
+        const options = canvasFactory.mock.calls[0][1];
+        const clone = document.cloneNode(true);
+        options.onclone(clone);
+
+        expect(clone.querySelector('.ptv-total-pill').style.color).toBe('transparent');
     });
 });
