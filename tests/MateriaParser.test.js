@@ -29,6 +29,20 @@ describe('MateriaParser', () => {
     expect(result[0].RAs).toEqual(['2024_MAT01_01RA', '2024_MAT01_02RA']);
   });
 
+  test('hauria d’identificar l’estada a l’empresa de cada mòdul', () => {
+    const html = `
+      <table>
+        <tr><td>2024_MAT01</td><td>Matemàtiques</td></tr>
+        <tr><td>2024_MAT01_01EM</td><td>Estada a l’empresa</td></tr>
+        <tr><td>2024_MAT01_01RA</td><td>RA1</td></tr>
+      </table>
+    `;
+    const dom = new JSDOM(html);
+    const files = Array.from(dom.window.document.querySelectorAll('tr'));
+
+    expect(parser.parse(files)[0].estada).toBe('2024_MAT01_01EM');
+  });
+
 
   test('hauria de parsejar correctament matèries opcionals', () => {
     const html = `

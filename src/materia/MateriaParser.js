@@ -23,7 +23,8 @@ export class MateriaParser {
         const ras = this._filterRAs(codis);
         const modules = this._detectModules(codis, ras);
 
-        const materies = this._buildMateries(files, modules, ras);
+        const estades = this._filterEstades(codis);
+        const materies = this._buildMateries(files, modules, ras, estades);
 
         // this.logger.log('MateriaParser → resultat final:', materies);
         return materies;
@@ -51,6 +52,15 @@ export class MateriaParser {
     }
 
     /**
+     * Filtra els codis d’estada a l’empresa.
+     * @param {string[]} codis
+     * @returns {Set<string>}
+     */
+    _filterEstades(codis) {
+        return new Set(codis.filter(codi => /_[0-9]*EM$/i.test(codi)));
+    }
+
+    /**
      * Detecta quins codis són mòduls (tenen algun RA que comença per ells).
      * @param {string[]} codis
      * @param {Set<string>} ras
@@ -75,9 +85,10 @@ export class MateriaParser {
      * @param {HTMLElement[]} files
      * @param {Set<string>} modules
      * @param {Set<string>} ras
+     * @param {Set<string>} estades
      * @returns {Array<{ codi: string, nom: string, RAs: string[] }>}
      */
-    _buildMateries(files, modules, ras) {
+    _buildMateries(files, modules, ras, estades) {
         return Array.from(modules).map(modulCodi => {
             const row = files.find(r => {
                 const cell = r.querySelector('td:nth-child(1)');
@@ -87,8 +98,9 @@ export class MateriaParser {
             const nom = row?.querySelector('td:nth-child(2)')?.textContent.trim() || '';
 
             const raList = Array.from(ras).filter(ra => ra.startsWith(modulCodi + '_'));
+            const estada = Array.from(estades).find(codi => codi.startsWith(modulCodi + '_'));
 
-            return { codi: modulCodi, nom, RAs: raList };
+            return { codi: modulCodi, nom, RAs: raList, estada };
         });
     }
 }

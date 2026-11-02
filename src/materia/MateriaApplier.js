@@ -87,4 +87,60 @@ export class MateriaApplier {
             }
         });
     }
+
+    /**
+     * Indica si l’estada a l’empresa està pendent.
+     * @param {string} codiEstada
+     * @returns {boolean}
+     */
+    estadaPendent(codiEstada) {
+        if (!codiEstada) return false;
+        const select = this._trobaFila(codiEstada)?.querySelector('select');
+        return Boolean(select && ['string:PDT', 'string:PQ'].includes(select.value));
+    }
+
+    /**
+     * Aplica la nota del mòdul al camp numèric corresponent.
+     * @param {string} codiModul
+     * @param {string} valor
+     * @param {boolean} provisional
+     * @returns {boolean}
+     */
+    aplicaNotaModul(codiModul, valor, provisional = false) {
+        const row = this._trobaFila(codiModul);
+        const selector = provisional
+            ? 'input[ng-model="contingut.qualificacioProv"]'
+            : 'input[name="quantitativa"]';
+        const input = row?.querySelector(selector);
+        if (!input || input.disabled) {
+            this.logger.warn(`MateriaApplier → no es pot editar la nota del mòdul: ${codiModul}`);
+            return false;
+        }
+        input.value = valor;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+    }
+
+    /**
+     * Marca el mòdul com a no presentat.
+     * @param {string} codiModul
+     * @returns {boolean}
+     */
+    aplicaNoPresentatModul(codiModul) {
+        const select = this._trobaFila(codiModul)?.querySelector('select');
+        if (!select || select.disabled || !Array.from(select.options).some(opcio => opcio.value === 'string:NP')) {
+            this.logger.warn(`MateriaApplier → no es pot marcar NP al mòdul: ${codiModul}`);
+            return false;
+        }
+        select.value = 'string:NP';
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+    }
+
+    _trobaFila(codi) {
+        const cell = Array.from(document.querySelectorAll('tr.alturallistat td:first-child'))
+            .find(td => td.textContent.trim().replace(/\s/g, '') === codi);
+        return cell?.parentElement ?? null;
+    }
 }

@@ -98,13 +98,56 @@ export class MateriaFeatureManager {
     onApply(materia, inputVal) {
         this.logger.log(`MateriaFeatureManager → onApply per ${materia.codi}: ${inputVal}`);
 
-        const notes = this.applier.tradueixNotes(inputVal);
-        if (notes && notes.length === materia.RAs.length) {
-            this.applier.aplicaNotesARAs(materia.RAs, notes);
-            this.scrollHelper.enfocaAssignatura(materia);
-        } else {
-            alert(`Error: les notes no són vàlides o no coincideixen amb el nombre de RAs (${materia.RAs.length}).`);
+        if (!inputVal?.trim()) {
+            alert(`Falten ${materia.RAs.length} ${materia.RAs.length === 1 ? 'nota' : 'notes'} per als RAs.`);
+            return;
         }
+        const notes = this.applier.tradueixNotes(inputVal);
+        if (!notes) {
+            alert('Error: hi ha notes no vàlides.');
+            return;
+        }
+
+        const notesOriginals = inputVal.trim().replace(/\t/g, ' ').replace(/\s+/g, ' ').split(' ');
+        if (notes.length < materia.RAs.length) {
+            const falten = materia.RAs.length - notes.length;
+            alert(`Falten ${falten} ${falten === 1 ? 'nota' : 'notes'}: calen ${materia.RAs.length} per als RAs i, opcionalment, una més per al mòdul.`);
+            return;
+        }
+        if (notes.length > materia.RAs.length + 1) {
+            alert(`Hi ha massa notes: calen ${materia.RAs.length} per als RAs i, com a màxim, una més per al mòdul.`);
+            return;
+        }
+
+        const notesRAs = notes.slice(0, materia.RAs.length);
+        const téNotaModul = notes.length === materia.RAs.length + 1;
+        const notaModulOriginal = téNotaModul ? notesOriginals.at(-1).replace(',', '.') : '';
+        const notaModulNumero = Number(notaModulOriginal);
+        const ésNPModul = notaModulOriginal.toUpperCase() === 'NP';
+        if (téNotaModul && !ésNPModul && !/^\d+(?:\.\d+)?$/.test(notaModulOriginal)) {
+            alert('La nota del mòdul ha de ser numèrica o NP.');
+            return;
+        }
+        if (téNotaModul && !ésNPModul && (notaModulNumero < 1 || notaModulNumero > 10)) {
+            alert('La nota numèrica del mòdul ha d’estar entre 1 i 10.');
+            return;
+        }
+        if (téNotaModul && !ésNPModul && notaModulNumero >= 5
+            && !notesRAs.every(nota => /^A(5|6|7|8|9|10)$/.test(nota))) {
+            alert('No es pot posar una nota de mòdul igual o superior a 5 si tots els RAs no estan aprovats.');
+            return;
+        }
+
+        this.applier.aplicaNotesARAs(materia.RAs, notesRAs);
+        if (téNotaModul) {
+            if (ésNPModul) {
+                this.applier.aplicaNoPresentatModul(materia.codi);
+            } else {
+                const provisional = this.applier.estadaPendent(materia.estada);
+                this.applier.aplicaNotaModul(materia.codi, notaModulOriginal, provisional);
+            }
+        }
+        this.scrollHelper.enfocaAssignatura(materia);
     }
 
     /**
