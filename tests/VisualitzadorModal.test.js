@@ -107,6 +107,7 @@ describe('VisualitzadorModal', () => {
         expect(styles).toContain('.ptv-pdf-mode .ptv-subjects-table { width:100%; min-width:0; table-layout:fixed; }');
         expect(styles).toContain('.ptv-pdf-mode .ptv-subjects-table th:nth-last-child(2), .ptv-pdf-mode .ptv-subjects-table td:nth-last-child(2) { width:76px; }');
         expect(styles).toContain('.ptv-pdf-mode .ptv-ra-pill { width:44px; min-width:44px; height:38px;');
+        expect(styles).toContain('font-weight:900; line-height:1; vertical-align:middle;');
     });
 
     test('hauria de declarar el modal com a diàleg accessible amb controls etiquetats', () => {
