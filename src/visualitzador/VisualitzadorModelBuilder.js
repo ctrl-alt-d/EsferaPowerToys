@@ -82,8 +82,14 @@ export class VisualitzadorModelBuilder {
                         final: this.normalitzaNota(nota),
                         ras: [],
                     });
+                    if (nota.provisional !== undefined) {
+                        subjectMap.get(code).provisional = nota.provisional;
+                    }
                 } else {
                     subjectMap.get(code).final = this.normalitzaNota(nota);
+                    if (nota.provisional !== undefined) {
+                        subjectMap.get(code).provisional = nota.provisional;
+                    }
                 }
             }
         });
