@@ -31,7 +31,7 @@ describe('VisualitzadorRenderer', () => {
         expect(node.querySelector('.ptv-subj-code').textContent).toBe('M01');
         expect(node.querySelector('.ptv-subj-label').textContent).toBe('Mòdul aprovat');
         expect(node.querySelector('.ptv-ra-pill.pass').textContent).toBe('6');
-        expect(node.querySelector('.ptv-td-provisional').textContent).toBe('8');
+        expect(node.querySelector('.ptv-provisional-pill').textContent).toBe('8');
         expect(node.querySelector('.ptv-ra-pill.fail').textContent).toBe('NA');
         expect(node.querySelector('.ptv-recover-chip').textContent).toBe('Mòdul suspès');
         expect(node.textContent).toContain('A recuperar');
@@ -62,7 +62,7 @@ describe('VisualitzadorRenderer', () => {
         const cells1 = Array.from(rows[0].querySelectorAll('td'));
         expect(cells1[1].querySelector('.ptv-ra-pill').textContent).toBe('PDT'); // EM column
         expect(cells1[2].querySelector('.ptv-ra-pill').textContent).toBe('6'); // RA01 column
-        expect(cells1[3].textContent).toBe('·'); // provisional column
+        expect(cells1[3].querySelector('.ptv-provisional-pill').textContent).toBe('·'); // provisional column
 
         // Second row: M02
         const cells2 = Array.from(rows[1].querySelectorAll('td'));

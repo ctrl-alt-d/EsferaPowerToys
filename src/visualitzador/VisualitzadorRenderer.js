@@ -132,9 +132,12 @@ export class VisualitzadorRenderer {
 
         const provisional = document.createElement('td');
         provisional.className = 'ptv-td-provisional';
-        provisional.textContent = this.valueHelper.isNull(subject.provisional)
+        const provisionalValue = document.createElement('span');
+        provisionalValue.className = `ptv-provisional-pill${this.valueHelper.isNull(subject.provisional) ? ' empty' : ''}`;
+        provisionalValue.textContent = this.valueHelper.isNull(subject.provisional)
             ? '·'
             : this.valueHelper.displayVal(subject.provisional);
+        provisional.appendChild(provisionalValue);
         tr.appendChild(provisional);
 
         const total = document.createElement('td');
