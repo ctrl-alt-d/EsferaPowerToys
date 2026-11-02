@@ -143,7 +143,7 @@ export class MateriaFeatureManager {
             if (ésNPModul) {
                 this.applier.aplicaNoPresentatModul(materia.codi);
             } else {
-                const provisional = this.applier.estadaPendent(materia.estada);
+                const provisional = notaModulNumero >= 5 && this.applier.estadaPendent(materia.estada);
                 this.applier.aplicaNotaModul(materia.codi, notaModulOriginal, provisional);
             }
         }

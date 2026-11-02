@@ -120,6 +120,16 @@ describe('MateriaFeatureManager', () => {
         expect(applier.aplicaNotaModul).toHaveBeenCalledWith('MAT', '6', true);
     });
 
+    test('onApply envia al camp ordinari una nota de mòdul suspesa encara que l’EM estigui pendent', () => {
+        const materia = { codi: 'MAT', nom: 'Matemàtiques', RAs: ['RA1'], estada: 'MAT_01EM' };
+        applier.tradueixNotes.mockReturnValue(['A10', 'NA']);
+        applier.estadaPendent.mockReturnValue(true);
+
+        manager.onApply(materia, '10 4');
+
+        expect(applier.aplicaNotaModul).toHaveBeenCalledWith('MAT', '4', false);
+    });
+
     test('onApply manté NP per al mòdul i exigeix els RAs aprovats per una nota de mòdul aprovada', () => {
         const materia = { codi: 'MAT', nom: 'Matemàtiques', RAs: ['RA1'] };
         applier.tradueixNotes.mockReturnValue(['A10', 'PDT']);
