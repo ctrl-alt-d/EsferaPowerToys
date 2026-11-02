@@ -103,7 +103,9 @@ export class VisualitzadorModelBuilder {
             });
         });
 
-        return Array.from(subjectMap.values()).filter(subject => subject.final !== '' || subject.ras.length > 0);
+        return Array.from(subjectMap.values()).filter(subject =>
+            subject.final !== '' || subject.ras.length > 0 || !this.notaValueHelper.ésBuit(subject.provisional)
+        );
     }
 
     /**

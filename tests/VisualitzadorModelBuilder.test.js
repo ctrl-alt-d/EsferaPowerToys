@@ -36,6 +36,27 @@ describe('VisualitzadorModelBuilder', () => {
         });
     });
 
+    test('hauria de conservar un mòdul sense nota final ni RAs quan només té provisional 0', () => {
+        const model = builder.construeixModel([
+            {
+                idAlumne: '1',
+                nom: 'Cognom, Nom',
+                avaluacions: [{ codi: 'FINAL_1', id: 'ava1' }],
+                continguts: {
+                    ava1: [
+                        { codi: 'M01', nom: 'Mòdul provisional', jerarquia: '2', qualitativa: '', quantitativa: '', provisional: 0 },
+                        { codi: 'M02', nom: 'Mòdul buit', jerarquia: '2', qualitativa: '', quantitativa: '', provisional: '' },
+                    ],
+                },
+            },
+        ], 1);
+
+        expect(model.students).toHaveLength(1);
+        expect(model.students[0].subjects).toEqual([
+            { code: 'M01', name: 'Mòdul provisional', final: '', provisional: 0, ras: [] },
+        ]);
+    });
+
     test('hauria d’aplicar les mateixes classes de notes que el visualitzador original', () => {
         expect(builder.scoreClass('NA')).toBe('fail');
         expect(builder.scoreClass(5)).toBe('pass');
