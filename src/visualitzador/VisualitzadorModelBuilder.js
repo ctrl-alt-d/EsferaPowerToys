@@ -79,18 +79,13 @@ export class VisualitzadorModelBuilder {
                     subjectMap.set(code, {
                         code,
                         name: nota.nom || code,
-                        final: this.normalitzaNota(nota),
                         ras: [],
                     });
-                    if (nota.provisional !== undefined) {
-                        subjectMap.get(code).provisional = nota.provisional;
-                    }
-                } else {
-                    subjectMap.get(code).final = this.normalitzaNota(nota);
-                    if (nota.provisional !== undefined) {
-                        subjectMap.get(code).provisional = nota.provisional;
-                    }
                 }
+
+                const subject = subjectMap.get(code);
+                subject.final = this.normalitzaNota(nota);
+                if (nota.provisional !== undefined) subject.provisional = nota.provisional;
             }
         });
 
