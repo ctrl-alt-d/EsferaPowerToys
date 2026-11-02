@@ -98,6 +98,17 @@ describe('VisualitzadorModal', () => {
         expect(styles).toContain('#ptv-student-select.ptv-student-select { min-width:0; max-width:none; width:100%; }');
     });
 
+    test('hauria d’ajustar la taula en mode PDF perquè totes les columnes siguin visibles', () => {
+        modal.open(students);
+
+        const styles = document.querySelector('#ptv-styles').textContent;
+
+        expect(styles).toContain('.ptv-pdf-mode .ptv-table-scroll { overflow:visible; }');
+        expect(styles).toContain('.ptv-pdf-mode .ptv-subjects-table { width:100%; min-width:0; table-layout:fixed; }');
+        expect(styles).toContain('.ptv-pdf-mode .ptv-subjects-table th:nth-last-child(2), .ptv-pdf-mode .ptv-subjects-table td:nth-last-child(2) { width:76px; }');
+        expect(styles).toContain('.ptv-pdf-mode .ptv-ra-pill { width:44px; min-width:44px; height:38px;');
+    });
+
     test('hauria de declarar el modal com a diàleg accessible amb controls etiquetats', () => {
         modal.open(students);
 

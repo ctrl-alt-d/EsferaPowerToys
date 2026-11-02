@@ -67,6 +67,10 @@ export class VisualitzadorRenderer {
             headRow.appendChild(th);
         }
 
+        const provisionalHeader = document.createElement('th');
+        provisionalHeader.textContent = 'Nota provisional';
+        headRow.appendChild(provisionalHeader);
+
         const totalHeader = document.createElement('th');
         totalHeader.textContent = 'Total';
         headRow.appendChild(totalHeader);
@@ -125,6 +129,16 @@ export class VisualitzadorRenderer {
             td.appendChild(this.creaPill(regularRAs[i]));
             tr.appendChild(td);
         }
+
+        const provisional = document.createElement('td');
+        provisional.className = 'ptv-td-provisional';
+        const provisionalValue = document.createElement('span');
+        provisionalValue.className = `ptv-provisional-pill${this.valueHelper.isNull(subject.provisional) ? ' empty' : ''}`;
+        provisionalValue.textContent = this.valueHelper.isNull(subject.provisional)
+            ? '·'
+            : this.valueHelper.displayVal(subject.provisional);
+        provisional.appendChild(provisionalValue);
+        tr.appendChild(provisional);
 
         const total = document.createElement('td');
         total.className = 'ptv-td-total';

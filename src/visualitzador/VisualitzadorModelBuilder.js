@@ -79,12 +79,13 @@ export class VisualitzadorModelBuilder {
                     subjectMap.set(code, {
                         code,
                         name: nota.nom || code,
-                        final: this.normalitzaNota(nota),
                         ras: [],
                     });
-                } else {
-                    subjectMap.get(code).final = this.normalitzaNota(nota);
                 }
+
+                const subject = subjectMap.get(code);
+                subject.final = this.normalitzaNota(nota);
+                if (nota.provisional !== undefined) subject.provisional = nota.provisional;
             }
         });
 
@@ -102,7 +103,9 @@ export class VisualitzadorModelBuilder {
             });
         });
 
-        return Array.from(subjectMap.values()).filter(subject => subject.final !== '' || subject.ras.length > 0);
+        return Array.from(subjectMap.values()).filter(subject =>
+            subject.final !== '' || subject.ras.length > 0 || !this.notaValueHelper.ésBuit(subject.provisional)
+        );
     }
 
     /**
